@@ -41,7 +41,7 @@ const templates: Template[] = [
     id: 'promo',
     name: 'Promo',
     title: '🎉 Special Offer!',
-    message: 'Get 50% off your next purchase. Limited time offer - don\'t miss out!',
+    message: 'Get 50% off your next purchase. Limited time offer - don&apos;t miss out!',
     icon: 'success',
     background: '#10B981',
     backgroundGradient: '#059669',

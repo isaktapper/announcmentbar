@@ -12,8 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
-import { Announcement } from '../page'
-import { ICONS } from '@/types/announcement'
+import { Announcement, ICONS } from '@/types/announcement'
 
 interface AnnouncementCardProps {
   announcement: Announcement

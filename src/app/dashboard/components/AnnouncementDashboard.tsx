@@ -7,7 +7,7 @@ import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { Announcement } from '../page'
+import { Announcement } from '@/types/announcement'
 import Link from 'next/link'
 import AnnouncementCard from './AnnouncementCard'
 
