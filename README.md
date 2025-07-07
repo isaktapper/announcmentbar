@@ -1,36 +1,292 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaaS App
+
+A modern SaaS application built with Next.js 15, TypeScript, Tailwind CSS, and Supabase authentication.
+
+## Features
+
+- ⚡ **Next.js 15** with App Router
+- 🔷 **TypeScript** for type safety
+- 🎨 **Tailwind CSS** for styling
+- 🔐 **Supabase Authentication** with email/password
+- 📱 **Responsive Design** ready
+- 🏗️ **SaaS Architecture** with proper folder structure
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ 
+- npm/yarn/pnpm
+- A Supabase account
+
+### Setup
+
+1. **Clone and install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Set up Supabase:**
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Go to Settings > API to get your project URL, anon key, and service role key
+   - Update `.env.local` with your Supabase credentials:
+     ```
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+     ```
+   - **Create the announcements table** in your Supabase project:
+     ```sql
+     CREATE TABLE announcements (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+       title TEXT NOT NULL,
+       message TEXT NOT NULL,
+       icon TEXT DEFAULT 'info',
+       background TEXT NOT NULL DEFAULT '#3B82F6',
+       background_gradient TEXT,
+       text_color TEXT NOT NULL DEFAULT '#FFFFFF',
+       visibility BOOLEAN NOT NULL DEFAULT true,
+       slug TEXT NOT NULL UNIQUE,
+       created_at TIMESTAMPTZ DEFAULT now()
+     );
+     
+     -- Enable Row Level Security
+     ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+     
+     -- Policy to allow users to see only their own announcements
+     CREATE POLICY "Users can view their own announcements" ON announcements
+       FOR SELECT USING (auth.uid() = user_id);
+     
+     -- Policy to allow users to insert their own announcements
+     CREATE POLICY "Users can insert their own announcements" ON announcements
+       FOR INSERT WITH CHECK (auth.uid() = user_id);
+     
+     -- Policy to allow users to update their own announcements
+     CREATE POLICY "Users can update their own announcements" ON announcements
+       FOR UPDATE USING (auth.uid() = user_id);
+     
+     -- Policy to allow users to delete their own announcements
+     CREATE POLICY "Users can delete their own announcements" ON announcements
+       FOR DELETE USING (auth.uid() = user_id);
+     ```
+   - **Note**: The service role key is required for email duplicate checking
+   - **Important**: Replace placeholder values with real Supabase credentials before testing
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open [http://localhost:3000](http://localhost:3000)** to see your app.
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+├── components/          # Reusable components
+│   ├── auth/           # Authentication components
+│   └── ui/             # UI components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility libraries
+│   ├── supabase.ts     # Supabase client (legacy)
+│   ├── supabase-client.ts  # Browser client
+│   ├── supabase-server.ts  # Server client
+│   └── auth.ts         # Authentication utilities
+└── types/              # TypeScript type definitions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Authentication
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app comes with a complete authentication setup:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Email/password authentication** via Supabase
+- **Session management** with automatic refresh
+- **Auth context** for state sharing
+- **Custom hooks** for easy auth integration
+- **Middleware** for session handling
+
+### Usage Examples
+
+```typescript
+// In a client component
+import { useAuthContext } from '@/components/auth/AuthProvider'
+
+function MyComponent() {
+  const { user, loading } = useAuthContext()
+  
+  if (loading) return <div>Loading...</div>
+  if (!user) return <div>Please log in</div>
+  
+  return <div>Welcome, {user.email}!</div>
+}
+```
+
+```typescript
+// Authentication functions
+import { auth } from '@/lib/auth'
+
+// Sign up
+const { data, error } = await auth.signUp({
+  email: 'user@example.com',
+  password: 'password'
+})
+
+// Sign in
+const { data, error } = await auth.signIn({
+  email: 'user@example.com', 
+  password: 'password'
+})
+
+// Sign out
+const { error } = await auth.signOut()
+```
+
+## Authentication Pages
+
+The app includes a complete authentication system with the following pages:
+
+### 📝 `/auth/signup` - User Registration
+- **Fields**: First name, last name, company, email, password, confirm password
+- **Features**: 
+  - Password visibility toggle
+  - Remember me checkbox
+  - Form validation (all fields required, passwords match, password ≥ 8 chars)
+  - **Server-side email duplicate checking** with immediate feedback
+  - User metadata storage (first_name, last_name, company)
+- **Flow**: 
+  - Pre-check email existence → If exists, show "Email already registered" error
+  - If email available → Proceed with signup
+  - If session created → Redirect to `/dashboard`
+  - If verification needed → Redirect to `/auth/verify`
+
+### 🔑 `/auth/login` - User Sign In
+- **Fields**: Email, password
+- **Features**: 
+  - Password visibility toggle
+  - Remember me checkbox
+  - Friendly error messages
+- **Flow**: 
+  - Success → Redirect to `/dashboard`
+  - Failure → Show error message
+
+### 📧 `/auth/verify` - Email Verification
+- **Purpose**: Static page shown after signup
+- **Content**: Instructions to check email for verification link
+- **Links**: Back to login for verified users
+
+### 🏠 `/dashboard` - Announcement Management
+- **Protection**: Server-side authentication check using `createServerSupabaseClient()`
+- **Features**: 
+  - **📊 Dashboard Overview**: Stats showing total, active, and hidden announcements
+  - **➕ Create Announcements**: Link to dedicated `/dashboard/create` page with modern form
+  - **✏️ Inline Editing**: Edit announcements directly in cards with real-time preview
+  - **👁️ Visibility Toggle**: One-click show/hide announcements
+  - **📋 Copy Embed Code**: Get embed script for each announcement: `<script src="https://announcement.bar/embed/{slug}.js" defer></script>`
+  - **🗑️ Delete Announcements**: With confirmation dialog
+  - **🔔 Toast Notifications**: Success/error feedback for all actions
+  - **🎨 Color Picker**: Custom background and text colors
+  - **🔒 User Isolation**: Users only see their own announcements (RLS policies)
+- **Flow**: No session → Redirect to `/auth/login`
+
+### 🎨 `/dashboard/create` - Modern Announcement Builder
+- **Protection**: Client-side authentication check with redirect
+- **Design**: Beautiful, minimal SaaS-style UI inspired by Vercel/Notion/Linear
+- **Features**:
+  - **📝 Enhanced Form Fields**: Title, message, icon selector, background/gradient, text color
+  - **🎯 Template System**: Pre-built templates (Alert, Maintenance, Promo) with one-click setup
+  - **🎨 Icon Library**: 5 Lucide React icons (warning, alert, info, success, schedule)
+  - **🌈 Gradient Support**: Toggle between solid colors and beautiful gradients
+  - **👀 Live Preview**: Real-time mock website showing exactly how announcement will appear
+  - **📱 Responsive Design**: Perfect on mobile and desktop
+  - **⚡ Smart UX**: Auto-generated slugs, template prefill, real-time updates
+- **Templates**:
+  - **Alert**: Red background, alert icon, system issue messaging
+  - **Planned Maintenance**: Orange background, schedule icon, maintenance messaging  
+  - **Promo**: Green gradient, success icon, promotional messaging
+- **Flow**: Create → Auto-redirect to dashboard with success toast
+
+## Middleware Authentication
+
+The app uses Supabase middleware following the official guide:
+
+- **Session Management**: Automatic session refresh
+- **Route Protection**: 
+  - `/dashboard/*` → Requires authentication
+  - `/auth/login`, `/auth/signup` → Redirects if already authenticated
+- **Cookie Handling**: Proper cookie management for SSR
+
+## Announcement Dashboard
+
+The app includes a comprehensive announcement management system:
+
+### 📋 Features
+
+- **Create Announcements**: Modern, dedicated page with SaaS-style UI and live preview
+- **Template System**: Pre-built templates (Alert, Maintenance, Promo) for quick setup
+- **Icon Library**: Professional icons from Lucide React (warning, alert, info, success, schedule)
+- **Gradient Backgrounds**: Beautiful gradients or solid colors with visual color pickers
+- **Edit Inline**: Click edit to modify announcements directly in cards
+- **Visibility Control**: Toggle announcements on/off with visual indicators
+- **Copy Embed Code**: Get ready-to-use JavaScript embed snippets
+- **Delete with Confirmation**: Safe deletion with "Are you sure?" prompts
+- **Toast Notifications**: Real-time feedback for all operations
+- **Live Preview**: See exactly how announcements will appear on websites
+- **Responsive Design**: Works perfectly on mobile and desktop
+- **Real-time Updates**: See changes instantly as you type
+
+### 🗃️ Data Model
+
+```typescript
+interface Announcement {
+  id: string              // UUID primary key
+  user_id: string         // User who owns this announcement
+  title: string          // Display title
+  message: string        // Announcement text
+  icon: string           // Icon type (warning, alert, info, success, schedule)
+  background: string     // Hex color (e.g., "#3B82F6")
+  background_gradient?: string // Optional gradient end color for gradients
+  text_color: string     // Hex color (e.g., "#FFFFFF")
+  visibility: boolean    // Whether announcement is active
+  slug: string          // Unique identifier for embed (e.g., "abc123")
+  created_at: string    // ISO timestamp
+}
+```
+
+### 🔗 Embed System
+
+Each announcement gets a unique embed code:
+```html
+<script src="https://announcement.bar/embed/{slug}.js" defer></script>
+```
+
+Users can copy this code and paste it into any website to display their announcements.
+
+### 🔒 Security
+
+- **Row Level Security**: Users can only access their own announcements
+- **Server-side Auth**: All operations protected by Supabase authentication
+- **Input Validation**: Client and server-side validation for all forms
+- **Sanitized Data**: All user inputs properly escaped and validated
+
+## Next Steps
+
+Your complete announcement system is ready! You can:
+
+1. ✅ Sign up new users with metadata
+2. ✅ Sign in existing users  
+3. ✅ Protect routes with authentication
+4. ✅ Handle email verification
+5. ✅ Create and manage announcements
+6. ✅ Toggle visibility and copy embed codes
+7. ✅ Edit and delete announcements safely
+8. Build the embed script delivery system
+9. Add analytics and tracking
+10. Customize themes and branding
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
