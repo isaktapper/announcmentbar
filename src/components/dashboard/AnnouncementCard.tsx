@@ -261,7 +261,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
             </div>
             
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{announcement.title}"? This will permanently remove the announcement and any embedded instances will stop working.
+              Are you sure you want to delete &quot;{announcement.title}&quot;? This will permanently remove the announcement and any embedded instances will stop working.
             </p>
             
             <div className="flex space-x-3">
