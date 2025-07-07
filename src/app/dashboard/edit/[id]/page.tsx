@@ -67,7 +67,7 @@ export default function EditAnnouncementPage() {
         setAnnouncement(announcementData)
 
         // Pre-populate form with existing data
-        const initialFormData = {
+        setFormData({
           title: announcementData.title,
           message: announcementData.message,
           icon: announcementData.icon,
@@ -76,14 +76,7 @@ export default function EditAnnouncementPage() {
           useGradient: !!announcementData.background_gradient,
           textColor: announcementData.text_color,
           visibility: announcementData.visibility,
-        }
-        
-        console.log('📋 Loading announcement data:', {
-          original: announcementData,
-          formData: initialFormData
         })
-        
-        setFormData(initialFormData)
       } catch {
         error('Failed to load announcement data')
         router.push('/dashboard')
@@ -95,7 +88,7 @@ export default function EditAnnouncementPage() {
     if (params.id) {
       checkAuthAndFetchData()
     }
-  }, [params.id, router, error])
+  }, [params.id, router])
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template.id)
