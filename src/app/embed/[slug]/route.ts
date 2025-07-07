@@ -148,7 +148,7 @@ export async function GET(
           padding: 0 \${isClosable ? '40px' : '20px'} 0 20px;
           box-sizing: border-box;
         ">
-          \${${iconSvg ? `iconSvg` : `''`} && iconAlignment !== 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${${iconSvg ? `iconSvg` : `''`}}</div>\` : ''}
+          \${iconSvg && iconAlignment !== 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${iconSvg}</div>\` : ''}
           <div style="
             flex: 1; 
             min-width: 0; 
@@ -167,7 +167,7 @@ export async function GET(
               line-height: 1.4;
             ">\${messageElement}</div>
           </div>
-          \${${iconSvg ? `iconSvg` : `''`} && iconAlignment === 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${${iconSvg ? `iconSvg` : `''`}}</div>\` : ''}
+          \${iconSvg && iconAlignment === 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${iconSvg}</div>\` : ''}
         </div>
         \${isClosable ? \`
           <button 
