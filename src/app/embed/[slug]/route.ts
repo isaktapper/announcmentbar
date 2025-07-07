@@ -102,8 +102,7 @@ export async function GET(
         font-size: 15px;
         line-height: 1.4;
         box-shadow: 0 2px 16px rgba(0,0,0,0.1);
-        transform: translateY(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(0);
         box-sizing: border-box;
         margin: 0;
       ">
@@ -181,17 +180,12 @@ export async function GET(
 
      // Add body/html padding to prevent content overlap
      const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
-     const currentBodyMargin = parseInt(window.getComputedStyle(document.body).marginTop) || 0;
      
-     // Temporarily show to measure height
-     announcementBar.style.transform = 'translateY(0)';
-     announcementBar.style.visibility = 'visible';
+     // Measure height (bar is already visible)
      const barHeight = announcementBar.offsetHeight;
-     announcementBar.style.transform = 'translateY(-100%)';
      
-     // Apply spacing to both body and html to ensure compatibility
+     // Apply spacing to push down content
      document.body.style.paddingTop = (currentBodyPadding + barHeight) + 'px';
-     document.documentElement.style.marginTop = '0px';
      
      // Also try to push down any fixed headers or navigation
      const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
@@ -206,11 +200,6 @@ export async function GET(
          }
        });
      });
-
-    // Animate in smoothly
-    setTimeout(() => {
-      announcementBar.style.transform = 'translateY(0)';
-    }, 100);
 
     return announcementBar;
   }
