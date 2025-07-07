@@ -181,14 +181,17 @@ export async function GET(
      // Add spacing to push down content below the fixed announcement bar
      const barHeight = announcementBar.offsetHeight;
      
-     // Get current margins
-     const currentBodyMargin = parseInt(window.getComputedStyle(document.body).marginTop) || 0;
+     // Create a spacer div to push content down
+     const spacer = document.createElement('div');
+     spacer.id = 'announcement-spacer-${slug}';
+     spacer.style.height = barHeight + 'px';
+     spacer.style.width = '100%';
+     spacer.style.display = 'block';
+     spacer.style.backgroundColor = 'transparent';
+     spacer.style.pointerEvents = 'none';
      
-     // Apply margin-top to body to push all content down
-     document.body.style.marginTop = (currentBodyMargin + barHeight) + 'px';
-     
-     // Ensure no conflicting positioning
-     document.body.style.position = 'relative';
+     // Insert spacer at the very beginning of body
+     document.body.insertBefore(spacer, document.body.firstChild);
      
      // Also try to push down any fixed headers or navigation
      const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
@@ -219,7 +222,7 @@ export async function GET(
     return new NextResponse(jsCode, {
       headers: {
         'Content-Type': 'text/javascript',
-        'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+        'Cache-Control': 'public, max-age=30', // Cache for only 30 seconds for faster updates
         'Access-Control-Allow-Origin': '*', // Allow cross-origin requests
         'Access-Control-Allow-Methods': 'GET',
         'Access-Control-Allow-Headers': 'Content-Type',
