@@ -198,7 +198,7 @@ export async function GET(
      commonHeaderSelectors.forEach(selector => {
        const elements = document.querySelectorAll(selector);
        elements.forEach(el => {
-         const element = el as HTMLElement;
+         const element = el;
          if (window.getComputedStyle(element).position === 'fixed' && 
              window.getComputedStyle(element).top === '0px') {
            element.style.top = barHeight + 'px';
