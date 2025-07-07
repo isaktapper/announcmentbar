@@ -84,11 +84,12 @@ export async function GET(
     return;
   }
 
-  // Create the announcement bar
-  function createAnnouncementBar() {
-    const announcementBar = document.createElement('div');
-    announcementBar.id = 'announcement-bar-${slug}';
-    announcementBar.innerHTML = \`
+     // Create the announcement bar
+   function createAnnouncementBar() {
+     console.log("Creating announcement bar...");
+     const announcementBar = document.createElement('div');
+     announcementBar.id = 'announcement-bar-${slug}';
+     announcementBar.innerHTML = \`
       <div style="
         position: fixed;
         top: 0;
@@ -121,9 +122,10 @@ export async function GET(
           </div>
         </div>
       </div>
-    \`;
+         \`;
+     console.log("announcementBar.innerHTML", announcementBar.innerHTML);
 
-    // Add icon styles
+     // Add icon styles
     const style = document.createElement('style');
     style.textContent = \`
       .announcement-icon {
@@ -148,10 +150,12 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-    // Add body padding to prevent content overlap
-    const currentPaddingTop = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
-    const barHeight = announcementBar.offsetHeight;
-    document.body.style.paddingTop = (currentPaddingTop + barHeight) + 'px';
+         // Add body padding to prevent content overlap
+     const currentPaddingTop = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
+     announcementBar.style.transform = 'translateY(0)';
+     const barHeight = announcementBar.offsetHeight;
+     announcementBar.style.transform = 'translateY(-100%)';
+     document.body.style.paddingTop = (currentPaddingTop + barHeight) + 'px';
 
     // Animate in
     setTimeout(() => {
