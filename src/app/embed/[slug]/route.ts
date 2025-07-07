@@ -93,18 +93,19 @@ export async function GET(
         left: 0;
         right: 0;
         width: 100%;
-        z-index: 9999;
+        z-index: 999999;
         ${backgroundStyle}
         color: ${announcement.text_color};
-        padding: 14px 20px;
+        padding: 16px 0;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 15px;
-        line-height: 1.5;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        line-height: 1.4;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.1);
         transform: translateY(-100%);
-        transition: transform 0.4s ease-out;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-sizing: border-box;
+        margin: 0;
       ">
         <div style="
           display: flex;
@@ -112,7 +113,10 @@ export async function GET(
           justify-content: center;
           gap: 10px;
           width: 100%;
-          max-width: none;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px;
+          box-sizing: border-box;
         ">
           ${iconSvg ? `<div style="flex-shrink: 0; width: 18px; height: 18px;">${iconSvg}</div>` : ''}
           <div style="flex: 1; min-width: 0;">
@@ -133,10 +137,31 @@ export async function GET(
         display: block;
       }
       
+      /* Ensure full width and proper positioning */
+      #announcement-bar-${slug} {
+        margin: 0 !important;
+        width: 100vw !important;
+        left: 0 !important;
+        right: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        z-index: 999999 !important;
+      }
+      
+      /* Inner container styling */
+      #announcement-bar-${slug} > div > div {
+        min-width: 0 !important;
+        flex: 1 !important;
+      }
+      
+      /* Mobile responsiveness */
       @media (max-width: 768px) {
-        #announcement-bar-${slug} > div {
-          padding: 12px 16px !important;
+        #announcement-bar-${slug} {
+          padding: 14px 0 !important;
           font-size: 14px !important;
+        }
+        #announcement-bar-${slug} > div {
+          padding: 0 16px !important;
         }
         #announcement-bar-${slug} .announcement-icon {
           width: 16px !important;
@@ -144,23 +169,9 @@ export async function GET(
         }
       }
       
-      /* Ensure full width on all devices */
-      #announcement-bar-${slug} {
-        margin: 0 !important;
-        width: 100vw !important;
-        left: 0 !important;
-        right: 0 !important;
-      }
-      
-      /* Prevent any parent containers from affecting layout */
-      #announcement-bar-${slug} > div {
-        min-height: 48px;
-        display: flex !important;
-        align-items: center !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding-left: 20px !important;
-        padding-right: 20px !important;
+      /* Ensure body gets proper spacing */
+      body {
+        transition: padding-top 0.3s ease !important;
       }
     \`;
     document.head.appendChild(style);
@@ -168,20 +179,38 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-         // Add body padding to prevent content overlap
-     const currentPaddingTop = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
+     // Add body/html padding to prevent content overlap
+     const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
+     const currentBodyMargin = parseInt(window.getComputedStyle(document.body).marginTop) || 0;
+     
+     // Temporarily show to measure height
      announcementBar.style.transform = 'translateY(0)';
+     announcementBar.style.visibility = 'visible';
      const barHeight = announcementBar.offsetHeight;
      announcementBar.style.transform = 'translateY(-100%)';
-     document.body.style.paddingTop = (currentPaddingTop + barHeight) + 'px';
+     
+     // Apply spacing to both body and html to ensure compatibility
+     document.body.style.paddingTop = (currentBodyPadding + barHeight) + 'px';
+     document.documentElement.style.marginTop = '0px';
+     
+     // Also try to push down any fixed headers or navigation
+     const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
+     commonHeaderSelectors.forEach(selector => {
+       const elements = document.querySelectorAll(selector);
+       elements.forEach(el => {
+         const element = el as HTMLElement;
+         if (window.getComputedStyle(element).position === 'fixed' && 
+             window.getComputedStyle(element).top === '0px') {
+           element.style.top = barHeight + 'px';
+           element.style.transition = 'top 0.3s ease';
+         }
+       });
+     });
 
-    // Animate in
+    // Animate in smoothly
     setTimeout(() => {
-      const barDiv = announcementBar.querySelector('div');
-      if (barDiv) {
-        barDiv.style.transform = 'translateY(0)';
-      }
-    }, 200);
+      announcementBar.style.transform = 'translateY(0)';
+    }, 100);
 
     return announcementBar;
   }
