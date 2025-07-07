@@ -67,7 +67,7 @@ export default function EditAnnouncementPage() {
         setAnnouncement(announcementData)
 
         // Pre-populate form with existing data
-        setFormData({
+        const initialFormData = {
           title: announcementData.title,
           message: announcementData.message,
           icon: announcementData.icon,
@@ -76,7 +76,14 @@ export default function EditAnnouncementPage() {
           useGradient: !!announcementData.background_gradient,
           textColor: announcementData.text_color,
           visibility: announcementData.visibility,
+        }
+        
+        console.log('📋 Loading announcement data:', {
+          original: announcementData,
+          formData: initialFormData
         })
+        
+        setFormData(initialFormData)
       } catch {
         error('Failed to load announcement data')
         router.push('/dashboard')
@@ -135,6 +142,12 @@ export default function EditAnnouncementPage() {
         return
       }
 
+      console.log('📝 Updating announcement:', {
+        id: announcement.id,
+        user_id: user.id,
+        formData
+      })
+
       const updatedAnnouncement = {
         title: formData.title,
         message: formData.message,
@@ -145,20 +158,26 @@ export default function EditAnnouncementPage() {
         visibility: formData.visibility,
       }
 
-      const { error: updateError } = await supabase
+      console.log('🔄 Sending update to Supabase:', updatedAnnouncement)
+
+      const { data: updatedData, error: updateError } = await supabase
         .from('announcements')
         .update(updatedAnnouncement)
         .eq('id', announcement.id)
         .eq('user_id', user.id)
+        .select()
 
       if (updateError) {
-        error(updateError.message)
+        console.error('❌ Supabase update error:', updateError)
+        error(`Update failed: ${updateError.message}`)
         return
       }
 
+      console.log('✅ Update successful:', updatedData)
       success('Announcement updated successfully!')
       router.push('/dashboard')
-    } catch {
+    } catch (err) {
+      console.error('❌ Unexpected error:', err)
       error('Failed to update announcement')
     } finally {
       setLoading(false)
