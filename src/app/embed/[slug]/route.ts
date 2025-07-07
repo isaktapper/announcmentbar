@@ -247,10 +247,13 @@ export async function GET(
      }
      
      // Monitor size changes with ResizeObserver for dynamic updates
+     // TEMPORARY DISABLED to fix infinite loop
+     /*
      if (window.ResizeObserver) {
        const resizeObserver = new ResizeObserver(updateSpacing);
        resizeObserver.observe(announcementBar);
      }
+     */
      
      // Also try to push down any fixed headers or navigation
      const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
