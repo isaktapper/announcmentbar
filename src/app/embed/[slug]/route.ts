@@ -95,7 +95,6 @@ export async function GET(
      const titleFontSize = ${announcement.title_font_size || 16};
      const messageFontSize = ${announcement.message_font_size || 14};
      const textAlignment = '${announcement.text_alignment || 'center'}';
-     const iconAlignment = '${announcement.icon_alignment || 'left'}';
      
      // URL settings
      const titleUrl = '${announcement.title_url || ''}';
@@ -103,8 +102,7 @@ export async function GET(
      
      // Calculate layout styles
      const justifyContent = textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center';
-     const iconOrder = iconAlignment === 'right' ? '2' : iconAlignment === 'center' ? '1' : '0';
-     const contentOrder = iconAlignment === 'center' ? '0' : '1';
+     const contentOrder = '${announcement.icon_alignment || 'left'}' === 'center' ? '0' : '1';
      
      // Create title and message elements with optional links
      const titleElement = titleUrl ? 
@@ -149,7 +147,7 @@ export async function GET(
           padding: 0 \${isClosable ? '40px' : '20px'} 0 20px;
           box-sizing: border-box;
         ">
-          \${iconSvg && iconAlignment !== 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${iconSvg}</div>\` : ''}
+          ${iconSvg && announcement.icon_alignment !== 'center' ? `<div style="flex-shrink: 0; width: 18px; height: 18px; order: ${announcement.icon_alignment === 'right' ? '2' : '0'};">${iconSvg}</div>` : ''}
           <div style="
             flex: 1; 
             min-width: 0; 
@@ -168,7 +166,7 @@ export async function GET(
               line-height: 1.4;
             ">\${messageElement}</div>
           </div>
-          \${iconSvg && iconAlignment === 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${iconSvg}</div>\` : ''}
+          ${iconSvg && announcement.icon_alignment === 'center' ? `<div style="flex-shrink: 0; width: 18px; height: 18px; order: 1;">${iconSvg}</div>` : ''}
         </div>
         \${isClosable ? \`
           <button 
