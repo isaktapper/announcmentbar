@@ -290,3 +290,70 @@ Your complete announcement system is ready! You can:
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+# Announcement Bar System
+
+A modern, embeddable announcement bar system built with Next.js and Supabase.
+
+## 🔧 Handling Sticky Headers
+
+If your website has a sticky header, you may need to adjust its positioning to work with the announcement bar:
+
+### Option 1: Use CSS Custom Property (Automatic)
+
+The embed script automatically sets a CSS custom property `--announcement-bar-height` that you can use:
+
+```css
+/* Your sticky header */
+.sticky-header {
+  position: sticky;
+  top: var(--announcement-bar-height, 0px); /* Falls back to 0px if no announcement */
+  z-index: 50; /* Make sure it's below the announcement bar (z-index: 999999) */
+}
+```
+
+### Option 2: Manual CSS Adjustment
+
+If you know your announcement bar height, you can manually adjust:
+
+```css
+/* If announcement bar is ~50px high */
+.sticky-header {
+  position: sticky;
+  top: 50px;
+  z-index: 50;
+}
+```
+
+### Option 3: JavaScript Detection
+
+For dynamic adjustment:
+
+```javascript
+// Wait for announcement bar to load
+setTimeout(() => {
+  const announcementHeight = getComputedStyle(document.documentElement).getPropertyValue('--announcement-bar-height');
+  if (announcementHeight) {
+    document.querySelector('.your-header').style.top = announcementHeight;
+  }
+}, 1000);
+```
+
+### Option 4: Tailwind CSS Classes
+
+For Tailwind users:
+
+```html
+<!-- Use top-[var(--announcement-bar-height)] when supported, or top-12 as fallback -->
+<header class="sticky top-12 lg:top-[var(--announcement-bar-height)] z-50">
+  Your header content
+</header>
+```
+
+## 🚨 Common Issues
+
+**Issue**: Announcement bar overlaps sticky header
+**Solution**: Use one of the methods above to push your header down
+
+**Issue**: Content appears behind announcement bar
+**Solution**: The embed script automatically adds margin-top to body. If this doesn't work, manually add margin or padding to your main content area.

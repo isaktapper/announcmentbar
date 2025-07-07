@@ -182,27 +182,53 @@ export async function GET(
      const applySpacing = () => {
        console.log('🚀 Starting spacing application...');
        
-       // Wait for element to be properly rendered
-       setTimeout(() => {
-         // Use getBoundingClientRect for more reliable height measurement
-         const rect = announcementBar.getBoundingClientRect();
-         const barHeight = rect.height;
-         
-         console.log('📏 Announcement bar height:', barHeight + 'px');
-         console.log('📊 Rect:', rect);
-         
-         if (barHeight > 0) {
-           // Simple approach: just add margin-top to body with !important
-           document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
-           console.log('✅ Applied', barHeight + 'px', 'margin-top to body');
-         } else {
-           console.log('❌ Height is 0, trying alternative measurement...');
-           // Fallback: use computed style
-           const computed = window.getComputedStyle(announcementBar);
-           const fallbackHeight = computed.height;
-           console.log('🔄 Computed height:', fallbackHeight);
-         }
-       }, 200); // Give more time for rendering
+               // Wait for element to be properly rendered
+        setTimeout(() => {
+          // Try multiple height measurement methods
+          const rect = announcementBar.getBoundingClientRect();
+          const offsetHeight = announcementBar.offsetHeight;
+          const scrollHeight = announcementBar.scrollHeight;
+          const clientHeight = announcementBar.clientHeight;
+          
+          console.log('📊 Height measurements:');
+          console.log('  - getBoundingClientRect:', rect.height + 'px');
+          console.log('  - offsetHeight:', offsetHeight + 'px');
+          console.log('  - scrollHeight:', scrollHeight + 'px');
+          console.log('  - clientHeight:', clientHeight + 'px');
+          
+          // Try measuring the inner content div instead
+          const innerDiv = announcementBar.querySelector('div');
+          let contentHeight = 0;
+          if (innerDiv) {
+            contentHeight = innerDiv.getBoundingClientRect().height;
+            console.log('  - innerDiv height:', contentHeight + 'px');
+          }
+          
+          // Choose the best height measurement
+          let barHeight = Math.max(rect.height, offsetHeight, scrollHeight, clientHeight, contentHeight);
+          
+          // If still 0, calculate from content
+          if (barHeight === 0) {
+            console.log('🔧 All measurements are 0, calculating from styling...');
+            // Calculate from padding (16px top + 16px bottom) + estimated text height
+            const padding = 32; // 16px top + 16px bottom from CSS
+            const estimatedTextHeight = 20; // Rough estimate for text height
+            barHeight = padding + estimatedTextHeight;
+            console.log('📐 Estimated height:', barHeight + 'px');
+          }
+          
+          console.log('🎯 Final chosen height:', barHeight + 'px');
+          
+          if (barHeight > 0) {
+            // Apply margin-top to body
+            document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
+            console.log('✅ Applied', barHeight + 'px', 'margin-top to body');
+            
+            // Also set a CSS custom property for potential use by the website
+            document.documentElement.style.setProperty('--announcement-bar-height', barHeight + 'px');
+            console.log('📝 Set CSS custom property --announcement-bar-height:', barHeight + 'px');
+          }
+        }, 500); // Wait even longer for full rendering
      };
      
      // Single execution after DOM is ready
