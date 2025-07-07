@@ -178,20 +178,35 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-     // Add spacing to push down content below the fixed announcement bar
-     const barHeight = announcementBar.offsetHeight;
+     // Function to update spacing when bar height changes
+     const updateSpacing = () => {
+       // Temporarily reset transform to get accurate height
+       const originalTransform = announcementBar.style.transform;
+       announcementBar.style.transform = 'translateY(0)';
+       
+       const barHeight = announcementBar.offsetHeight;
+       
+       // Restore original transform
+       announcementBar.style.transform = originalTransform;
+       
+       // Apply scroll-padding-top to html element - this pushes content down properly
+       document.documentElement.style.scrollPaddingTop = barHeight + 'px';
+       
+       // Also add top padding to body to create immediate space
+       const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
+       if (currentBodyPadding < barHeight) {
+         document.body.style.paddingTop = barHeight + 'px';
+       }
+     };
      
-     // Create a spacer div to push content down
-     const spacer = document.createElement('div');
-     spacer.id = 'announcement-spacer-${slug}';
-     spacer.style.height = barHeight + 'px';
-     spacer.style.width = '100%';
-     spacer.style.display = 'block';
-     spacer.style.backgroundColor = 'transparent';
-     spacer.style.pointerEvents = 'none';
+     // Initial spacing update
+     updateSpacing();
      
-     // Insert spacer at the very beginning of body
-     document.body.insertBefore(spacer, document.body.firstChild);
+     // Monitor size changes with ResizeObserver for dynamic updates
+     if (window.ResizeObserver) {
+       const resizeObserver = new ResizeObserver(updateSpacing);
+       resizeObserver.observe(announcementBar);
+     }
      
      // Also try to push down any fixed headers or navigation
      const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
