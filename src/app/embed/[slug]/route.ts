@@ -92,25 +92,27 @@ export async function GET(
         top: 0;
         left: 0;
         right: 0;
+        width: 100%;
         z-index: 9999;
         ${backgroundStyle}
         color: ${announcement.text_color};
-        padding: 12px 20px;
+        padding: 14px 20px;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        font-size: 15px;
+        line-height: 1.5;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
         transform: translateY(-100%);
-        transition: transform 0.3s ease-in-out;
+        transition: transform 0.4s ease-out;
+        box-sizing: border-box;
       ">
         <div style="
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          max-width: 1200px;
-          margin: 0 auto;
+          gap: 10px;
+          width: 100%;
+          max-width: none;
         ">
           ${iconSvg ? `<div style="flex-shrink: 0; width: 18px; height: 18px;">${iconSvg}</div>` : ''}
           <div style="flex: 1; min-width: 0;">
@@ -133,13 +135,32 @@ export async function GET(
       
       @media (max-width: 768px) {
         #announcement-bar-${slug} > div {
-          padding: 10px 16px !important;
-          font-size: 13px !important;
+          padding: 12px 16px !important;
+          font-size: 14px !important;
         }
         #announcement-bar-${slug} .announcement-icon {
           width: 16px !important;
           height: 16px !important;
         }
+      }
+      
+      /* Ensure full width on all devices */
+      #announcement-bar-${slug} {
+        margin: 0 !important;
+        width: 100vw !important;
+        left: 0 !important;
+        right: 0 !important;
+      }
+      
+      /* Prevent any parent containers from affecting layout */
+      #announcement-bar-${slug} > div {
+        min-height: 48px;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
       }
     \`;
     document.head.appendChild(style);
@@ -156,8 +177,11 @@ export async function GET(
 
     // Animate in
     setTimeout(() => {
-      announcementBar.style.transform = 'translateY(0)';
-    }, 100);
+      const barDiv = announcementBar.querySelector('div');
+      if (barDiv) {
+        barDiv.style.transform = 'translateY(0)';
+      }
+    }, 200);
 
     return announcementBar;
   }
