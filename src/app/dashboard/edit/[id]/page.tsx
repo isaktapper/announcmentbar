@@ -34,6 +34,8 @@ export default function EditAnnouncementPage() {
 
   // Check authentication and fetch announcement data
   useEffect(() => {
+    if (!params.id) return
+
     const checkAuthAndFetchData = async () => {
       try {
         const supabase = createClient()
@@ -85,10 +87,8 @@ export default function EditAnnouncementPage() {
       }
     }
     
-    if (params.id) {
-      checkAuthAndFetchData()
-    }
-  }, [params.id, router])
+    checkAuthAndFetchData()
+  }, [params.id])
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template.id)
@@ -135,12 +135,6 @@ export default function EditAnnouncementPage() {
         return
       }
 
-      console.log('📝 Updating announcement:', {
-        id: announcement.id,
-        user_id: user.id,
-        formData
-      })
-
       const updatedAnnouncement = {
         title: formData.title,
         message: formData.message,
@@ -151,26 +145,19 @@ export default function EditAnnouncementPage() {
         visibility: formData.visibility,
       }
 
-      console.log('🔄 Sending update to Supabase:', updatedAnnouncement)
-
-      const { data: updatedData, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('announcements')
         .update(updatedAnnouncement)
         .eq('id', announcement.id)
         .eq('user_id', user.id)
-        .select()
 
       if (updateError) {
-        console.error('❌ Supabase update error:', updateError)
         error(`Update failed: ${updateError.message}`)
         return
       }
-
-      console.log('✅ Update successful:', updatedData)
       success('Announcement updated successfully!')
       router.push('/dashboard')
-    } catch (err) {
-      console.error('❌ Unexpected error:', err)
+    } catch {
       error('Failed to update announcement')
     } finally {
       setLoading(false)
