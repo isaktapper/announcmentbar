@@ -194,14 +194,26 @@ export async function GET(
        // Method 1: Set CSS custom property for the height
        document.documentElement.style.setProperty('--announcement-bar-height', barHeight + 'px');
        
-       // Method 2: Add margin-top to all direct children of body (except announcement bar)
+       // Method 2: Add margin-top only to important elements (skip script tags etc)
        console.log('📋 Body children count:', document.body.children.length);
        Array.from(document.body.children).forEach((child, index) => {
-         // Skip the announcement bar itself (index 0)
-         if (index > 0 && child !== announcementBar) {
+         // Skip the announcement bar itself (index 0) and script tags
+         if (index > 0 && child !== announcementBar && 
+             !['SCRIPT', 'STYLE', 'META', 'LINK'].includes(child.tagName)) {
            const currentMargin = parseInt(window.getComputedStyle(child).marginTop) || 0;
            console.log('🔧 Setting margin-top on element:', child.tagName, 'from', currentMargin + 'px', 'to', barHeight + 'px');
-           child.style.marginTop = barHeight + 'px';
+           child.style.marginTop = Math.max(currentMargin, barHeight) + 'px';
+           child.style.position = 'relative'; // Ensure margin works
+         }
+       });
+       
+       // Method 4: More aggressive - find first content div and push it down
+       const contentElements = document.querySelectorAll('body > div, body > main, body > section, body > article, body > header');
+       contentElements.forEach(element => {
+         if (element !== announcementBar) {
+           console.log('🎯 Pushing down content element:', element.tagName, element.className);
+           element.style.marginTop = Math.max(parseInt(element.style.marginTop) || 0, barHeight) + 'px';
+           element.style.position = 'relative';
          }
        });
        
@@ -212,8 +224,22 @@ export async function GET(
        }
      };
      
-     // Initial spacing update
+     // Initial spacing update with delay to ensure DOM is ready
      updateSpacing();
+     
+     // Also try after a short delay to ensure everything is rendered
+     setTimeout(() => {
+       console.log('⏰ Delayed spacing update...');
+       updateSpacing();
+     }, 100);
+     
+     // And when window is fully loaded
+     if (document.readyState === 'loading') {
+       window.addEventListener('load', () => {
+         console.log('🎯 Window loaded');
+         updateSpacing();
+       });
+     }
      
      // Monitor size changes with ResizeObserver for dynamic updates
      if (window.ResizeObserver) {
