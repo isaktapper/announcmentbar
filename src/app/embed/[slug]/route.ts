@@ -217,11 +217,16 @@ export async function GET(
          }
        });
        
-       // Method 3: Also try adding padding to body as fallback
-       const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
-       if (currentBodyPadding < barHeight) {
-         document.body.style.paddingTop = barHeight + 'px';
-       }
+       // Method 3: Aggressive body styling with !important
+       console.log('💪 Applying aggressive body styling...');
+       document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
+       document.body.style.setProperty('padding-top', barHeight + 'px', 'important');
+       
+       // Method 5: Try setting transform on body to push everything down
+       document.body.style.setProperty('transform', \`translateY(\${barHeight}px)\`, 'important');
+       
+       // Method 6: Set minimum height on html to ensure space
+       document.documentElement.style.setProperty('padding-top', barHeight + 'px', 'important');
      };
      
      // Initial spacing update with delay to ensure DOM is ready
