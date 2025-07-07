@@ -154,7 +154,7 @@ export default function AnnouncementCard({
   }
 
   const handleCopyEmbed = async () => {
-    const embedCode = `<script src="https://announcement.bar/embed/${announcement.slug}.js" defer></script>`
+    const embedCode = `<script src="${window.location.origin}/embed/${announcement.slug}.js" defer></script>`
     
     try {
       await navigator.clipboard.writeText(embedCode)

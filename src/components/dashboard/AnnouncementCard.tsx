@@ -84,7 +84,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
   }
 
   const copyEmbedScript = async () => {
-    const embedScript = `<script src="${window.location.origin}/embed/${announcement.slug}.js"></script>`
+    const embedScript = `<script src="${window.location.origin}/embed/${announcement.slug}.js" defer></script>`
     try {
       await navigator.clipboard.writeText(embedScript)
       setCopySuccess(true)
