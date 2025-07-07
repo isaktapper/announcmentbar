@@ -47,6 +47,7 @@ A modern SaaS application built with Next.js 15, TypeScript, Tailwind CSS, and S
        background_gradient TEXT,
        text_color TEXT NOT NULL DEFAULT '#FFFFFF',
        visibility BOOLEAN NOT NULL DEFAULT true,
+       is_sticky BOOLEAN NOT NULL DEFAULT true,
        slug TEXT NOT NULL UNIQUE,
        created_at TIMESTAMPTZ DEFAULT now()
      );

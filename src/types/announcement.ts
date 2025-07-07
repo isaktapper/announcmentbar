@@ -8,6 +8,7 @@ export interface Announcement {
   background_gradient?: string
   text_color: string
   visibility: boolean
+  is_sticky: boolean
   slug: string
   created_at: string
 }
@@ -21,6 +22,7 @@ export interface AnnouncementFormData {
   useGradient: boolean
   textColor: string
   visibility: boolean
+  isSticky: boolean
 }
 
 export interface Template {
@@ -33,6 +35,7 @@ export interface Template {
   backgroundGradient?: string
   textColor: string
   useGradient: boolean
+  isSticky: boolean
 }
 
 export const ICONS = {

@@ -30,6 +30,7 @@ export default function EditAnnouncementPage() {
     useGradient: false,
     textColor: '#FFFFFF',
     visibility: true,
+    isSticky: true,
   })
 
   // Check authentication and fetch announcement data
@@ -78,6 +79,7 @@ export default function EditAnnouncementPage() {
           useGradient: !!announcementData.background_gradient,
           textColor: announcementData.text_color,
           visibility: announcementData.visibility,
+          isSticky: announcementData.is_sticky ?? true, // Default to true if not set
         })
       } catch {
         error('Failed to load announcement data')
@@ -101,6 +103,7 @@ export default function EditAnnouncementPage() {
       useGradient: template.useGradient,
       textColor: template.textColor,
       visibility: formData.visibility, // Keep the current visibility setting
+      isSticky: template.isSticky,
     })
   }
 
@@ -143,6 +146,7 @@ export default function EditAnnouncementPage() {
         background_gradient: formData.useGradient ? formData.backgroundGradient : null,
         text_color: formData.textColor,
         visibility: formData.visibility,
+        is_sticky: formData.isSticky,
       }
 
       const { error: updateError } = await supabase
@@ -337,6 +341,25 @@ export default function EditAnnouncementPage() {
                         type="checkbox"
                         checked={formData.visibility}
                         onChange={(e) => handleInputChange('visibility', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+
+                  {/* Sticky Position Toggle */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <div className="font-medium text-gray-900">Sticky Position</div>
+                      <div className="text-sm text-gray-500">
+                        Whether the announcement bar stays at the top when scrolling
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isSticky}
+                        onChange={(e) => handleInputChange('isSticky', e.target.checked)}
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>

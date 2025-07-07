@@ -86,14 +86,19 @@ export async function GET(
      console.log("Creating announcement bar...");
      const announcementBar = document.createElement('div');
      announcementBar.id = 'announcement-bar-${slug}';
+     const isSticky = ${announcement.is_sticky !== false}; // Default to true if undefined
+     const positionStyle = isSticky ? 'fixed' : 'relative';
+     const topStyle = isSticky ? 'top: 0;' : '';
+     const zIndexStyle = isSticky ? 'z-index: 999999;' : 'z-index: 100;';
+     
      announcementBar.innerHTML = \`
       <div style="
-        position: fixed;
-        top: 0;
+        position: \${positionStyle};
+        \${topStyle}
         left: 0;
         right: 0;
         width: 100%;
-        z-index: 999999;
+        \${zIndexStyle}
         ${backgroundStyle}
         color: ${announcement.text_color};
         padding: 16px 0;
@@ -142,9 +147,9 @@ export async function GET(
         width: 100vw !important;
         left: 0 !important;
         right: 0 !important;
-        position: fixed !important;
-        top: 0 !important;
-        z-index: 999999 !important;
+        position: \${positionStyle} !important;
+        \${isSticky ? 'top: 0 !important;' : ''}
+        z-index: \${isSticky ? '999999' : '100'} !important;
       }
       
       /* Inner container styling */
@@ -178,9 +183,14 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-     // Simplified single-run spacing with proper height measurement
+     // Simplified single-run spacing with proper height measurement (only for sticky bars)
      const applySpacing = () => {
-       console.log('🚀 Starting spacing application...');
+       if (!isSticky) {
+         console.log('📍 Non-sticky bar, skipping spacing application');
+         return;
+       }
+       
+       console.log('🚀 Starting spacing application for sticky bar...');
        
                // Wait for element to be properly rendered
         setTimeout(() => {
@@ -247,19 +257,21 @@ export async function GET(
      }
      */
      
-     // Also try to push down any fixed headers or navigation
-     const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
-     commonHeaderSelectors.forEach(selector => {
-       const elements = document.querySelectorAll(selector);
-       elements.forEach(el => {
-         const element = el;
-         if (window.getComputedStyle(element).position === 'fixed' && 
-             window.getComputedStyle(element).top === '0px') {
-           element.style.top = barHeight + 'px';
-           element.style.transition = 'top 0.3s ease';
-         }
+     // Also try to push down any fixed headers or navigation (only for sticky bars)
+     if (isSticky) {
+       const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
+       commonHeaderSelectors.forEach(selector => {
+         const elements = document.querySelectorAll(selector);
+         elements.forEach(el => {
+           const element = el;
+           if (window.getComputedStyle(element).position === 'fixed' && 
+               window.getComputedStyle(element).top === '0px') {
+             element.style.top = barHeight + 'px';
+             element.style.transition = 'top 0.3s ease';
+           }
+         });
        });
-     });
+     }
 
     return announcementBar;
   }

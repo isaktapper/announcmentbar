@@ -26,6 +26,7 @@ const templates: Template[] = [
     background: '#EF4444',
     textColor: '#FFFFFF',
     useGradient: false,
+    isSticky: true,
   },
   {
     id: 'maintenance',
@@ -36,6 +37,7 @@ const templates: Template[] = [
     background: '#F59E0B',
     textColor: '#FFFFFF',
     useGradient: false,
+    isSticky: true,
   },
   {
     id: 'promo',
@@ -47,6 +49,7 @@ const templates: Template[] = [
     backgroundGradient: '#059669',
     textColor: '#FFFFFF',
     useGradient: true,
+    isSticky: false, // Promo messages might not need to be sticky
   },
 ]
 
