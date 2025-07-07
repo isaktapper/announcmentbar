@@ -88,7 +88,7 @@ export default function EditAnnouncementPage() {
     }
     
     checkAuthAndFetchData()
-  }, [params.id])
+  }, [params.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template.id)

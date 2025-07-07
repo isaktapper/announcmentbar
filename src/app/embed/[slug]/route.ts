@@ -13,10 +13,11 @@ const ICON_SVG_MAP = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const cookieStore = await cookies()
+    const resolvedParams = await params
     
     // Create Supabase client for server-side operations
     const supabase = createServerClient(
@@ -32,7 +33,7 @@ export async function GET(
     )
 
     // Extract slug and remove .js extension if present
-    const slug = params.slug.replace(/\.js$/, '')
+    const slug = resolvedParams.slug.replace(/\.js$/, '')
 
     // Check if request is asking for the .js file specifically
     const url = new URL(request.url)
