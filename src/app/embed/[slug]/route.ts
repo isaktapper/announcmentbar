@@ -1,6 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Icon mapping for the JavaScript output
