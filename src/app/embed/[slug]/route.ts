@@ -189,10 +189,23 @@ export async function GET(
        // Restore original transform
        announcementBar.style.transform = originalTransform;
        
-       // Apply scroll-padding-top to html element - this pushes content down properly
-       document.documentElement.style.scrollPaddingTop = barHeight + 'px';
+       console.log('📏 Announcement bar height:', barHeight + 'px');
        
-       // Also add top padding to body to create immediate space
+       // Method 1: Set CSS custom property for the height
+       document.documentElement.style.setProperty('--announcement-bar-height', barHeight + 'px');
+       
+       // Method 2: Add margin-top to all direct children of body (except announcement bar)
+       console.log('📋 Body children count:', document.body.children.length);
+       Array.from(document.body.children).forEach((child, index) => {
+         // Skip the announcement bar itself (index 0)
+         if (index > 0 && child !== announcementBar) {
+           const currentMargin = parseInt(window.getComputedStyle(child).marginTop) || 0;
+           console.log('🔧 Setting margin-top on element:', child.tagName, 'from', currentMargin + 'px', 'to', barHeight + 'px');
+           child.style.marginTop = barHeight + 'px';
+         }
+       });
+       
+       // Method 3: Also try adding padding to body as fallback
        const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
        if (currentBodyPadding < barHeight) {
          document.body.style.paddingTop = barHeight + 'px';
