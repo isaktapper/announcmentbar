@@ -147,7 +147,7 @@ export async function GET(
           padding: 0 \${isClosable ? '40px' : '20px'} 0 20px;
           box-sizing: border-box;
         ">
-          ${iconSvg && announcement.icon_alignment !== 'center' ? `<div style="flex-shrink: 0; width: 18px; height: 18px; order: ${announcement.icon_alignment === 'right' ? '2' : '0'};">${iconSvg}</div>` : ''}
+          ${iconSvg && announcement.icon_alignment !== 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: ${announcement.icon_alignment === 'right' ? '2' : '0'};">${iconSvg}</div>` : ''}
           <div style="
             flex: 1; 
             min-width: 0; 
@@ -166,7 +166,7 @@ export async function GET(
               line-height: 1.4;
             ">\${messageElement}</div>
           </div>
-          ${iconSvg && announcement.icon_alignment === 'center' ? `<div style="flex-shrink: 0; width: 18px; height: 18px; order: 1;">${iconSvg}</div>` : ''}
+          ${iconSvg && announcement.icon_alignment === 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: 1;">${iconSvg}</div>` : ''}
         </div>
         \${isClosable ? \`
           <button 
@@ -231,8 +231,8 @@ export async function GET(
           padding: 0 16px !important;
         }
         #announcement-bar-${slug} .announcement-icon {
-          width: 16px !important;
-          height: 16px !important;
+          width: \${Math.max(titleFontSize, messageFontSize)}px !important;
+          height: \${Math.max(titleFontSize, messageFontSize)}px !important;
         }
       }
       

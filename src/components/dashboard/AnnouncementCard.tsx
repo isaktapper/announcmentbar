@@ -229,14 +229,112 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
           <div className="border-t border-gray-200 p-6 bg-gray-50">
             <div className="relative">
               <div 
-                className="flex items-center p-4 rounded-lg text-white"
-                style={getBackgroundStyle()}
+                className="flex items-center p-4 rounded-lg relative"
+                style={{
+                  ...getBackgroundStyle(),
+                  color: announcement.text_color,
+                  minHeight: '40px',
+                  justifyContent: announcement.text_alignment === 'left' ? 'flex-start' : 
+                                 announcement.text_alignment === 'right' ? 'flex-end' : 'center',
+                  paddingRight: announcement.is_closable ? '48px' : '16px',
+                }}
               >
-                {IconComponent && <IconComponent className="w-5 h-5 mr-3 flex-shrink-0" />}
-                <div>
-                  <div className="font-semibold">{announcement.title}</div>
-                  <div className="text-sm opacity-90">{announcement.message}</div>
+                {/* Icon - Non-center alignment */}
+                {IconComponent && announcement.icon_alignment !== 'center' && (
+                  <div 
+                    className="flex-shrink-0 mr-3"
+                    style={{ 
+                      order: announcement.icon_alignment === 'right' ? '2' : '0',
+                      width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
+                      height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
+                    }}
+                  >
+                    <IconComponent style={{ width: '100%', height: '100%' }} />
+                  </div>
+                )}
+                
+                {/* Content */}
+                <div 
+                  className="flex-1"
+                  style={{ 
+                    textAlign: announcement.text_alignment || 'center',
+                    order: announcement.icon_alignment === 'center' ? '0' : '1'
+                  }}
+                >
+                  <div 
+                    className="font-semibold mb-1"
+                    style={{ 
+                      fontSize: `${announcement.title_font_size || 16}px`,
+                      lineHeight: 1.3
+                    }}
+                  >
+                    {announcement.title_url ? (
+                      <a 
+                        href={announcement.title_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: 'inherit', 
+                          textDecoration: 'underline',
+                          textDecorationColor: 'rgba(255,255,255,0.5)'
+                        }}
+                      >
+                        {announcement.title}
+                      </a>
+                    ) : (
+                      announcement.title
+                    )}
+                  </div>
+                  <div 
+                    className="opacity-90"
+                    style={{ 
+                      fontSize: `${announcement.message_font_size || 14}px`,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    {announcement.message_url ? (
+                      <a 
+                        href={announcement.message_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: 'inherit', 
+                          textDecoration: 'underline',
+                          textDecorationColor: 'rgba(255,255,255,0.5)'
+                        }}
+                      >
+                        {announcement.message}
+                      </a>
+                    ) : (
+                      announcement.message
+                    )}
+                  </div>
                 </div>
+
+                {/* Icon - Center alignment */}
+                {IconComponent && announcement.icon_alignment === 'center' && (
+                  <div 
+                    className="flex-shrink-0 ml-3"
+                    style={{ 
+                      order: '1',
+                      width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
+                      height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
+                    }}
+                  >
+                    <IconComponent style={{ width: '100%', height: '100%' }} />
+                  </div>
+                )}
+
+                {/* Close button */}
+                {announcement.is_closable && (
+                  <button
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lg opacity-70 hover:opacity-100 transition-opacity"
+                    style={{ color: announcement.text_color }}
+                    title="Close announcement"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
               <div className="mt-2 text-xs text-gray-500 text-center">
                 Live preview of your announcement banner

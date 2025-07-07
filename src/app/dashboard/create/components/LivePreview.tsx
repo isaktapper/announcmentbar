@@ -26,6 +26,31 @@ export default function LivePreview({ formData }: LivePreviewProps) {
     return formData.background
   }
 
+  const getIconSize = () => {
+    const baseSize = Math.max(formData.titleFontSize || 16, formData.messageFontSize || 14)
+    return baseSize + 2
+  }
+
+  const getJustifyContent = () => {
+    switch (formData.textAlignment) {
+      case 'left': return 'flex-start'
+      case 'right': return 'flex-end'
+      default: return 'center'
+    }
+  }
+
+  const getIconOrder = () => {
+    switch (formData.iconAlignment) {
+      case 'right': return '2'
+      case 'center': return '1' 
+      default: return '0'
+    }
+  }
+
+  const getContentOrder = () => {
+    return formData.iconAlignment === 'center' ? '0' : '1'
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -54,29 +79,117 @@ export default function LivePreview({ formData }: LivePreviewProps) {
         {/* Announcement Bar */}
         {formData.visibility && (
           <div
-            className="px-4 py-3 text-center"
+            className="px-4 py-2.5 relative"
             style={{
               background: getBackgroundStyle(),
               color: formData.textColor,
+              minHeight: '40px',
             }}
           >
-            <div className="flex items-center justify-center gap-3 max-w-4xl mx-auto">
-              {formData.icon && formData.icon !== 'none' && IconComponent && (
-                <IconComponent className="w-5 h-5 flex-shrink-0" />
+            <div 
+              className="flex items-center gap-3 max-w-4xl mx-auto"
+              style={{
+                justifyContent: getJustifyContent(),
+                paddingRight: formData.isClosable ? '32px' : '16px',
+              }}
+            >
+              {/* Icon - Non-center alignment */}
+              {formData.icon && formData.icon !== 'none' && IconComponent && formData.iconAlignment !== 'center' && (
+                <div style={{ order: getIconOrder(), flexShrink: 0 }}>
+                  <IconComponent 
+                    style={{ 
+                      width: `${getIconSize()}px`, 
+                      height: `${getIconSize()}px` 
+                    }} 
+                  />
+                </div>
               )}
-              <div className="flex-1 min-w-0">
+              
+              {/* Content */}
+              <div 
+                className="flex-1 min-w-0"
+                style={{ 
+                  textAlign: formData.textAlignment as any,
+                  order: getContentOrder()
+                }}
+              >
                 {formData.title && (
-                  <div className="font-semibold text-sm sm:text-base mb-1">
-                    {formData.title}
+                  <div 
+                    className="font-semibold mb-0.5"
+                    style={{ 
+                      fontSize: `${formData.titleFontSize || 16}px`,
+                      lineHeight: 1.3
+                    }}
+                  >
+                    {formData.titleUrl ? (
+                      <a 
+                        href={formData.titleUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: 'inherit', 
+                          textDecoration: 'underline',
+                          textDecorationColor: 'rgba(255,255,255,0.5)'
+                        }}
+                      >
+                        {formData.title}
+                      </a>
+                    ) : (
+                      formData.title
+                    )}
                   </div>
                 )}
                 {formData.message && (
-                  <div className="text-xs sm:text-sm opacity-95">
-                    {formData.message}
+                  <div 
+                    className="opacity-90"
+                    style={{ 
+                      fontSize: `${formData.messageFontSize || 14}px`,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    {formData.messageUrl ? (
+                      <a 
+                        href={formData.messageUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: 'inherit', 
+                          textDecoration: 'underline',
+                          textDecorationColor: 'rgba(255,255,255,0.5)'
+                        }}
+                      >
+                        {formData.message}
+                      </a>
+                    ) : (
+                      formData.message
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* Icon - Center alignment */}
+              {formData.icon && formData.icon !== 'none' && IconComponent && formData.iconAlignment === 'center' && (
+                <div style={{ order: 1, flexShrink: 0 }}>
+                  <IconComponent 
+                    style={{ 
+                      width: `${getIconSize()}px`, 
+                      height: `${getIconSize()}px` 
+                    }} 
+                  />
+                </div>
+              )}
             </div>
+
+            {/* Close button */}
+            {formData.isClosable && (
+              <button
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lg opacity-70 hover:opacity-100 transition-opacity"
+                style={{ color: formData.textColor }}
+                title="Close announcement"
+              >
+                ×
+              </button>
+            )}
           </div>
         )}
 
