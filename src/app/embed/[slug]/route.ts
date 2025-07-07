@@ -178,72 +178,38 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-     // Function to update spacing when bar height changes
-     const updateSpacing = () => {
-       // Temporarily reset transform to get accurate height
-       const originalTransform = announcementBar.style.transform;
-       announcementBar.style.transform = 'translateY(0)';
+     // Simplified single-run spacing with proper height measurement
+     const applySpacing = () => {
+       console.log('🚀 Starting spacing application...');
        
-       const barHeight = announcementBar.offsetHeight;
-       
-       // Restore original transform
-       announcementBar.style.transform = originalTransform;
-       
-       console.log('📏 Announcement bar height:', barHeight + 'px');
-       
-       // Method 1: Set CSS custom property for the height
-       document.documentElement.style.setProperty('--announcement-bar-height', barHeight + 'px');
-       
-       // Method 2: Add margin-top only to important elements (skip script tags etc)
-       console.log('📋 Body children count:', document.body.children.length);
-       Array.from(document.body.children).forEach((child, index) => {
-         // Skip the announcement bar itself (index 0) and script tags
-         if (index > 0 && child !== announcementBar && 
-             !['SCRIPT', 'STYLE', 'META', 'LINK'].includes(child.tagName)) {
-           const currentMargin = parseInt(window.getComputedStyle(child).marginTop) || 0;
-           console.log('🔧 Setting margin-top on element:', child.tagName, 'from', currentMargin + 'px', 'to', barHeight + 'px');
-           child.style.marginTop = Math.max(currentMargin, barHeight) + 'px';
-           child.style.position = 'relative'; // Ensure margin works
+       // Wait for element to be properly rendered
+       setTimeout(() => {
+         // Use getBoundingClientRect for more reliable height measurement
+         const rect = announcementBar.getBoundingClientRect();
+         const barHeight = rect.height;
+         
+         console.log('📏 Announcement bar height:', barHeight + 'px');
+         console.log('📊 Rect:', rect);
+         
+         if (barHeight > 0) {
+           // Simple approach: just add margin-top to body with !important
+           document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
+           console.log('✅ Applied', barHeight + 'px', 'margin-top to body');
+         } else {
+           console.log('❌ Height is 0, trying alternative measurement...');
+           // Fallback: use computed style
+           const computed = window.getComputedStyle(announcementBar);
+           const fallbackHeight = computed.height;
+           console.log('🔄 Computed height:', fallbackHeight);
          }
-       });
-       
-       // Method 4: More aggressive - find first content div and push it down
-       const contentElements = document.querySelectorAll('body > div, body > main, body > section, body > article, body > header');
-       contentElements.forEach(element => {
-         if (element !== announcementBar) {
-           console.log('🎯 Pushing down content element:', element.tagName, element.className);
-           element.style.marginTop = Math.max(parseInt(element.style.marginTop) || 0, barHeight) + 'px';
-           element.style.position = 'relative';
-         }
-       });
-       
-       // Method 3: Aggressive body styling with !important
-       console.log('💪 Applying aggressive body styling...');
-       document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
-       document.body.style.setProperty('padding-top', barHeight + 'px', 'important');
-       
-       // Method 5: Try setting transform on body to push everything down
-       document.body.style.setProperty('transform', \`translateY(\${barHeight}px)\`, 'important');
-       
-       // Method 6: Set minimum height on html to ensure space
-       document.documentElement.style.setProperty('padding-top', barHeight + 'px', 'important');
+       }, 200); // Give more time for rendering
      };
      
-     // Initial spacing update with delay to ensure DOM is ready
-     updateSpacing();
-     
-     // Also try after a short delay to ensure everything is rendered
-     setTimeout(() => {
-       console.log('⏰ Delayed spacing update...');
-       updateSpacing();
-     }, 100);
-     
-     // And when window is fully loaded
+     // Single execution after DOM is ready
      if (document.readyState === 'loading') {
-       window.addEventListener('load', () => {
-         console.log('🎯 Window loaded');
-         updateSpacing();
-       });
+       document.addEventListener('DOMContentLoaded', applySpacing);
+     } else {
+       applySpacing();
      }
      
      // Monitor size changes with ResizeObserver for dynamic updates
