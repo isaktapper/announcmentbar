@@ -28,6 +28,13 @@ export default function CreateAnnouncementPage() {
     textColor: '#FFFFFF',
     visibility: true,
     isSticky: true,
+    titleFontSize: 16,
+    messageFontSize: 14,
+    titleUrl: '',
+    messageUrl: '',
+    textAlignment: 'center',
+    iconAlignment: 'left',
+    isClosable: false,
   })
 
   // Check authentication
@@ -60,10 +67,17 @@ export default function CreateAnnouncementPage() {
       textColor: template.textColor,
       visibility: true,
       isSticky: template.isSticky,
+      titleFontSize: template.titleFontSize,
+      messageFontSize: template.messageFontSize,
+      titleUrl: template.titleUrl || '',
+      messageUrl: template.messageUrl || '',
+      textAlignment: template.textAlignment,
+      iconAlignment: template.iconAlignment,
+      isClosable: template.isClosable,
     })
   }
 
-  const handleInputChange = (field: keyof AnnouncementFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof AnnouncementFormData, value: string | boolean | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (selectedTemplate) {
       setSelectedTemplate(null) // Clear template selection when user modifies
@@ -99,6 +113,13 @@ export default function CreateAnnouncementPage() {
         text_color: formData.textColor,
         visibility: formData.visibility,
         is_sticky: formData.isSticky,
+        title_font_size: formData.titleFontSize,
+        message_font_size: formData.messageFontSize,
+        title_url: formData.titleUrl || null,
+        message_url: formData.messageUrl || null,
+        text_alignment: formData.textAlignment,
+        icon_alignment: formData.iconAlignment,
+        is_closable: formData.isClosable,
         slug: generateSlug(),
       }
 
@@ -204,6 +225,82 @@ export default function CreateAnnouncementPage() {
                     selectedIcon={formData.icon}
                     onSelect={(icon) => handleInputChange('icon', icon)}
                   />
+
+                  {/* Typography Controls */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-900">
+                      Text Sizes
+                    </label>
+                    
+                    {/* Title Font Size */}
+                    <div>
+                      <label htmlFor="titleFontSize" className="block text-sm font-medium text-gray-700 mb-2">
+                        Title Size: {formData.titleFontSize}px
+                      </label>
+                      <input
+                        type="range"
+                        id="titleFontSize"
+                        min="12"
+                        max="24"
+                        value={formData.titleFontSize}
+                        onChange={(e) => handleInputChange('titleFontSize', parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+
+                    {/* Message Font Size */}
+                    <div>
+                      <label htmlFor="messageFontSize" className="block text-sm font-medium text-gray-700 mb-2">
+                        Message Size: {formData.messageFontSize}px
+                      </label>
+                      <input
+                        type="range"
+                        id="messageFontSize"
+                        min="10"
+                        max="20"
+                        value={formData.messageFontSize}
+                        onChange={(e) => handleInputChange('messageFontSize', parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Link URLs */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-900">
+                      Clickable Links (Optional)
+                    </label>
+                    
+                    {/* Title URL */}
+                    <div>
+                      <label htmlFor="titleUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                        Title Link URL
+                      </label>
+                      <input
+                        type="url"
+                        id="titleUrl"
+                        value={formData.titleUrl || ''}
+                        onChange={(e) => handleInputChange('titleUrl', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        placeholder="https://example.com (makes title clickable)"
+                      />
+                    </div>
+
+                    {/* Message URL */}
+                    <div>
+                      <label htmlFor="messageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                        Message Link URL
+                      </label>
+                      <input
+                        type="url"
+                        id="messageUrl"
+                        value={formData.messageUrl || ''}
+                        onChange={(e) => handleInputChange('messageUrl', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        placeholder="https://example.com (makes message clickable)"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -295,6 +392,78 @@ export default function CreateAnnouncementPage() {
                       />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
+                  </div>
+
+                  {/* Closable Toggle */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <div className="font-medium text-gray-900">Closable</div>
+                      <div className="text-sm text-gray-500">
+                        Allow users to dismiss the announcement with an X button
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isClosable}
+                        onChange={(e) => handleInputChange('isClosable', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+
+                  {/* Alignment Controls */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-900">
+                      Alignment
+                    </label>
+                    
+                    {/* Text Alignment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Text Alignment
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['left', 'center', 'right'] as const).map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() => handleInputChange('textAlignment', alignment)}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                              formData.textAlignment === alignment
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            {alignment.charAt(0).toUpperCase() + alignment.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Icon Alignment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Icon Alignment
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['left', 'center', 'right'] as const).map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() => handleInputChange('iconAlignment', alignment)}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                              formData.iconAlignment === alignment
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            {alignment.charAt(0).toUpperCase() + alignment.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -48,6 +48,13 @@ A modern SaaS application built with Next.js 15, TypeScript, Tailwind CSS, and S
        text_color TEXT NOT NULL DEFAULT '#FFFFFF',
        visibility BOOLEAN NOT NULL DEFAULT true,
        is_sticky BOOLEAN NOT NULL DEFAULT true,
+       title_font_size INTEGER NOT NULL DEFAULT 16,
+       message_font_size INTEGER NOT NULL DEFAULT 14,
+       title_url TEXT,
+       message_url TEXT,
+       text_alignment TEXT NOT NULL DEFAULT 'center',
+       icon_alignment TEXT NOT NULL DEFAULT 'left',
+       is_closable BOOLEAN NOT NULL DEFAULT false,
        slug TEXT NOT NULL UNIQUE,
        created_at TIMESTAMPTZ DEFAULT now()
      );

@@ -88,46 +88,111 @@ export async function GET(
      announcementBar.id = 'announcement-bar-${slug}';
      const isSticky = ${announcement.is_sticky !== false}; // Default to true if undefined
      const positionStyle = isSticky ? 'fixed' : 'relative';
-     const topStyle = isSticky ? 'top: 0;' : '';
-     const zIndexStyle = isSticky ? 'z-index: 999999;' : 'z-index: 100;';
+     const isClosable = ${announcement.is_closable === true};
+     
+     // Typography and layout settings
+     const titleFontSize = ${announcement.title_font_size || 16};
+     const messageFontSize = ${announcement.message_font_size || 14};
+     const textAlignment = '${announcement.text_alignment || 'center'}';
+     const iconAlignment = '${announcement.icon_alignment || 'left'}';
+     
+     // URL settings
+     const titleUrl = '${announcement.title_url || ''}';
+     const messageUrl = '${announcement.message_url || ''}';
+     
+     // Calculate layout styles
+     const justifyContent = textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center';
+     const iconOrder = iconAlignment === 'right' ? '2' : iconAlignment === 'center' ? '1' : '0';
+     const contentOrder = iconAlignment === 'center' ? '0' : '1';
+     
+     // Create title and message elements with optional links
+     const titleElement = titleUrl ? 
+       \`<a href="\${titleUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">${announcement.title.replace(/'/g, "\\'")}</a>\` :
+       '${announcement.title.replace(/'/g, "\\'")}';
+       
+     const messageElement = messageUrl ?
+       \`<a href="\${messageUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">${announcement.message.replace(/'/g, "\\'")}</a>\` :
+       '${announcement.message.replace(/'/g, "\\'")}';
      
      announcementBar.innerHTML = \`
       <div style="
         position: \${positionStyle};
-        \${topStyle}
+        \${isSticky ? 'top: 0;' : ''}
         left: 0;
         right: 0;
         width: 100%;
-        \${zIndexStyle}
+        z-index: \${isSticky ? '999999' : '100'};
         ${backgroundStyle}
         color: ${announcement.text_color};
-        padding: 16px 0;
-        text-align: center;
+        padding: 10px 16px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 15px;
-        line-height: 1.4;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         transform: translateY(0);
         box-sizing: border-box;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: \${justifyContent};
+        gap: 12px;
+        min-height: 40px;
+        position: relative;
       ">
         <div style="
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 10px;
+          justify-content: \${justifyContent};
+          gap: 12px;
           width: 100%;
           max-width: 1200px;
           margin: 0 auto;
-          padding: 0 20px;
+          padding: 0 \${isClosable ? '40px' : '20px'} 0 20px;
           box-sizing: border-box;
         ">
-          ${iconSvg ? `<div style="flex-shrink: 0; width: 18px; height: 18px;">${iconSvg}</div>` : ''}
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; margin-bottom: 2px;">${announcement.title}</div>
-            <div style="opacity: 0.9;">${announcement.message}</div>
+          \${${iconSvg ? `iconSvg` : `''`} && iconAlignment !== 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${${iconSvg ? `iconSvg` : `''`}}</div>\` : ''}
+          <div style="
+            flex: 1; 
+            min-width: 0; 
+            text-align: \${textAlignment};
+            order: \${contentOrder};
+          ">
+            <div style="
+              font-weight: 600; 
+              margin-bottom: 2px; 
+              font-size: \${titleFontSize}px;
+              line-height: 1.3;
+            ">\${titleElement}</div>
+            <div style="
+              opacity: 0.9; 
+              font-size: \${messageFontSize}px;
+              line-height: 1.4;
+            ">\${messageElement}</div>
           </div>
+          \${${iconSvg ? `iconSvg` : `''`} && iconAlignment === 'center' ? \`<div style="flex-shrink: 0; width: 18px; height: 18px; order: \${iconOrder};">\${${iconSvg ? `iconSvg` : `''`}}</div>\` : ''}
         </div>
+        \${isClosable ? \`
+          <button 
+            onclick="this.closest('#announcement-bar-${slug}').remove(); document.body.style.marginTop = '0px';" 
+            style="
+              position: absolute;
+              right: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              background: none;
+              border: none;
+              color: ${announcement.text_color};
+              font-size: 18px;
+              line-height: 1;
+              cursor: pointer;
+              padding: 4px;
+              opacity: 0.7;
+              transition: opacity 0.2s ease;
+              z-index: 1;
+            "
+            onmouseover="this.style.opacity='1'"
+            onmouseout="this.style.opacity='0.7'"
+            title="Close announcement"
+          >×</button>
+        \` : ''}
       </div>
          \`;
      console.log("announcementBar.innerHTML", announcementBar.innerHTML);
@@ -161,8 +226,7 @@ export async function GET(
       /* Mobile responsiveness */
       @media (max-width: 768px) {
         #announcement-bar-${slug} {
-          padding: 14px 0 !important;
-          font-size: 14px !important;
+          padding: 8px 16px !important;
         }
         #announcement-bar-${slug} > div {
           padding: 0 16px !important;
@@ -220,9 +284,9 @@ export async function GET(
           // If still 0, calculate from content
           if (barHeight === 0) {
             console.log('🔧 All measurements are 0, calculating from styling...');
-            // Calculate from padding (16px top + 16px bottom) + estimated text height
-            const padding = 32; // 16px top + 16px bottom from CSS
-            const estimatedTextHeight = 20; // Rough estimate for text height
+            // Calculate from padding (10px top + 10px bottom) + estimated text height
+            const padding = 20; // 10px top + 10px bottom from CSS
+            const estimatedTextHeight = Math.max(titleFontSize, messageFontSize) * 2.5; // Account for title + message
             barHeight = padding + estimatedTextHeight;
             console.log('📐 Estimated height:', barHeight + 'px');
           }

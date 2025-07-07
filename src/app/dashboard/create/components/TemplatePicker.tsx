@@ -27,6 +27,13 @@ const templates: Template[] = [
     textColor: '#FFFFFF',
     useGradient: false,
     isSticky: true,
+    titleFontSize: 16,
+    messageFontSize: 14,
+    titleUrl: '',
+    messageUrl: '',
+    textAlignment: 'center',
+    iconAlignment: 'left',
+    isClosable: false, // Critical alerts shouldn't be dismissible
   },
   {
     id: 'maintenance',
@@ -38,6 +45,13 @@ const templates: Template[] = [
     textColor: '#FFFFFF',
     useGradient: false,
     isSticky: true,
+    titleFontSize: 16,
+    messageFontSize: 14,
+    titleUrl: '',
+    messageUrl: '',
+    textAlignment: 'center',
+    iconAlignment: 'left',
+    isClosable: true, // Maintenance notices can be dismissed
   },
   {
     id: 'promo',
@@ -50,6 +64,13 @@ const templates: Template[] = [
     textColor: '#FFFFFF',
     useGradient: true,
     isSticky: false, // Promo messages might not need to be sticky
+    titleFontSize: 18, // Slightly larger for promotions
+    messageFontSize: 15,
+    titleUrl: '',
+    messageUrl: '',
+    textAlignment: 'center',
+    iconAlignment: 'left',
+    isClosable: true, // Promotions can be dismissed
   },
 ]
 
