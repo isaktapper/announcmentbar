@@ -178,14 +178,17 @@ export async function GET(
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
 
-     // Add body/html padding to prevent content overlap
-     const currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
-     
-     // Measure height (bar is already visible)
+     // Add spacing to push down content below the fixed announcement bar
      const barHeight = announcementBar.offsetHeight;
      
-     // Apply spacing to push down content
-     document.body.style.paddingTop = (currentBodyPadding + barHeight) + 'px';
+     // Get current margins
+     const currentBodyMargin = parseInt(window.getComputedStyle(document.body).marginTop) || 0;
+     
+     // Apply margin-top to body to push all content down
+     document.body.style.marginTop = (currentBodyMargin + barHeight) + 'px';
+     
+     // Ensure no conflicting positioning
+     document.body.style.position = 'relative';
      
      // Also try to push down any fixed headers or navigation
      const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
