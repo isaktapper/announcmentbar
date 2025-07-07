@@ -77,7 +77,7 @@ export default function EditAnnouncementPage() {
           textColor: announcementData.text_color,
           visibility: announcementData.visibility,
         })
-      } catch (err) {
+      } catch {
         error('Failed to load announcement data')
         router.push('/dashboard')
       } finally {
@@ -88,7 +88,7 @@ export default function EditAnnouncementPage() {
     if (params.id) {
       checkAuthAndFetchData()
     }
-  }, [params.id, router])
+  }, [params.id, router, error])
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template.id)

@@ -7,7 +7,6 @@ import {
   EyeOff, 
   Trash2, 
   Copy, 
-  ExternalLink,
   AlertTriangle,
   AlertCircle,
   Info,
@@ -165,7 +164,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                 onClick={handleToggleVisibility}
                 disabled={isUpdating}
                 className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
-                title={`Make ${announcement.visibility ? 'private' : 'public'}`}
+                title={`Make ${announcement.visibility ? 'inactive' : 'active'}`}
               >
                 {announcement.visibility ? (
                   <EyeOff className="w-4 h-4" />
