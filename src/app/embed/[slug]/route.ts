@@ -69,6 +69,7 @@ export async function GET(
       : `background: ${announcement.background};`
 
     // Get icon SVG if available
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const iconSvg = announcement.icon && announcement.icon !== 'none' 
       ? ICON_SVG_MAP[announcement.icon as keyof typeof ICON_SVG_MAP] || ''
       : ''
