@@ -19,6 +19,7 @@ export default function FormattingToolbar({
 }: FormattingToolbarProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isFocused, setIsFocused] = useState(false)
+  const isUserInputRef = useRef(false)
 
   // Convert HTML to plain text for validation
   const getPlainText = useCallback((html: string) => {
@@ -27,52 +28,19 @@ export default function FormattingToolbar({
     return div.textContent || div.innerText || ''
   }, [])
 
-  // Update editor content when value changes externally
+  // Initialize content on mount and handle external value changes
   useEffect(() => {
     if (editorRef.current) {
       const currentHTML = editorRef.current.innerHTML
       const targetHTML = value || ''
       
-      if (currentHTML !== targetHTML) {
-        const currentSelection = window.getSelection()
-        const isEditorFocused = document.activeElement === editorRef.current
-        let savedRange: Range | null = null
-        
-        // Save cursor position if editor is focused
-        if (isEditorFocused && currentSelection && currentSelection.rangeCount > 0) {
-          savedRange = currentSelection.getRangeAt(0).cloneRange()
-        }
-        
+      // Only update if this is not from user input and content actually differs
+      if (!isUserInputRef.current && currentHTML !== targetHTML) {
         editorRef.current.innerHTML = targetHTML
-        
-        // Restore cursor position if editor was focused
-        if (isEditorFocused && savedRange) {
-          try {
-            const newRange = document.createRange()
-            if (editorRef.current.firstChild) {
-              const textNode = editorRef.current.firstChild
-              const maxOffset = textNode.textContent?.length || 0
-              const offset = Math.min(savedRange.startOffset, maxOffset)
-              newRange.setStart(textNode, offset)
-              newRange.collapse(true)
-            } else {
-              newRange.selectNodeContents(editorRef.current)
-              newRange.collapse(true)
-            }
-            currentSelection?.removeAllRanges()
-            currentSelection?.addRange(newRange)
-          } catch {
-            // Ignore cursor positioning errors
-          }
-        }
       }
-    }
-  }, [value])
-
-  // Initialize content on mount
-  useEffect(() => {
-    if (editorRef.current && value) {
-      editorRef.current.innerHTML = value
+      
+      // Reset the user input flag
+      isUserInputRef.current = false
     }
   }, [value])
 
@@ -118,6 +86,7 @@ export default function FormattingToolbar({
       }
       
       // Trigger change event
+      isUserInputRef.current = true
       const newValue = editorRef.current.innerHTML
       onChange(newValue)
           } catch (err) {
@@ -128,6 +97,7 @@ export default function FormattingToolbar({
   // Handle content changes
   const handleInput = useCallback(() => {
     if (editorRef.current) {
+      isUserInputRef.current = true
       const newValue = editorRef.current.innerHTML
       onChange(newValue)
     }
@@ -148,6 +118,7 @@ export default function FormattingToolbar({
       selection.removeAllRanges()
       selection.addRange(range)
       
+      isUserInputRef.current = true
       handleInput()
     }
   }, [handleInput])
