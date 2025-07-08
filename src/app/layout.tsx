@@ -9,8 +9,11 @@ import '@fontsource/space-grotesk/600.css'
 import '@fontsource/space-grotesk/700.css'
 
 export const metadata = {
-  title: 'Announcements Dashboard',
-  description: 'Create and manage beautiful announcements for your website',
+      title: 'Bars Dashboard',
+    description: 'Create and manage beautiful bars for your website',
+  icons: {
+    icon: '/favicon_yello.png',
+  },
 }
 
 export default function RootLayout({

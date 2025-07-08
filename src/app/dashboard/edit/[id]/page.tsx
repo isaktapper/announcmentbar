@@ -8,9 +8,12 @@ import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { AnnouncementFormData, AnnouncementType, AnnouncementContentItem } from '@/types/announcement'
 import IconSelector from '../../create/components/IconSelector'
+import FontSelector from '../../create/components/FontSelector'
 import LivePreview from '../../create/components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from '../../create/components/FormattingToolbar'
+import GeoSelector from '../../create/components/GeoSelector'
+import PageTargeting from '../../create/components/PageTargeting'
 
 export default function EditAnnouncementPage() {
   const router = useRouter()
@@ -24,10 +27,10 @@ export default function EditAnnouncementPage() {
     title: '',
     message: '',
     icon: 'none',
-    background: '#3B82F6',
-    backgroundGradient: '#1D4ED8',
+    background: '#FFFFFF',
+    backgroundGradient: '#FFFFFF',
     useGradient: false,
-    textColor: '#FFFFFF',
+    textColor: '#000000',
     visibility: true,
     isSticky: true,
     titleFontSize: 16,
@@ -36,11 +39,16 @@ export default function EditAnnouncementPage() {
     messageUrl: '',
     textAlignment: 'center',
     iconAlignment: 'left',
-    isClosable: false,
+    isClosable: true,
     type: 'single',
     typeSettings: {},
     barHeight: 60,
     carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+    fontFamily: 'Work Sans',
+    geoCountries: [],
+    pagePaths: [],
+    scheduledStart: null,
+    scheduledEnd: null,
   })
 
   // Debounced state for live preview
@@ -121,6 +129,11 @@ export default function EditAnnouncementPage() {
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
             carouselItems: parsedContent,
+            fontFamily: data.font_family || 'Work Sans',
+            geoCountries: data.geo_countries || [], // Added: Load geo targeting
+            pagePaths: data.page_paths || [], // Added: Load page targeting
+            scheduledStart: data.scheduled_start || null,
+            scheduledEnd: data.scheduled_end || null,
           }
         } else if (parsedContent && typeof parsedContent === 'object' && !Array.isArray(parsedContent)) {
           // Single/Marquee with JSON object
@@ -145,6 +158,11 @@ export default function EditAnnouncementPage() {
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
             carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+            fontFamily: data.font_family || 'Work Sans',
+            geoCountries: data.geo_countries || [], // Added: Load geo targeting
+            pagePaths: data.page_paths || [], // Added: Load page targeting
+            scheduledStart: data.scheduled_start || null,
+            scheduledEnd: data.scheduled_end || null,
           }
         } else {
           // Fallback to legacy individual fields
@@ -169,6 +187,11 @@ export default function EditAnnouncementPage() {
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
             carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+            fontFamily: data.font_family || 'Work Sans',
+            geoCountries: data.geo_countries || [], // Added: Load geo targeting
+            pagePaths: data.page_paths || [], // Added: Load page targeting
+            scheduledStart: data.scheduled_start || null,
+            scheduledEnd: data.scheduled_end || null,
           }
         }
 
@@ -188,7 +211,7 @@ export default function EditAnnouncementPage() {
     }
   }, [params.id, router])
 
-  const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: string | boolean | number | AnnouncementType) => {
+  const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: string | boolean | number | AnnouncementType | string[]) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value }
       
@@ -281,7 +304,7 @@ export default function EditAnnouncementPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        error('You must be logged in to update announcements')
+        error('You must be logged in to update bars')
         return
       }
 
@@ -335,6 +358,11 @@ export default function EditAnnouncementPage() {
           type: formData.type,
           type_settings: formData.typeSettings,
           bar_height: formData.barHeight,
+          font_family: formData.fontFamily,
+          geo_countries: formData.geoCountries, // Added: Update geo targeting
+          page_paths: formData.pagePaths, // Added: Update page targeting
+          scheduled_start: formData.scheduledStart,
+          scheduled_end: formData.scheduledEnd,
         })
         .eq('id', params.id)
         .eq('user_id', user.id)
@@ -343,7 +371,7 @@ export default function EditAnnouncementPage() {
         throw updateError
       }
 
-      success('Announcement updated successfully!')
+      success('Bar updated successfully!')
       router.push('/dashboard')
     } catch {
       error('Failed to update announcement')
@@ -356,7 +384,7 @@ export default function EditAnnouncementPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading announcement...</p>
         </div>
       </div>
@@ -379,10 +407,10 @@ export default function EditAnnouncementPage() {
               </button>
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">Edit Announcement</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Update your announcement design
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Edit Bar</h1>
+                              <p className="text-sm text-gray-500 mt-1">
+                  Update your bar design
+                </p>
             </div>
             <div className="w-32"></div> {/* Spacer for centering */}
           </div>
@@ -419,7 +447,7 @@ export default function EditAnnouncementPage() {
                 borderColor="#e5e7eb"
                 buttonColor="#3b82f6"
                 buttonTextColor="#ffffff"
-                fontFamily="system-ui"
+                fontFamily={previewData.fontFamily}
                 fontSize={Math.max(previewData.titleFontSize || 16, previewData.messageFontSize || 14)}
                 titleFontSize={previewData.titleFontSize || 16}
                 messageFontSize={previewData.messageFontSize || 14}
@@ -435,17 +463,17 @@ export default function EditAnnouncementPage() {
                 borderWidth={1}
                 showDivider={true}
                 dividerColor="#d1d5db"
-                marqueeSpeed={previewData.typeSettings.marquee_speed || 2}
-                marqueeDirection={previewData.typeSettings.marquee_direction || 'left'}
+                marqueeSpeed={Number(previewData.typeSettings.marquee_speed) || 2}
+                marqueeDirection={(previewData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
                 pauseOnHover={
                   previewData.type === 'marquee' 
-                    ? previewData.typeSettings.marquee_pause_on_hover || false
+                    ? Boolean(previewData.typeSettings.marquee_pause_on_hover) || false
                     : previewData.type === 'carousel'
-                    ? previewData.typeSettings.carousel_pause_on_hover || false
+                    ? Boolean(previewData.typeSettings.carousel_pause_on_hover) || false
                     : false
                 }
                 carouselItems={previewData.carouselItems || []}
-                carouselRotationSpeed={(previewData.typeSettings.carousel_speed || 5000) / 1000}
+                carouselRotationSpeed={Number(previewData.typeSettings.carousel_speed || 5000) / 1000}
                 barHeight={previewData.barHeight}
               />
             </div>
@@ -461,8 +489,8 @@ export default function EditAnnouncementPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Announcement Type</h3>
-                <p className="text-xs text-gray-500">Choose how your announcement will be displayed</p>
+                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Type</h3>
+              <p className="text-xs text-gray-500">Choose how your bar will be displayed</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -476,9 +504,9 @@ export default function EditAnnouncementPage() {
                     onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
                     className="sr-only peer"
                   />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all hover:bg-gray-50">
-                    <div className="w-6 h-6 bg-indigo-100 rounded-md mb-2 flex items-center justify-center">
-                      <div className="w-3 h-3 bg-indigo-600 rounded"></div>
+                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
+                    <div className="w-6 h-6 bg-blue-100 rounded-md mb-2 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-blue-600 rounded"></div>
                     </div>
                     <h4 className="font-medium text-gray-900 text-sm mb-0.5">Single</h4>
                     <p className="text-xs text-gray-500">Default static bar</p>
@@ -495,7 +523,7 @@ export default function EditAnnouncementPage() {
                     onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
                     className="sr-only peer"
                   />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all hover:bg-gray-50">
+                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
                     <div className="w-6 h-6 bg-orange-100 rounded-md mb-2 flex items-center justify-center">
                       <div className="flex gap-0.5">
                         <div className="w-1.5 h-1.5 bg-orange-600 rounded"></div>
@@ -542,14 +570,14 @@ export default function EditAnnouncementPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rotation Speed: {(formData.typeSettings.carousel_speed || 5000) / 1000}s
+                        Rotation Speed: {Number(formData.typeSettings.carousel_speed || 5000) / 1000}s
                       </label>
                       <input
                         type="range"
                         min="2"
                         max="10"
                         step="0.5"
-                        value={(formData.typeSettings.carousel_speed || 5000) / 1000}
+                        value={Number(formData.typeSettings.carousel_speed || 5000) / 1000}
                         onChange={(e) => handleTypeSettingsChange('carousel_speed', parseFloat(e.target.value) * 1000)}
                         className="w-full"
                       />
@@ -558,7 +586,7 @@ export default function EditAnnouncementPage() {
                       <input
                         type="checkbox"
                         id="carousel_pause"
-                        checked={formData.typeSettings.carousel_pause_on_hover || false}
+                        checked={Boolean(formData.typeSettings.carousel_pause_on_hover) || false}
                         onChange={(e) => handleTypeSettingsChange('carousel_pause_on_hover', e.target.checked)}
                         className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                       />
@@ -577,9 +605,9 @@ export default function EditAnnouncementPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Speed</label>
                       <select
-                        value={formData.typeSettings.marquee_speed || 2}
+                        value={Number(formData.typeSettings.marquee_speed || 2)}
                         onChange={(e) => handleTypeSettingsChange('marquee_speed', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                       >
                         <option value={1}>Slow (30s to cross)</option>
                         <option value={2}>Normal (20s to cross)</option>
@@ -591,9 +619,9 @@ export default function EditAnnouncementPage() {
                         Direction
                       </label>
                       <select
-                        value={formData.typeSettings.marquee_direction || 'left'}
+                        value={(formData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
                         onChange={(e) => handleTypeSettingsChange('marquee_direction', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="left">Left to Right</option>
                         <option value="right">Right to Left</option>
@@ -604,7 +632,7 @@ export default function EditAnnouncementPage() {
                     <input
                       type="checkbox"
                       id="marquee_pause"
-                      checked={formData.typeSettings.marquee_pause_on_hover || false}
+                      checked={Boolean(formData.typeSettings.marquee_pause_on_hover) || false}
                       onChange={(e) => handleTypeSettingsChange('marquee_pause_on_hover', e.target.checked)}
                       className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
@@ -625,7 +653,7 @@ export default function EditAnnouncementPage() {
                 <p className="text-xs text-gray-500">Template selection is disabled while editing</p>
               </div>
               <div className="text-sm text-gray-500 italic">
-                Templates are only available when creating new announcements
+                Templates are only available when creating new bars
               </div>
             </div>
           </div>
@@ -634,8 +662,8 @@ export default function EditAnnouncementPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Announcement Content</h3>
-                <p className="text-xs text-gray-500">Write your announcement message and customize formatting</p>
+                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Content</h3>
+              <p className="text-xs text-gray-500">Write your bar message and customize formatting</p>
               </div>
 
               {/* Carousel Items - All Visible */}
@@ -699,7 +727,7 @@ export default function EditAnnouncementPage() {
                               type="url"
                               value={item.titleUrl || ''}
                               onChange={(e) => updateCarouselItem(index, 'titleUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
                               placeholder="https://example.com"
                             />
                           </div>
@@ -711,7 +739,7 @@ export default function EditAnnouncementPage() {
                               type="url"
                               value={item.messageUrl || ''}
                               onChange={(e) => updateCarouselItem(index, 'messageUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
                               placeholder="https://example.com"
                             />
                           </div>
@@ -775,7 +803,7 @@ export default function EditAnnouncementPage() {
                         id="titleUrl"
                         value={formData.titleUrl || ''}
                         onChange={(e) => handleInputChange('titleUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -788,7 +816,7 @@ export default function EditAnnouncementPage() {
                         id="messageUrl"
                         value={formData.messageUrl || ''}
                         onChange={(e) => handleInputChange('messageUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -825,7 +853,7 @@ export default function EditAnnouncementPage() {
                     id="useGradient"
                     checked={formData.useGradient}
                     onChange={(e) => handleInputChange('useGradient', e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                   />
                   <label htmlFor="useGradient" className="text-sm text-gray-700">
                     Use gradient background
@@ -833,7 +861,7 @@ export default function EditAnnouncementPage() {
                 </div>
 
                 {/* Color Pickers */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ColorPicker
                     value={formData.background}
                     onChange={(color) => handleInputChange('background', color)}
@@ -842,7 +870,7 @@ export default function EditAnnouncementPage() {
                   
                   {formData.useGradient && (
                     <ColorPicker
-                      value={formData.backgroundGradient || '#1D4ED8'}
+                      value={formData.backgroundGradient || '#FFF7A0'}
                       onChange={(color) => handleInputChange('backgroundGradient', color)}
                       label="End Color"
                     />
@@ -873,12 +901,19 @@ export default function EditAnnouncementPage() {
                 />
               </div>
 
-              {/* Font Size Sliders */}
+              {/* Typography Section */}
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-900">
-                  Font Sizes
+                  Typography
                 </label>
                 
+                {/* Font Family Selector */}
+                <FontSelector
+                  selectedFont={formData.fontFamily}
+                  onSelect={(font) => handleInputChange('fontFamily', font)}
+                />
+
+                {/* Font Size Sliders */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Title Font Size */}
                   <div>
@@ -941,7 +976,7 @@ export default function EditAnnouncementPage() {
                               isDisabled
                                 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-indigo-600 border-indigo-600 text-white'
+                                ? 'bg-brand-600 border-brand-600 text-gray-900'
                                 : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                             }`}
                           >
@@ -973,7 +1008,7 @@ export default function EditAnnouncementPage() {
                             onClick={() => handleInputChange('iconAlignment', alignment)}
                             className={`px-3 py-2 text-sm rounded-lg border transition-all capitalize ${
                               isSelected
-                                ? 'bg-indigo-600 border-indigo-600 text-white'
+                                ? 'bg-brand-600 border-brand-600 text-gray-900'
                                 : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                             }`}
                           >
@@ -985,6 +1020,18 @@ export default function EditAnnouncementPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Geo Targeting */}
+              <GeoSelector
+                selectedCountries={formData.geoCountries || []}
+                onSelect={(countries) => handleInputChange('geoCountries', countries)}
+              />
+
+              {/* Page Targeting */}
+              <PageTargeting
+                pagePaths={formData.pagePaths || []}
+                onChange={(paths) => handleInputChange('pagePaths', paths)}
+              />
 
               {/* Options */}
               <div className="space-y-4">
@@ -1006,7 +1053,7 @@ export default function EditAnnouncementPage() {
                         onChange={(e) => handleInputChange('isClosable', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                     </label>
                   </div>
 
@@ -1023,7 +1070,7 @@ export default function EditAnnouncementPage() {
                         onChange={(e) => handleInputChange('isSticky', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                     </label>
                   </div>
                 </div>
@@ -1032,7 +1079,7 @@ export default function EditAnnouncementPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
                     <div className="font-medium text-gray-900">Visibility</div>
-                    <div className="text-sm text-gray-500">Whether this announcement is active</div>
+                    <div className="text-sm text-gray-500">Whether this bar is active</div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -1041,7 +1088,7 @@ export default function EditAnnouncementPage() {
                       onChange={(e) => handleInputChange('visibility', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                   </label>
                 </div>
               </div>
@@ -1053,9 +1100,9 @@ export default function EditAnnouncementPage() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="px-6 py-3 bg-[#FFFFC5] text-black font-medium rounded-lg hover:bg-yellow-200 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {loading ? 'Updating...' : 'Update Announcement'}
+              {loading ? 'Updating...' : 'Update Bar'}
             </button>
           </div>
         </form>

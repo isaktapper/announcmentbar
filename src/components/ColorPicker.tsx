@@ -85,7 +85,7 @@ export default function ColorPicker({ value, onChange, label }: ColorPickerProps
             type="text"
             value={value.replace('#', '')}
             onChange={handleHexChange}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono text-black"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm font-mono text-black"
             placeholder="ff0000"
             maxLength={6}
           />

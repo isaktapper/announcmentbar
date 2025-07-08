@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   AlertTriangle, 
   AlertCircle, 
@@ -22,6 +22,8 @@ import {
   Crown
 } from 'lucide-react'
 import { ICONS, IconType } from '@/types/announcement'
+import { getUserPlan } from '@/lib/user-utils'
+import { createClient } from '@/lib/supabase-client'
 
 interface IconSelectorProps {
   selectedIcon: string
@@ -58,7 +60,7 @@ const iconLabels = {
   sparkles: 'Featured',
   bell: 'Notification',
   message: 'Message',
-  megaphone: 'Announcement',
+  megaphone: 'Megaphone',
   flame: 'Hot',
   package: 'Product',
   flask: 'Experiment',
@@ -77,6 +79,28 @@ const iconCategories = {
 export default function IconSelector({ selectedIcon, onSelect }: IconSelectorProps) {
   const [showAllIcons, setShowAllIcons] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          const plan = await getUserPlan(user.id)
+          setUserPlan(plan)
+        }
+      } catch (error) {
+        console.warn('Error fetching user plan:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserPlan()
+  }, [])
 
   // Filter icons based on search term
   const filteredIcons = Object.entries(ICONS).filter(([key]) => {
@@ -95,12 +119,12 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
     const buttonClass = size === 'large' 
       ? `flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all min-w-[100px] relative ${
           isSelected
-            ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+            ? 'border-[#ff6b6b] bg-[#ff6b6b]/5 text-[#ff6b6b]'
             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
         }`
       : `flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all min-w-[70px] relative ${
           isSelected
-            ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+            ? 'border-[#ff6b6b] bg-[#ff6b6b]/5 text-[#ff6b6b]'
             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
         }`
 
@@ -118,24 +142,39 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
         className={buttonClass}
         title={label}
       >
-        {/* Premium badge */}
-        {isPremium && (
+        {/* Premium badge - only show for free users */}
+        {isPremium && userPlan === 'free' && (
           <div className="absolute top-1 right-1 bg-yellow-200 rounded-full p-1">
             <Crown className="w-3 h-3 text-black" />
           </div>
         )}
         
         {isNone ? (
-          <div className={`${iconSize} border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center`}>
-            <X className={size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} />
+          <div className={`${iconSize} border-2 border-dashed ${isSelected ? 'border-[#ff6b6b]' : 'border-gray-400'} rounded-full flex items-center justify-center`}>
+            <X className={`${size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} ${isSelected ? 'text-[#ff6b6b]' : ''}`} />
           </div>
         ) : (
-          <IconComponent className={iconSize} />
+          <IconComponent className={`${iconSize} ${isSelected ? 'stroke-[2.5]' : ''}`} />
         )}
         <span className={`${textSize} font-medium text-center leading-tight`}>
           {label}
         </span>
       </button>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-gray-900">
+          Icon
+        </label>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-[70px] h-[70px] bg-gray-100 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      </div>
     )
   }
 
@@ -174,10 +213,16 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Select an Icon</h3>
                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                  {userPlan === 'free' ? (
+                    <>
                   Choose from our collection of icons. Premium icons are marked with 
                   <span className="bg-yellow-200 rounded-full p-1">
                     <Crown className="w-3 h-3 text-black inline" />
                   </span>
+                    </>
+                  ) : (
+                    'Choose from our collection of icons'
+                  )}
                 </p>
               </div>
               <button
@@ -197,7 +242,7 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
                   placeholder="Search icons..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-500 placeholder:font-normal"
                 />
               </div>
             </div>
@@ -239,11 +284,13 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
             {/* Modal footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between">
+                {userPlan === 'free' && (
                 <div className="text-xs text-gray-500 flex items-center gap-1">
                   💡 Tip: <span className="bg-yellow-200 rounded-full p-0.5">
                     <Crown className="w-2.5 h-2.5 text-black inline" />
                   </span> Premium icons may require an upgraded plan in the future
                 </div>
+                )}
                 <button
                   onClick={() => setShowAllIcons(false)}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"

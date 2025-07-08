@@ -6,8 +6,8 @@ export default function VerifyPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100">
-            <EnvelopeIcon className="h-8 w-8 text-indigo-600" />
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-brand-100">
+            <EnvelopeIcon className="h-8 w-8 text-brand-600" />
           </div>
           
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -46,7 +46,7 @@ export default function VerifyPage() {
                 Already verified?{' '}
                 <Link 
                   href="/auth/login" 
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-brand-600 hover:text-brand-500"
                 >
                   Log in
                 </Link>
@@ -58,7 +58,7 @@ export default function VerifyPage() {
                 Need to use a different email?{' '}
                 <Link 
                   href="/auth/signup" 
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-brand-600 hover:text-brand-500"
                 >
                   Sign up again
                 </Link>

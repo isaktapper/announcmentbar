@@ -107,6 +107,21 @@ const LivePreview = React.memo(function LivePreview({
   const [isVisible, setIsVisible] = useState(true)
   const [isCarouselPaused, setIsCarouselPaused] = useState(false)
 
+  // Load Google Fonts dynamically
+  useEffect(() => {
+    if (fontFamily) {
+      const link = document.createElement('link')
+      link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@400;500;600;700&display=swap`
+      link.rel = 'stylesheet'
+      document.head.appendChild(link)
+
+      return () => {
+        // Clean up by removing the link when component unmounts or font changes
+        document.head.removeChild(link)
+      }
+    }
+  }, [fontFamily])
+
   // Get background style (solid or gradient)
   const getBackgroundStyle = () => {
     if (useGradient && backgroundGradient) {

@@ -105,6 +105,115 @@ src/
 └── types/              # TypeScript type definitions
 ```
 
+## Troubleshooting
+
+### Signup Issues
+
+If you encounter problems during user signup, here are common issues and solutions:
+
+#### 1. **500 Server Error During Signup**
+
+**Symptoms:**
+- Users see "Database error saving new user" message
+- Supabase returns 500 status on signup requests
+- Console shows trigger-related errors
+
+**Solutions:**
+1. **Check Profiles Table Setup:** Ensure the profiles table and trigger are properly created:
+   ```bash
+   # Run this in your Supabase SQL editor:
+   ```
+   ```sql
+   -- Copy and paste the contents of create_profiles_table.sql
+   ```
+
+2. **Check RLS Policies:** Verify Row Level Security policies allow profile insertion:
+   ```sql
+   -- In Supabase SQL editor, verify this policy exists:
+   SELECT * FROM pg_policies WHERE tablename = 'profiles';
+   ```
+
+3. **Test Trigger Function:** Manually test the trigger function:
+   ```sql
+   -- In Supabase SQL editor:
+   SELECT handle_new_user();
+   ```
+
+#### 2. **Email Check API Failures**
+
+**Symptoms:**
+- "Failed to verify email" errors
+- API route returns 500 errors
+- Missing environment variables warnings
+
+**Solutions:**
+1. **Add Service Role Key:** In your environment variables, add:
+   ```env
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+   ```
+
+2. **Fallback Method:** The app includes a fallback email check method that works without service role key
+
+#### 3. **Users Not Redirected to /verify**
+
+**Symptoms:**
+- Signup succeeds but user stays on signup page
+- No redirect to verification page
+- User created but session exists immediately
+
+**Solutions:**
+1. **Check Email Confirmation Settings:** In Supabase Dashboard → Authentication → Settings:
+   - Ensure "Enable email confirmations" is enabled for verification flow
+   - Or disable it if you want immediate login
+
+2. **Check Browser Console:** Look for redirect logs:
+   ```js
+   // Should see: "User created, redirecting to verify page"
+   ```
+
+#### 4. **Environment Variables**
+
+**Required Variables:**
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key (optional, for email checking)
+```
+
+**Check Variables:** The app will log environment variable issues in the browser console.
+
+#### 5. **Database Trigger Debugging**
+
+If the profiles trigger is causing issues:
+
+1. **Check Trigger Status:**
+   ```sql
+   SELECT * FROM information_schema.triggers WHERE trigger_name = 'on_auth_user_created';
+   ```
+
+2. **View Trigger Logs:**
+   ```sql
+   -- Check for warnings in your Supabase logs
+   ```
+
+3. **Manual Profile Creation:**
+   ```sql
+   -- Create a profile manually to test:
+   INSERT INTO profiles (id, plan) VALUES ('user-uuid-here', 'free');
+   ```
+
+#### 6. **Network Issues**
+
+**Symptoms:**
+- Multiple "Failed to fetch" errors in console
+- Datadog/analytics errors
+- Service worker errors
+
+**Solutions:**
+- These are typically browser extension or analytics issues and don't affect signup
+- Check Network tab in DevTools for actual API failures
+- Focus on Supabase-related errors (auth/signup endpoints)
+
 ## Authentication
 
 The app comes with a complete authentication setup:

@@ -20,6 +20,14 @@ const ICON_SVG_MAP = {
   flask: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6l-4 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-4-8V2"/><path d="M12 2v6"/><path d="M12 16l.01 0"/></svg>`,
 }
 
+// Add page targeting check
+const pageTargetingScript = `
+  // Check if announcement has page targeting
+  if (announcement.page_paths?.length && !announcement.page_paths.some((path) => window.location.pathname.includes(path))) {
+    return;
+  }
+`
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -73,6 +81,42 @@ export async function GET(
       })
     }
 
+    // Check geo targeting if enabled
+    if (announcement.geo_countries && announcement.geo_countries.length > 0) {
+      try {
+        // Get visitor's IP address
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                  request.headers.get('x-real-ip') ||
+                  '127.0.0.1'
+
+        // Skip geo check for localhost/development
+        if (ip === '127.0.0.1' || ip === 'localhost') {
+          console.log('Skipping geo check for localhost')
+        } else {
+          // Call ipapi.co for geolocation
+          const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`)
+          const geoData = await geoResponse.json()
+
+          // If country doesn't match, return empty script
+          if (!announcement.geo_countries.includes(geoData.country_code)) {
+            const emptyScript = `
+              // Announcement not available in your region
+              console.log('Announcement not available in your region');
+            `
+            return new NextResponse(emptyScript, {
+              headers: {
+                'Content-Type': 'text/javascript',
+                'Cache-Control': 'public, max-age=60',
+              },
+            })
+          }
+        }
+      } catch (geoError) {
+        console.error('Error checking geolocation:', geoError)
+        // On geo service error, show the announcement (fail open)
+      }
+    }
+
     // Generate the background style
     const backgroundStyle = announcement.background_gradient
       ? `background: linear-gradient(135deg, ${announcement.background}, ${announcement.background_gradient});`
@@ -87,9 +131,61 @@ export async function GET(
     // Generate the JavaScript code
     const jsCode = `
 (function() {
+  const announcement = ${JSON.stringify(announcement)};
+  
+  ${pageTargetingScript}
+
   // Check if announcement bar already exists
   if (document.getElementById('announcement-bar-${slug}')) {
     return;
+  }
+
+  // Font configuration
+  const fontFamily = '${announcement.font_family || 'Work Sans'}';
+  const googleFonts = {
+    'Work Sans': { cssName: 'Work Sans', weights: '400;500;600', fallback: 'sans-serif' },
+    'Inter': { cssName: 'Inter', weights: '400;500;600', fallback: 'sans-serif' },
+    'Lato': { cssName: 'Lato', weights: '400;700', fallback: 'sans-serif' },
+    'Roboto': { cssName: 'Roboto', weights: '400;500;700', fallback: 'sans-serif' },
+    'Rubik': { cssName: 'Rubik', weights: '400;500;600', fallback: 'sans-serif' },
+    'Poppins': { cssName: 'Poppins', weights: '400;500;600', fallback: 'sans-serif' },
+    'Space Grotesk': { cssName: 'Space+Grotesk', weights: '400;500;600', fallback: 'sans-serif' },
+    'DM Sans': { cssName: 'DM+Sans', weights: '400;500;600', fallback: 'sans-serif' },
+    'Playfair Display': { cssName: 'Playfair+Display', weights: '400;600;700', fallback: 'serif' },
+    'Bricolage Grotesque': { cssName: 'Bricolage+Grotesque', weights: '400;500;600', fallback: 'sans-serif' }
+  };
+
+  // Load Google Font if needed
+  function loadGoogleFont(fontName) {
+    const fontId = 'google-font-' + fontName.replace(/\s+/g, '-').toLowerCase();
+    
+    // Check if font is already loaded
+    if (document.getElementById(fontId)) {
+      return;
+    }
+    
+    const fontConfig = googleFonts[fontName];
+    if (fontConfig) {
+      const link = document.createElement('link');
+      link.id = fontId;
+      link.rel = 'stylesheet';
+      link.href = \`https://fonts.googleapis.com/css2?family=\${fontConfig.cssName}:wght@\${fontConfig.weights}&display=swap\`;
+      document.head.appendChild(link);
+    }
+  }
+
+  // Load the selected font
+  if (fontFamily && googleFonts[fontFamily]) {
+    loadGoogleFont(fontFamily);
+  }
+
+  // Get font CSS with fallback
+  function getFontFamily(fontName) {
+    const fontConfig = googleFonts[fontName];
+    if (fontConfig) {
+      return \`"\${fontConfig.cssName}", \${fontConfig.fallback}\`;
+    }
+    return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   }
 
      // Create the announcement bar
@@ -109,6 +205,7 @@ export async function GET(
      const titleFontSize = ${announcement.title_font_size || 16};
      const messageFontSize = ${announcement.message_font_size || 14};
      const textAlignment = '${announcement.text_alignment || 'center'}';
+     const selectedFontFamily = getFontFamily(fontFamily);
      
      // URL settings
      const titleUrl = '${announcement.title_url || ''}';
@@ -279,7 +376,7 @@ export async function GET(
         ${backgroundStyle}
         color: ${announcement.text_color};
         padding: 10px 16px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: \${selectedFontFamily};
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         transform: translateY(0);
         box-sizing: border-box;

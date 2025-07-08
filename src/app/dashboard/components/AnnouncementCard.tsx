@@ -118,9 +118,9 @@ export default function AnnouncementCard({
 
       onUpdate(data)
       setIsEditing(false)
-      onSuccess('Announcement updated successfully')
+              onSuccess('Bar updated successfully')
     } catch {
-      onError('Failed to update announcement')
+              onError('Failed to update bar')
     } finally {
       setLoading(false)
     }
@@ -144,7 +144,7 @@ export default function AnnouncementCard({
       }
 
       onUpdate(data)
-      onSuccess(`Announcement ${data.visibility ? 'enabled' : 'disabled'}`)
+              onSuccess(`Bar ${data.visibility ? 'enabled' : 'disabled'}`)
     } catch {
       onError('Failed to toggle visibility')
     } finally {
@@ -168,9 +168,9 @@ export default function AnnouncementCard({
       }
 
       onDelete(announcement.id)
-      onSuccess('Announcement deleted successfully')
+              onSuccess('Bar deleted successfully')
     } catch {
-      onError('Failed to delete announcement')
+              onError('Failed to delete bar')
     } finally {
       setLoading(false)
       setShowDeleteConfirm(false)
@@ -421,7 +421,7 @@ export default function AnnouncementCard({
                 <button
                   onClick={handleCancelEdit}
                   disabled={loading}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
                 >
                   <XMarkIcon className="h-3 w-3 mr-1" />
                   Cancel
@@ -431,7 +431,7 @@ export default function AnnouncementCard({
               <>
                 <button
                   onClick={handleEdit}
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
                 >
                   <PencilIcon className="h-3 w-3 mr-1" />
                   Edit
@@ -456,7 +456,7 @@ export default function AnnouncementCard({
 
                 <button
                   onClick={handleCopyEmbed}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
                 >
                   <ClipboardIcon className="h-3 w-3 mr-1" />
                   Copy Embed
@@ -474,7 +474,7 @@ export default function AnnouncementCard({
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
                     >
                       No
                     </button>

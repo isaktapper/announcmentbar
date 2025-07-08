@@ -38,6 +38,7 @@ const templates: Template[] = [
     typeSettings: {},
     barHeight: 60,
     carouselItems: [{ title: 'Important System Alert', message: 'We are experiencing some issues. Our team is working to resolve this quickly.', titleUrl: '', messageUrl: '' }],
+    fontFamily: 'Work Sans',
   },
   {
     id: 'maintenance',
@@ -60,6 +61,7 @@ const templates: Template[] = [
     typeSettings: {},
     barHeight: 60,
     carouselItems: [{ title: 'Scheduled Maintenance', message: 'We will be performing maintenance from 2:00 AM to 4:00 AM UTC. Service may be temporarily unavailable.', titleUrl: '', messageUrl: '' }],
+    fontFamily: 'Work Sans',
   },
   {
     id: 'promo',
@@ -87,6 +89,7 @@ const templates: Template[] = [
     },
     barHeight: 70,
     carouselItems: [{ title: '🎉 Special Offer!', message: 'Get 50% off your next purchase. Limited time offer - don\'t miss out!', titleUrl: '', messageUrl: '' }],
+    fontFamily: 'Work Sans',
   },
 ]
 
@@ -114,7 +117,7 @@ export default function TemplatePicker({ selectedTemplate, onSelect }: TemplateP
               onClick={() => onSelect(template)}
               className={`text-left p-3 rounded-lg border-2 transition-all ${
                 isSelected
-                  ? 'border-indigo-500 bg-indigo-50'
+                  ? 'border-brand-500 bg-brand-50'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
               }`}
             >
@@ -141,7 +144,7 @@ export default function TemplatePicker({ selectedTemplate, onSelect }: TemplateP
                 {/* Template Name */}
                 <div className="text-center">
                   <span className={`text-xs font-medium ${
-                    isSelected ? 'text-indigo-700' : 'text-gray-900'
+                    isSelected ? 'text-brand-700' : 'text-gray-900'
                   }`}>
                     {template.name}
                   </span>

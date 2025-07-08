@@ -6,12 +6,14 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { AnnouncementFormData, Template, AnnouncementType, AnnouncementContentItem } from '@/types/announcement'
+import { AnnouncementFormData, Template, AnnouncementType, AnnouncementContentItem, FontFamily } from '@/types/announcement'
 import IconSelector from './components/IconSelector'
+import FontSelector from './components/FontSelector'
 import TemplatePicker from './components/TemplatePicker'
 import LivePreview from './components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from './components/FormattingToolbar'
+import TargetingGroup from './components/TargetingGroup'
 
 export default function CreateAnnouncementPage() {
   const router = useRouter()
@@ -23,10 +25,10 @@ export default function CreateAnnouncementPage() {
     title: '',
     message: '',
     icon: 'none',
-    background: '#3B82F6',
-    backgroundGradient: '#1D4ED8',
+    background: '#FFFFC5',
+    backgroundGradient: '#FFF7A0',
     useGradient: false,
-    textColor: '#FFFFFF',
+    textColor: '#1F2937',
     visibility: true,
     isSticky: true,
     titleFontSize: 16,
@@ -40,6 +42,11 @@ export default function CreateAnnouncementPage() {
     typeSettings: {},
     barHeight: 60,
     carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+    fontFamily: 'Work Sans',
+    geoCountries: [],
+    pagePaths: [],
+    scheduledStart: null,
+    scheduledEnd: null,
   })
 
   // Debounced state for live preview
@@ -100,10 +107,15 @@ export default function CreateAnnouncementPage() {
       typeSettings: template.typeSettings,
       barHeight: template.barHeight || 60,
       carouselItems: template.carouselItems || [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+      fontFamily: template.fontFamily || 'Work Sans',
+      geoCountries: template.geo_countries || [], // Preserve geo targeting from template
+      pagePaths: template.page_paths || [], // Preserve page paths from template
+      scheduledStart: template.scheduled_start || null,
+      scheduledEnd: template.scheduled_end || null,
     })
   }, [])
 
-  const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: string | boolean | number | AnnouncementType) => {
+  const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: string | boolean | number | AnnouncementType | string[]) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value }
       
@@ -147,32 +159,10 @@ export default function CreateAnnouncementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate based on announcement type
-    if (formData.type === 'carousel') {
-      if (!formData.carouselItems || formData.carouselItems.length === 0) {
-        error('Please add at least one carousel item')
-        return
-      }
-      // Check if all carousel items have messages
-      const hasEmptyMessage = formData.carouselItems.some(item => {
-        const div = document.createElement('div')
-        div.innerHTML = item.message || ''
-        const plainText = (div.textContent || div.innerText || '').trim()
-        return !plainText
-      })
-      if (hasEmptyMessage) {
-        error('All carousel items must have a message')
-        return
-      }
-    } else {
-      // For single/marquee, check message
-      const div = document.createElement('div')
-      div.innerHTML = formData.message || ''
-      const plainMessage = (div.textContent || div.innerText || '').trim()
-      if (!plainMessage) {
-        error('Please fill in the message field')
-        return
-      }
+    // Validate required fields
+    if (!formData.message.trim()) {
+      error('Please fill in the message field')
+      return
     }
 
     setLoading(true)
@@ -182,7 +172,7 @@ export default function CreateAnnouncementPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        error('You must be logged in to create announcements')
+        error('You must be logged in to create bars')
         return
       }
 
@@ -249,7 +239,12 @@ export default function CreateAnnouncementPage() {
         type_settings: formData.typeSettings,
         bar_height: formData.barHeight,
         content: content, // All formatted content stored here
+        font_family: formData.fontFamily as FontFamily,
+        geo_countries: formData.geoCountries, // Added: Store geo targeting
+        page_paths: formData.pagePaths, // Added: Store page paths
         slug: generateSlug(),
+        scheduled_start: formData.scheduledStart || null,
+        scheduled_end: formData.scheduledEnd || null,
       }
 
       const { error: insertError } = await supabase
@@ -261,9 +256,10 @@ export default function CreateAnnouncementPage() {
         return
       }
 
-      success('Announcement created successfully!')
+      success('Bar created successfully!')
       router.push('/dashboard')
-    } catch {
+    } catch (err) {
+      console.error('Error creating announcement:', err)
       error('Failed to create announcement')
     } finally {
       setLoading(false)
@@ -286,7 +282,7 @@ export default function CreateAnnouncementPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -301,10 +297,10 @@ export default function CreateAnnouncementPage() {
               </button>
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">Create Announcement</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Design a beautiful announcement for your website
-              </p>
+                          <h1 className="text-2xl font-bold text-gray-900">Create Bar</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Design a beautiful bar for your website
+            </p>
             </div>
             <div className="w-32"></div> {/* Spacer for centering */}
           </div>
@@ -341,7 +337,7 @@ export default function CreateAnnouncementPage() {
                 borderColor="#e5e7eb"
                 buttonColor="#3b82f6"
                 buttonTextColor="#ffffff"
-                fontFamily="system-ui"
+                fontFamily={previewData.fontFamily}
                 fontSize={Math.max(previewData.titleFontSize || 16, previewData.messageFontSize || 14)}
                 titleFontSize={previewData.titleFontSize || 16}
                 messageFontSize={previewData.messageFontSize || 14}
@@ -357,17 +353,17 @@ export default function CreateAnnouncementPage() {
                 borderWidth={1}
                 showDivider={true}
                 dividerColor="#d1d5db"
-                marqueeSpeed={previewData.typeSettings.marquee_speed || 2}
-                marqueeDirection={previewData.typeSettings.marquee_direction || 'left'}
+                marqueeSpeed={Number(previewData.typeSettings.marquee_speed) || 2}
+                marqueeDirection={(previewData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
                 pauseOnHover={
                   previewData.type === 'marquee' 
-                    ? previewData.typeSettings.marquee_pause_on_hover || false
+                    ? Boolean(previewData.typeSettings.marquee_pause_on_hover) || false
                     : previewData.type === 'carousel'
-                    ? previewData.typeSettings.carousel_pause_on_hover || false
+                    ? Boolean(previewData.typeSettings.carousel_pause_on_hover) || false
                     : false
                 }
                 carouselItems={previewData.carouselItems || []}
-                carouselRotationSpeed={(previewData.typeSettings.carousel_speed || 5000) / 1000}
+                carouselRotationSpeed={Number(previewData.typeSettings.carousel_speed || 5000) / 1000}
                 barHeight={previewData.barHeight}
               />
             </div>
@@ -376,15 +372,14 @@ export default function CreateAnnouncementPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 2. Announcement Type Section */}
           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Announcement Type</h3>
-                <p className="text-xs text-gray-500">Choose how your announcement will be displayed</p>
+                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Type</h3>
+              <p className="text-xs text-gray-500">Choose how your bar will be displayed</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -398,9 +393,9 @@ export default function CreateAnnouncementPage() {
                     onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
                     className="sr-only peer"
                   />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all hover:bg-gray-50">
-                    <div className="w-6 h-6 bg-indigo-100 rounded-md mb-2 flex items-center justify-center">
-                      <div className="w-3 h-3 bg-indigo-600 rounded"></div>
+                                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
+                  <div className="w-6 h-6 bg-blue-100 rounded-md mb-2 flex items-center justify-center">
+                    <div className="w-3 h-3 bg-blue-600 rounded"></div>
                     </div>
                     <h4 className="font-medium text-gray-900 text-sm mb-0.5">Single</h4>
                     <p className="text-xs text-gray-500">Default static bar</p>
@@ -417,7 +412,7 @@ export default function CreateAnnouncementPage() {
                     onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
                     className="sr-only peer"
                   />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all hover:bg-gray-50">
+                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
                     <div className="w-6 h-6 bg-orange-100 rounded-md mb-2 flex items-center justify-center">
                       <div className="flex gap-0.5">
                         <div className="w-1.5 h-1.5 bg-orange-600 rounded"></div>
@@ -464,14 +459,14 @@ export default function CreateAnnouncementPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rotation Speed: {(formData.typeSettings.carousel_speed || 5000) / 1000}s
+                        Rotation Speed: {Number(formData.typeSettings.carousel_speed || 5000) / 1000}s
                       </label>
                       <input
                         type="range"
                         min="2"
                         max="10"
                         step="0.5"
-                        value={(formData.typeSettings.carousel_speed || 5000) / 1000}
+                        value={Number(formData.typeSettings.carousel_speed || 5000) / 1000}
                         onChange={(e) => handleTypeSettingsChange('carousel_speed', parseFloat(e.target.value) * 1000)}
                         className="w-full"
                       />
@@ -480,7 +475,7 @@ export default function CreateAnnouncementPage() {
                       <input
                         type="checkbox"
                         id="carousel_pause"
-                        checked={formData.typeSettings.carousel_pause_on_hover || false}
+                        checked={Boolean(formData.typeSettings.carousel_pause_on_hover) || false}
                         onChange={(e) => handleTypeSettingsChange('carousel_pause_on_hover', e.target.checked)}
                         className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                       />
@@ -499,7 +494,7 @@ export default function CreateAnnouncementPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Speed</label>
                       <select
-                        value={formData.typeSettings.marquee_speed || 2}
+                        value={Number(formData.typeSettings.marquee_speed || 2)}
                         onChange={(e) => handleTypeSettingsChange('marquee_speed', parseInt(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                       >
@@ -511,7 +506,7 @@ export default function CreateAnnouncementPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Direction</label>
                       <select
-                        value={formData.typeSettings.marquee_direction || 'left'}
+                        value={(formData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
                         onChange={(e) => handleTypeSettingsChange('marquee_direction', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                       >
@@ -524,7 +519,7 @@ export default function CreateAnnouncementPage() {
                     <input
                       type="checkbox"
                       id="marquee_pause"
-                      checked={formData.typeSettings.marquee_pause_on_hover || false}
+                      checked={Boolean(formData.typeSettings.marquee_pause_on_hover) || false}
                       onChange={(e) => handleTypeSettingsChange('marquee_pause_on_hover', e.target.checked)}
                       className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
@@ -549,8 +544,8 @@ export default function CreateAnnouncementPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Announcement Content</h3>
-                <p className="text-xs text-gray-500">Write your announcement message and customize formatting</p>
+                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Content</h3>
+              <p className="text-xs text-gray-500">Write your bar message and customize formatting</p>
               </div>
 
 
@@ -616,7 +611,7 @@ export default function CreateAnnouncementPage() {
                               type="url"
                               value={item.titleUrl || ''}
                               onChange={(e) => updateCarouselItem(index, 'titleUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
                               placeholder="https://example.com"
                             />
                           </div>
@@ -628,7 +623,7 @@ export default function CreateAnnouncementPage() {
                               type="url"
                               value={item.messageUrl || ''}
                               onChange={(e) => updateCarouselItem(index, 'messageUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
                               placeholder="https://example.com"
                             />
                           </div>
@@ -662,7 +657,7 @@ export default function CreateAnnouncementPage() {
                     <FormattingToolbar
                       value={formData.title}
                       onChange={(value) => handleInputChange('title', value)}
-                      placeholder="Optional title for your announcement"
+                      placeholder="Optional title for your bar"
                       rows={2}
                     />
                   </div>
@@ -675,7 +670,7 @@ export default function CreateAnnouncementPage() {
                     <FormattingToolbar
                       value={formData.message}
                       onChange={(value) => handleInputChange('message', value)}
-                      placeholder="Enter your announcement message..."
+                      placeholder="Enter your bar message..."
                       required
                       rows={4}
                     />
@@ -692,7 +687,7 @@ export default function CreateAnnouncementPage() {
                         id="titleUrl"
                         value={formData.titleUrl || ''}
                         onChange={(e) => handleInputChange('titleUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -705,7 +700,7 @@ export default function CreateAnnouncementPage() {
                         id="messageUrl"
                         value={formData.messageUrl || ''}
                         onChange={(e) => handleInputChange('messageUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -744,7 +739,7 @@ export default function CreateAnnouncementPage() {
                     id="useGradient"
                     checked={formData.useGradient}
                     onChange={(e) => handleInputChange('useGradient', e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                   />
                   <label htmlFor="useGradient" className="text-sm text-gray-700">
                     Use gradient background
@@ -752,7 +747,7 @@ export default function CreateAnnouncementPage() {
                 </div>
 
                 {/* Color Pickers */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ColorPicker
                     value={formData.background}
                     onChange={(color) => handleInputChange('background', color)}
@@ -761,7 +756,7 @@ export default function CreateAnnouncementPage() {
                   
                   {formData.useGradient && (
                     <ColorPicker
-                      value={formData.backgroundGradient || '#1D4ED8'}
+                      value={formData.backgroundGradient || '#FFF7A0'}
                       onChange={(color) => handleInputChange('backgroundGradient', color)}
                       label="End Color"
                     />
@@ -792,12 +787,19 @@ export default function CreateAnnouncementPage() {
                 />
               </div>
 
-              {/* Font Size Sliders */}
+              {/* Typography Section */}
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-900">
-                  Font Sizes
+                  Typography
                 </label>
                 
+                {/* Font Family Selector */}
+                <FontSelector
+                  selectedFont={formData.fontFamily}
+                  onSelect={(font) => handleInputChange('fontFamily', font)}
+                />
+
+                {/* Font Size Sliders */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Title Font Size */}
                   <div>
@@ -847,20 +849,20 @@ export default function CreateAnnouncementPage() {
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {(['left', 'center', 'right'] as const).map((alignment) => {
-                        const isDisabled = formData.type === 'carousel' && (alignment === 'left' || alignment === 'right')
+                        const isDisabled = formData.type === 'carousel' && alignment !== 'center'
                         const isSelected = formData.textAlignment === alignment
                         
                         return (
                           <button
                             key={alignment}
                             type="button"
-                            onClick={() => !isDisabled && handleInputChange('textAlignment', alignment)}
                             disabled={isDisabled}
+                            onClick={() => handleInputChange('textAlignment', alignment)}
                             className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
                               isDisabled
-                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                ? 'bg-brand-600 text-gray-900 border-brand-600'
                                 : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                             }`}
                           >
@@ -884,7 +886,7 @@ export default function CreateAnnouncementPage() {
                           onClick={() => handleInputChange('iconAlignment', alignment)}
                           className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
                             formData.iconAlignment === alignment
-                              ? 'bg-indigo-600 text-white border-indigo-600'
+                              ? 'bg-brand-600 text-gray-900 border-brand-600'
                               : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                           }`}
                         >
@@ -896,6 +898,8 @@ export default function CreateAnnouncementPage() {
                 </div>
               </div>
 
+              {/* Geo Targeting */}
+              {/* Page Targeting */}
               {/* Toggle Options */}
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-900">
@@ -916,7 +920,7 @@ export default function CreateAnnouncementPage() {
                         onChange={(e) => handleInputChange('isClosable', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                     </label>
                   </div>
 
@@ -933,7 +937,7 @@ export default function CreateAnnouncementPage() {
                         onChange={(e) => handleInputChange('isSticky', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                     </label>
                   </div>
                 </div>
@@ -942,7 +946,7 @@ export default function CreateAnnouncementPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
                     <div className="font-medium text-gray-900">Visibility</div>
-                    <div className="text-sm text-gray-500">Whether this announcement is active</div>
+                    <div className="text-sm text-gray-500">Whether this bar is active</div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -951,11 +955,31 @@ export default function CreateAnnouncementPage() {
                       onChange={(e) => handleInputChange('visibility', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                   </label>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Targeting Group */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-6">Targeting & Visibility</h2>
+            <TargetingGroup
+              pagePaths={formData.pagePaths}
+              geoCountries={formData.geoCountries}
+              scheduledStart={formData.scheduledStart}
+              scheduledEnd={formData.scheduledEnd}
+              onPagePathsChange={(paths) => handleInputChange('pagePaths', paths)}
+              onGeoCountriesChange={(countries) => handleInputChange('geoCountries', countries)}
+              onScheduledTimeChange={(start, end) => {
+                setFormData(prev => ({
+                  ...prev,
+                  scheduledStart: start,
+                  scheduledEnd: end
+                }))
+              }}
+            />
           </div>
 
           {/* Submit Button */}
@@ -963,9 +987,9 @@ export default function CreateAnnouncementPage() {
             <button
               type="submit"
               disabled={loading || !formData.message.trim()}
-              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="px-6 py-3 bg-[#FFFFC5] text-black font-medium rounded-lg hover:bg-yellow-200 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {loading ? 'Creating...' : 'Create Announcement'}
+              {loading ? 'Creating...' : 'Create Bar'}
             </button>
           </div>
         </form>

@@ -1,5 +1,18 @@
 export type AnnouncementType = 'single' | 'carousel' | 'marquee'
 
+// Font family options with Google Fonts
+export type FontFamily = 
+  | 'Work Sans'
+  | 'Inter' 
+  | 'Lato'
+  | 'Roboto'
+  | 'Rubik'
+  | 'Poppins'
+  | 'Space Grotesk'
+  | 'DM Sans'
+  | 'Playfair Display'
+  | 'Bricolage Grotesque'
+
 export interface AnnouncementTypeSettings {
   // Carousel settings
   carousel_speed?: number // milliseconds between rotations
@@ -35,6 +48,9 @@ export interface Announcement {
   created_at: string
   bar_height: number
   content?: unknown // JSONB content for carousel items
+  font_family: FontFamily
+  geo_countries?: string[] // Added: Array of country codes for geo targeting
+  page_paths?: string[]
 }
 
 export interface AnnouncementContentItem {
@@ -49,23 +65,27 @@ export interface AnnouncementFormData {
   message: string
   icon: string
   background: string
-  backgroundGradient?: string
+  backgroundGradient: string
   useGradient: boolean
   textColor: string
   visibility: boolean
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
-  titleUrl?: string
-  messageUrl?: string
+  titleUrl: string
+  messageUrl: string
   textAlignment: 'left' | 'center' | 'right'
-  iconAlignment: 'left' | 'right' // Removed 'center'
+  iconAlignment: 'left' | 'right'
   isClosable: boolean
   type: AnnouncementType
-  typeSettings: AnnouncementTypeSettings
+  typeSettings: Record<string, unknown>
   barHeight: number
-  // New: Content management for carousel
-  carouselItems?: AnnouncementContentItem[]
+  carouselItems: AnnouncementContentItem[]
+  fontFamily: FontFamily
+  geoCountries: string[]
+  pagePaths: string[]
+  scheduledStart: string | null
+  scheduledEnd: string | null
 }
 
 export interface Template {
@@ -76,20 +96,25 @@ export interface Template {
   icon: string
   background: string
   backgroundGradient?: string
-  textColor: string
   useGradient: boolean
+  textColor: string
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
   titleUrl?: string
   messageUrl?: string
   textAlignment: 'left' | 'center' | 'right'
-  iconAlignment: 'left' | 'right' // Removed 'center'
+  iconAlignment: 'left' | 'right'
   isClosable: boolean
   type: AnnouncementType
-  typeSettings: AnnouncementTypeSettings
+  typeSettings: Record<string, unknown>
   barHeight: number
-  carouselItems?: AnnouncementContentItem[]
+  carouselItems: AnnouncementContentItem[]
+  fontFamily: FontFamily | undefined
+  geo_countries?: string[]
+  page_paths?: string[]
+  scheduled_start?: string | null
+  scheduled_end?: string | null
 }
 
 export const ICONS = {

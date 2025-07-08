@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
@@ -30,6 +30,7 @@ export default function SignUpPage() {
   const router = useRouter()
   const supabase = createClient()
   
+  // State declarations first
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -44,6 +45,16 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // Add environment check
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase environment variables')
+      setErrors({ 
+        general: 'Application configuration error. Please contact support.' 
+      })
+    }
+  }, [setErrors])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -93,7 +104,9 @@ export default function SignUpPage() {
     setErrors({})
     
     try {
-      // First, check if email already exists
+      // First, check if email already exists (with fallback)
+      let emailExists = false
+      try {
       const checkResponse = await fetch('/api/check-email', {
         method: 'POST',
         headers: {
@@ -102,16 +115,17 @@ export default function SignUpPage() {
         body: JSON.stringify({ email: formData.email }),
       })
       
-      if (!checkResponse.ok) {
-        setErrors({ 
-          general: 'Failed to verify email. Please try again.' 
-        })
-        return
+        if (checkResponse.ok) {
+      const { exists } = await checkResponse.json()
+          emailExists = exists
+        } else {
+          console.warn('Email check failed, proceeding with signup attempt')
+        }
+      } catch (error) {
+        console.warn('Email check error, proceeding with signup attempt:', error)
       }
       
-      const { exists } = await checkResponse.json()
-      
-      if (exists) {
+      if (emailExists) {
         setErrors({ 
           general: 'Email already registered. Try logging in instead.' 
         })
@@ -132,20 +146,37 @@ export default function SignUpPage() {
       })
       
       if (error) {
-        setErrors({ general: error.message })
+        console.error('Signup error:', error)
+        
+        // Provide user-friendly error messages
+        let errorMessage = error.message
+        
+        if (error.message.includes('Database error') || error.message.includes('trigger')) {
+          errorMessage = 'There was an issue creating your account. Please try again or contact support if the problem persists.'
+        } else if (error.message.includes('User already registered')) {
+          errorMessage = 'An account with this email already exists. Please try logging in instead.'
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Please enter a valid email address.'
+        } else if (error.message.includes('Password')) {
+          errorMessage = 'Password must be at least 6 characters long.'
+        }
+        
+        setErrors({ general: errorMessage })
         return
       }
       
       // If session is created, redirect to dashboard (email confirmation disabled)
       if (data.session) {
         router.push('/dashboard')
-      } else if (data.user) {
+      } else if (data.user && !data.session) {
         // User created successfully but needs email verification
+        console.log('User created, redirecting to verify page')
         router.push('/auth/verify')
       } else {
         // This shouldn't happen, but handle it gracefully
+        console.warn('Unexpected signup result:', { data, error })
         setErrors({ 
-          general: 'An unexpected error occurred during signup. Please try again.' 
+          general: 'Account created but there was an issue. Please try logging in or check your email for verification.' 
         })
       }
       
@@ -186,9 +217,9 @@ export default function SignUpPage() {
             Or{' '}
             <Link 
               href="/auth/login" 
-              className="font-medium text-indigo-600 hover:text-indigo-500"
+              className="font-medium text-brand-600 hover:text-brand-500"
             >
-              sign in to your existing account
+              <strong>sign in to your existing account</strong>
             </Link>
           </p>
         </div>
@@ -215,7 +246,7 @@ export default function SignUpPage() {
                   required
                   className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
                     errors.firstName ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                   placeholder="First name"
                   value={formData.firstName}
                   onChange={handleInputChange}
@@ -236,7 +267,7 @@ export default function SignUpPage() {
                   required
                   className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
                     errors.lastName ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                   placeholder="Last name"
                   value={formData.lastName}
                   onChange={handleInputChange}
@@ -258,7 +289,7 @@ export default function SignUpPage() {
                 required
                 className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
                   errors.company ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                 placeholder="Company"
                 value={formData.company}
                 onChange={handleInputChange}
@@ -280,7 +311,7 @@ export default function SignUpPage() {
                 required
                 className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
                   errors.email ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -303,7 +334,7 @@ export default function SignUpPage() {
                   required
                   className={`appearance-none rounded-md relative block w-full px-3 py-2 pr-10 border ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                   placeholder="Password (min. 8 characters)"
                   value={formData.password}
                   onChange={handleInputChange}
@@ -338,7 +369,7 @@ export default function SignUpPage() {
                   required
                   className={`appearance-none rounded-md relative block w-full px-3 py-2 pr-10 border ${
                     errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm`}
                   placeholder="Confirm password"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
@@ -366,7 +397,7 @@ export default function SignUpPage() {
               id="rememberMe"
               name="rememberMe"
               type="checkbox"
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
               checked={formData.rememberMe}
               onChange={handleInputChange}
             />
@@ -379,7 +410,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-black bg-[#FFFFC5] hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>

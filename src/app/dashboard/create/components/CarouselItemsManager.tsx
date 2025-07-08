@@ -36,12 +36,12 @@ export default function CarouselItemsManager({ items, onChange }: CarouselItemsM
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-sm font-medium text-gray-900">Carousel Items</h4>
-          <p className="text-xs text-gray-500">Add multiple announcements to rotate between</p>
+          <p className="text-xs text-gray-500">Add multiple bars to rotate between</p>
         </div>
         <button
           type="button"
           onClick={addItem}
-          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors"
         >
           <PlusIcon className="w-4 h-4" />
           Add Item
@@ -92,7 +92,7 @@ export default function CarouselItemsManager({ items, onChange }: CarouselItemsM
                 <FormattingToolbar
                   value={item.message}
                   onChange={(value) => updateItem(index, 'message', value)}
-                  placeholder="Announcement message for this item"
+                  placeholder="Bar message for this item"
                   required
                   rows={3}
                 />

@@ -24,7 +24,6 @@ import {
   Package,
   FlaskConical
 } from 'lucide-react'
-import { ScribbleStar, ScribbleCircle, ScribbleWave } from '../scribbles/ScribbleElements'
 import { Announcement } from '../../types/announcement'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
@@ -127,10 +126,6 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
   return (
     <>
       <div className="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-        {/* Decorative scribbles */}
-        <ScribbleStar className="top-2 right-2 w-4 h-4 text-purple-300 group-hover:text-purple-400 transition-colors" />
-        <ScribbleCircle className="bottom-2 left-2 w-6 h-6 text-blue-200 group-hover:text-blue-300 transition-colors" />
-        
         <div className="p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
@@ -142,7 +137,6 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                 >
                   {IconComponent && <IconComponent className="w-5 h-5" />}
                 </div>
-                <ScribbleWave className="bottom-0 left-0 w-8 h-2 text-gray-300" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-lg">{announcement.title}</h3>
@@ -355,7 +349,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                 )}
               </div>
               <div className="mt-2 text-xs text-gray-500 text-center">
-                Live preview of your announcement banner
+                Live preview of your bar banner
               </div>
             </div>
           </div>
@@ -371,13 +365,13 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                 <Trash2 className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Delete Announcement</h3>
+                <h3 className="font-semibold text-gray-900">Delete Bar</h3>
                 <p className="text-sm text-gray-500">This action cannot be undone</p>
               </div>
             </div>
             
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete &quot;{announcement.title}&quot;? This will permanently remove the announcement and any embedded instances will stop working.
+              Are you sure you want to delete &quot;{announcement.title}&quot;? This will permanently remove the bar and any embedded instances will stop working.
             </p>
             
             <div className="flex space-x-3">

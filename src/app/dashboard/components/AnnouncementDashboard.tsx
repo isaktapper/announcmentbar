@@ -64,7 +64,7 @@ export default function AnnouncementDashboard({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Announcement Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Bar Dashboard</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Welcome back, {fullName}
               </p>
@@ -72,7 +72,7 @@ export default function AnnouncementDashboard({
             <button
               onClick={handleSignOut}
               disabled={loading}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
               {loading ? 'Signing out...' : 'Sign out'}
@@ -90,14 +90,14 @@ export default function AnnouncementDashboard({
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-brand-500 rounded-md flex items-center justify-center">
                       <span className="text-white font-bold">{announcements.length}</span>
                     </div>
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Total Announcements
+                        Total Bars
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
                         {announcements.length}
@@ -121,7 +121,7 @@ export default function AnnouncementDashboard({
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Active Announcements
+                        Active Bars
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
                         {announcements.filter(a => a.visibility).length}
@@ -145,7 +145,7 @@ export default function AnnouncementDashboard({
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Hidden Announcements
+                        Hidden Bars
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
                         {announcements.filter(a => !a.visibility).length}
@@ -161,10 +161,10 @@ export default function AnnouncementDashboard({
           <div className="mb-6">
             <Link
               href="/dashboard/create"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-black bg-[#FFFFC5] hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
-              Create New Announcement
+              Create New Bar
             </Link>
           </div>
 
@@ -175,17 +175,17 @@ export default function AnnouncementDashboard({
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                   <PlusIcon className="h-6 w-6 text-gray-600" />
                 </div>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No announcements</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No bars</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Get started by creating your first announcement.
+                  Get started by creating your first bar.
                 </p>
                 <div className="mt-6">
                   <Link
                     href="/dashboard/create"
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-[#FFFFC5] hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                   >
                     <PlusIcon className="w-4 h-4 mr-2" />
-                    Create New Announcement
+                    Create New Bar
                   </Link>
                 </div>
               </div>

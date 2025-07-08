@@ -18,13 +18,13 @@ const iconMap = {
 const colorMap = {
   success: 'bg-green-50 border-green-200 text-green-800',
   error: 'bg-red-50 border-red-200 text-red-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
+  info: 'bg-brand-50 border-brand-200 text-brand-800',
 }
 
 const iconColorMap = {
   success: 'text-green-400',
   error: 'text-red-400',
-  info: 'text-blue-400',
+  info: 'text-brand-400',
 }
 
 export default function Toast({ toast, onRemove }: ToastProps) {
@@ -45,7 +45,7 @@ export default function Toast({ toast, onRemove }: ToastProps) {
           <div className="ml-4 flex-shrink-0 flex">
             <button
               type="button"
-              className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
               onClick={() => onRemove(toast.id)}
             >
               <span className="sr-only">Close</span>
