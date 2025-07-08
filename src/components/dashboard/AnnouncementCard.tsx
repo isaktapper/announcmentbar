@@ -13,7 +13,16 @@ import {
   CheckCircle,
   Clock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ShoppingCart,
+  Lightbulb,
+  Sparkles,
+  BellRing,
+  MessageCircle,
+  Megaphone,
+  Flame,
+  Package,
+  FlaskConical
 } from 'lucide-react'
 import { ScribbleStar, ScribbleCircle, ScribbleWave } from '../scribbles/ScribbleElements'
 import { Announcement } from '../../types/announcement'
@@ -32,6 +41,15 @@ const iconMap = {
   info: Info,
   success: CheckCircle,
   schedule: Clock,
+  shopping: ShoppingCart,
+  lightbulb: Lightbulb,
+  sparkles: Sparkles,
+  bell: BellRing,
+  message: MessageCircle,
+  megaphone: Megaphone,
+  flame: Flame,
+  package: Package,
+  flask: FlaskConical,
 }
 
 export default function AnnouncementCard({ announcement, onUpdate }: AnnouncementCardProps) {
@@ -239,12 +257,12 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                   paddingRight: announcement.is_closable ? '48px' : '16px',
                 }}
               >
-                {/* Icon - Non-center alignment */}
-                {IconComponent && announcement.icon_alignment !== 'center' && (
+                {/* Icon - Left alignment */}
+                {IconComponent && announcement.icon_alignment === 'left' && (
                   <div 
                     className="flex-shrink-0 mr-3"
                     style={{ 
-                      order: announcement.icon_alignment === 'right' ? '2' : '0',
+                      order: '0',
                       width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
                       height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
                     }}
@@ -258,7 +276,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                   className="flex-1"
                   style={{ 
                     textAlign: announcement.text_alignment || 'center',
-                    order: announcement.icon_alignment === 'center' ? '0' : '1'
+                    order: '1'
                   }}
                 >
                   <div 
@@ -311,12 +329,12 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
                   </div>
                 </div>
 
-                {/* Icon - Center alignment */}
-                {IconComponent && announcement.icon_alignment === 'center' && (
+                {/* Icon - Right alignment */}
+                {IconComponent && announcement.icon_alignment === 'right' && (
                   <div 
                     className="flex-shrink-0 ml-3"
                     style={{ 
-                      order: '1',
+                      order: '2',
                       width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
                       height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
                     }}

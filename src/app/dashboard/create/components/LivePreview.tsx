@@ -1,227 +1,548 @@
 'use client'
 
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock } from 'lucide-react'
-import { AnnouncementFormData, ICONS } from '@/types/announcement'
+import React, { useState, useEffect } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import { 
+  AlertTriangle, 
+  AlertCircle, 
+  Info, 
+  CheckCircle, 
+  Clock, 
+  X,
+  ShoppingCart,
+  Lightbulb,
+  Sparkles,
+  BellRing,
+  MessageCircle,
+  Megaphone,
+  Flame,
+  Package,
+  FlaskConical
+} from 'lucide-react'
+import { ICONS } from '@/types/announcement'
+
+interface CarouselItem {
+  title: string
+  message: string
+  titleUrl?: string
+  messageUrl?: string
+}
 
 interface LivePreviewProps {
-  formData: AnnouncementFormData
+  type: 'single' | 'marquee' | 'carousel'
+  title: string
+  message: string
+  titleUrl?: string
+  messageUrl?: string
+  backgroundColor: string
+  backgroundGradient?: string
+  useGradient?: boolean
+  textColor: string
+  linkColor: string
+  borderColor: string
+  buttonColor: string
+  buttonTextColor: string
+  fontFamily: string
+  fontSize: number
+  titleFontSize: number
+  messageFontSize: number
+  textAlignment: 'left' | 'center' | 'right'
+  showLeftIcon: boolean
+  showRightIcon: boolean
+  leftIcon: string
+  rightIcon: string
+  showButton: boolean
+  buttonText: string
+  showCloseButton: boolean
+  borderStyle: string
+  borderWidth: number
+  showDivider: boolean
+  dividerColor: string
+  marqueeSpeed: number
+  marqueeDirection: 'left' | 'right'
+  pauseOnHover: boolean
+  carouselItems: CarouselItem[]
+  carouselRotationSpeed: number
+  barHeight: number
 }
 
-const iconComponents = {
-  None: null,
-  AlertTriangle,
-  AlertCircle,
-  Info,
-  CheckCircle,
-  Clock,
-}
+const LivePreview = React.memo(function LivePreview({
+  type,
+  title,
+  message,
+  titleUrl,
+  messageUrl,
+  backgroundColor,
+  backgroundGradient,
+  useGradient,
+  textColor,
+  linkColor,
+  borderColor,
+  buttonColor,
+  buttonTextColor,
+  fontFamily,
+  fontSize,
+  titleFontSize,
+  messageFontSize,
+  textAlignment,
+  showLeftIcon,
+  showRightIcon,
+  leftIcon,
+  rightIcon,
+  showButton,
+  buttonText,
+  showCloseButton,
+  borderStyle,
+  borderWidth,
+  showDivider,
+  dividerColor,
+  marqueeSpeed,
+  marqueeDirection,
+  pauseOnHover,
+  carouselItems,
+  carouselRotationSpeed,
+  barHeight
+}: LivePreviewProps) {
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false)
 
-export default function LivePreview({ formData }: LivePreviewProps) {
-  const IconComponent = iconComponents[ICONS[formData.icon as keyof typeof ICONS] as keyof typeof iconComponents]
-
+  // Get background style (solid or gradient)
   const getBackgroundStyle = () => {
-    if (formData.useGradient && formData.backgroundGradient) {
-      return `linear-gradient(135deg, ${formData.background}, ${formData.backgroundGradient})`
+    if (useGradient && backgroundGradient) {
+      return `linear-gradient(135deg, ${backgroundColor}, ${backgroundGradient})`
     }
-    return formData.background
+    return backgroundColor
   }
 
-  const getIconSize = () => {
-    const baseSize = Math.max(formData.titleFontSize || 16, formData.messageFontSize || 14)
-    return baseSize + 2
-  }
-
-  const getJustifyContent = () => {
-    switch (formData.textAlignment) {
-      case 'left': return 'flex-start'
-      case 'right': return 'flex-end'
-      default: return 'center'
+  // Auto-rotate carousel items
+  useEffect(() => {
+    if (type === 'carousel' && carouselItems && carouselItems.length > 1 && !isCarouselPaused) {
+      const interval = setInterval(() => {
+        setCurrentCarouselIndex(prev => (prev + 1) % carouselItems.length)
+      }, carouselRotationSpeed * 1000)
+      
+      return () => clearInterval(interval)
     }
-  }
+  }, [type, carouselItems, carouselRotationSpeed, isCarouselPaused])
 
-  const getIconOrder = () => {
-    switch (formData.iconAlignment) {
-      case 'right': return '2'
-      case 'center': return '1' 
-      default: return '0'
+  if (!isVisible) return null
+
+  // Get current content based on type
+  const getCurrentContent = () => {
+    if (type === 'carousel' && carouselItems && carouselItems.length > 0) {
+      const currentItem = carouselItems[currentCarouselIndex] || carouselItems[0]
+      return {
+        title: currentItem.title || '',
+        message: currentItem.message || '',
+        titleUrl: currentItem.titleUrl,
+        messageUrl: currentItem.messageUrl
+      }
     }
+    return { title, message, titleUrl, messageUrl }
   }
 
-  const getContentOrder = () => {
-    return formData.iconAlignment === 'center' ? '0' : '1'
+  const currentContent = getCurrentContent()
+
+  const borderStyles = {
+    solid: 'solid',
+    dashed: 'dashed',
+    dotted: 'dotted'
   }
 
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">Live Preview</h3>
-        <p className="text-sm text-gray-500">
-          See how your announcement will appear to visitors
-        </p>
-      </div>
+  const iconStyle = {
+    width: '16px',
+    height: '16px',
+    display: 'inline-block'
+  }
 
-      {/* Mock Website Container */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        {/* Mock Browser Header */}
-        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+  const iconComponents = {
+    None: X,
+    AlertTriangle,
+    AlertCircle,
+    Info,
+    CheckCircle,
+    Clock,
+    ShoppingCart,
+    Lightbulb,
+    Sparkles,
+    BellRing,
+    MessageCircle,
+    Megaphone,
+    Flame,
+    Package,
+    FlaskConical,
+  }
+
+  const createIconElement = (icon: string) => {
+    if (!icon || icon === 'none') {
+      return null
+    }
+    
+    // Map icon key to component name using ICONS mapping
+    const componentName = ICONS[icon as keyof typeof ICONS]
+    const IconComponent = componentName ? iconComponents[componentName as keyof typeof iconComponents] : null
+    
+    if (IconComponent) {
+      return <IconComponent style={iconStyle} />
+    }
+    
+    // Default fallback for custom text/emojis
+    return <span style={iconStyle}>{icon}</span>
+  }
+
+  // Render content based on type
+  const renderContent = () => {
+    const baseContentStyle = {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      color: textColor,
+      fontFamily: fontFamily,
+      fontSize: `${fontSize}px`,
+      height: `${barHeight}px`,
+      width: '100%',
+    }
+    
+    const contentPadding = {
+      paddingLeft: showLeftIcon ? '40px' : '16px',
+      paddingRight: (showRightIcon || showCloseButton) ? '40px' : '16px',
+    }
+
+    if (type === 'marquee') {
+      // For marquee, return null here - we'll handle it in the main container
+      return null
+    }
+
+    // Single content - title above message
+    if (type === 'single') {
+      // Map text alignment to flex alignment
+      const getFlexAlignment = () => {
+        switch (textAlignment) {
+          case 'left': return 'flex-start'
+          case 'right': return 'flex-end'
+          case 'center': return 'center'
+          default: return 'center'
+        }
+      }
+
+      return (
+        <div style={{
+          ...baseContentStyle,
+          ...contentPadding,
+          flexDirection: 'column',
+          gap: '4px',
+          justifyContent: 'center',
+          alignItems: getFlexAlignment(),
+          fontSize: 'inherit' // Remove fontSize from container
+        }}>
+          {currentContent.title && (
+            <div style={{ 
+              textAlign: textAlignment,
+              fontSize: `${titleFontSize}px`,
+              fontFamily: fontFamily,
+              color: textColor,
+              width: '100%'
+            }}>
+              {currentContent.titleUrl ? (
+                <a 
+                  href={currentContent.titleUrl} 
+                  style={{ color: linkColor, textDecoration: 'none' }}
+                  dangerouslySetInnerHTML={{ __html: currentContent.title }}
+                />
+              ) : (
+                <span dangerouslySetInnerHTML={{ __html: currentContent.title }} />
+              )}
             </div>
-            <div className="flex-1 bg-white border border-gray-200 rounded px-3 py-1 text-xs text-gray-500">
-              https://your-website.com
+          )}
+          {currentContent.message && (
+            <div style={{ 
+              textAlign: textAlignment,
+              fontSize: `${messageFontSize}px`,
+              fontFamily: fontFamily,
+              color: textColor,
+              width: '100%'
+            }}>
+              {currentContent.messageUrl ? (
+                <a 
+                  href={currentContent.messageUrl} 
+                  style={{ color: linkColor, textDecoration: 'none' }}
+                  dangerouslySetInnerHTML={{ __html: currentContent.message }}
+                />
+              ) : (
+                <span dangerouslySetInnerHTML={{ __html: currentContent.message }} />
+              )}
             </div>
-          </div>
+          )}
         </div>
+      )
+    }
 
-        {/* Announcement Bar */}
-        {formData.visibility && (
+    // Carousel content - sliding animation (one item at a time)
+    if (type === 'carousel' && carouselItems && carouselItems.length > 0) {
+      // Get carousel pause on hover setting
+      const carouselPauseOnHover = pauseOnHover // This comes from typeSettings.carousel_pause_on_hover
+      
+      return (
+        <div 
+          style={{
+            ...baseContentStyle,
+            padding: 0,
+            overflow: 'hidden'
+          }}
+          onMouseEnter={() => carouselPauseOnHover && setIsCarouselPaused(true)}
+          onMouseLeave={() => carouselPauseOnHover && setIsCarouselPaused(false)}
+        >
           <div
-            className="px-4 py-2.5 relative"
             style={{
-              background: getBackgroundStyle(),
-              color: formData.textColor,
-              minHeight: '40px',
+              display: 'flex',
+              width: `${carouselItems.length * 100}%`,
+              transform: `translateX(-${currentCarouselIndex * 100}%)`,
+              transition: 'transform 0.5s ease-in-out',
+              height: '100%'
             }}
           >
-            <div 
-              className="flex items-center gap-3 max-w-4xl mx-auto"
-              style={{
-                justifyContent: getJustifyContent(),
-                paddingRight: formData.isClosable ? '32px' : '16px',
-              }}
-            >
-              {/* Icon - Non-center alignment */}
-              {formData.icon && formData.icon !== 'none' && IconComponent && formData.iconAlignment !== 'center' && (
-                <div style={{ order: getIconOrder(), flexShrink: 0 }}>
-                  <IconComponent 
-                    style={{ 
-                      width: `${getIconSize()}px`, 
-                      height: `${getIconSize()}px` 
-                    }} 
-                  />
-                </div>
-              )}
-              
-              {/* Content */}
-              <div 
-                className="flex-1 min-w-0"
-                style={{ 
-                  textAlign: formData.textAlignment as any,
-                  order: getContentOrder()
+            {carouselItems.map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  paddingLeft: showLeftIcon ? '40px' : '16px',
+                  paddingRight: (showRightIcon || showCloseButton) ? '40px' : '16px',
+                  color: textColor,
+                  fontFamily: fontFamily,
+                  flexShrink: 0
                 }}
               >
-                {formData.title && (
-                  <div 
-                    className="font-semibold mb-0.5"
-                    style={{ 
-                      fontSize: `${formData.titleFontSize || 16}px`,
-                      lineHeight: 1.3
-                    }}
-                  >
-                    {formData.titleUrl ? (
+                {item.title && (
+                  <div style={{ 
+                    textAlign: 'center',
+                    fontSize: `${titleFontSize}px`,
+                    fontFamily: fontFamily,
+                    color: textColor,
+                    width: '100%'
+                  }}>
+                    {item.titleUrl ? (
                       <a 
-                        href={formData.titleUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          color: 'inherit', 
-                          textDecoration: 'underline',
-                          textDecorationColor: 'rgba(255,255,255,0.5)'
-                        }}
-                      >
-                        {formData.title}
-                      </a>
+                        href={item.titleUrl} 
+                        style={{ color: linkColor, textDecoration: 'none' }}
+                        dangerouslySetInnerHTML={{ __html: item.title }}
+                      />
                     ) : (
-                      formData.title
+                      <span dangerouslySetInnerHTML={{ __html: item.title }} />
                     )}
                   </div>
                 )}
-                {formData.message && (
-                  <div 
-                    className="opacity-90"
-                    style={{ 
-                      fontSize: `${formData.messageFontSize || 14}px`,
-                      lineHeight: 1.4
-                    }}
-                  >
-                    {formData.messageUrl ? (
+                {item.message && (
+                  <div style={{ 
+                    textAlign: 'center',
+                    fontSize: `${messageFontSize}px`,
+                    fontFamily: fontFamily,
+                    color: textColor,
+                    width: '100%'
+                  }}>
+                    {item.messageUrl ? (
                       <a 
-                        href={formData.messageUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          color: 'inherit', 
-                          textDecoration: 'underline',
-                          textDecorationColor: 'rgba(255,255,255,0.5)'
-                        }}
-                      >
-                        {formData.message}
-                      </a>
+                        href={item.messageUrl} 
+                        style={{ color: linkColor, textDecoration: 'none' }}
+                        dangerouslySetInnerHTML={{ __html: item.message }}
+                      />
                     ) : (
-                      formData.message
+                      <span dangerouslySetInnerHTML={{ __html: item.message }} />
                     )}
                   </div>
                 )}
-              </div>
-
-              {/* Icon - Center alignment */}
-              {formData.icon && formData.icon !== 'none' && IconComponent && formData.iconAlignment === 'center' && (
-                <div style={{ order: 1, flexShrink: 0 }}>
-                  <IconComponent 
-                    style={{ 
-                      width: `${getIconSize()}px`, 
-                      height: `${getIconSize()}px` 
-                    }} 
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Close button */}
-            {formData.isClosable && (
-              <button
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lg opacity-70 hover:opacity-100 transition-opacity"
-                style={{ color: formData.textColor }}
-                title="Close announcement"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Mock Website Content */}
-        <div className="p-8 space-y-6">
-          <div className="space-y-2">
-            <div className="h-8 bg-gray-200 rounded-lg w-1/2"></div>
-            <div className="h-4 bg-gray-100 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-100 rounded w-2/3"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-3">
-                <div className="h-32 bg-gray-100 rounded-lg"></div>
-                <div className="h-4 bg-gray-200 rounded w-full"></div>
-                <div className="h-3 bg-gray-100 rounded w-2/3"></div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )
+    }
 
-      {/* Visibility Status */}
-      <div className="flex items-center gap-2 text-sm">
-        <div className={`w-2 h-2 rounded-full ${
-          formData.visibility ? 'bg-green-500' : 'bg-gray-400'
-        }`}></div>
-        <span className="text-gray-600">
-          Announcement is {formData.visibility ? 'visible' : 'hidden'}
-        </span>
+    // Fallback for single/other content
+    return (
+      <div style={{...baseContentStyle, ...contentPadding}}>
+        {currentContent.title && (
+          <span>
+            {currentContent.titleUrl ? (
+              <a 
+                href={currentContent.titleUrl} 
+                style={{ color: linkColor, textDecoration: 'none' }}
+                dangerouslySetInnerHTML={{ __html: currentContent.title }}
+              />
+            ) : (
+              <span dangerouslySetInnerHTML={{ __html: currentContent.title }} />
+            )}
+          </span>
+        )}
+        {currentContent.title && currentContent.message && showDivider && (
+          <span style={{ color: dividerColor }}>|</span>
+        )}
+        {currentContent.message && (
+          <span>
+            {currentContent.messageUrl ? (
+              <a 
+                href={currentContent.messageUrl} 
+                style={{ color: linkColor, textDecoration: 'none' }}
+                dangerouslySetInnerHTML={{ __html: currentContent.message }}
+              />
+            ) : (
+              <span dangerouslySetInnerHTML={{ __html: currentContent.message }} />
+            )}
+          </span>
+        )}
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <>
+      <style jsx global>{`
+        @keyframes marquee-left-to-right {
+          0% { transform: translateX(-5vw); }
+          100% { transform: translateX(5vw); }
+        }
+        @keyframes marquee-right-to-left {
+          0% { transform: translateX(5vw); }
+          100% { transform: translateX(-5vw); }
+        }
+        .animate-marquee.pausable:hover {
+          animation-play-state: paused !important;
+        }
+      `}</style>
+      
+      <div className="sticky top-4 z-10 mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 border">
+          <h3 className="font-medium text-gray-900 mb-3">Live Preview</h3>
+          <div 
+            className="relative w-full overflow-hidden"
+            style={{
+              background: getBackgroundStyle(),
+              borderColor,
+              borderStyle: borderStyles[borderStyle as keyof typeof borderStyles],
+              borderWidth: `${borderWidth}px`,
+              height: `${barHeight}px`,
+            }}
+          >
+            {/* Left Icon */}
+            {showLeftIcon && leftIcon && (
+              <div 
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10"
+                style={{ color: textColor }}
+              >
+                {createIconElement(leftIcon)}
+              </div>
+            )}
+
+            {/* Right Icon */}
+            {showRightIcon && rightIcon && (
+              <div 
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10"
+                style={{ color: textColor }}
+              >
+                {createIconElement(rightIcon)}
+              </div>
+            )}
+
+            {/* Close Button */}
+            {showCloseButton && (
+              <button
+                onClick={() => setIsVisible(false)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 hover:opacity-70"
+                style={{ color: textColor }}
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
+
+                        {/* Marquee Content - Full Width */}
+            {type === 'marquee' && (
+              <div className="absolute inset-0 overflow-hidden flex items-center">
+                <div
+                  className={`animate-marquee ${pauseOnHover ? 'pausable' : ''}`}
+                  style={{
+                    display: 'flex',
+                    whiteSpace: 'nowrap',
+                    animation: `${marqueeDirection === 'left' ? 'marquee-left-to-right' : 'marquee-right-to-left'} ${marqueeSpeed === 1 ? 30 : marqueeSpeed === 2 ? 20 : 15}s linear infinite`,
+                    width: 'max-content'
+                  }}
+                >
+                  {/* Content with spacing */}
+                  <div 
+                    className="flex items-center gap-2"
+                    style={{
+                      paddingRight: '10px',
+                      color: textColor,
+                      fontFamily: fontFamily,
+                      height: `${barHeight}px`
+                    }}
+                  >
+                    {getCurrentContent().title && (
+                      <span style={{ fontSize: `${titleFontSize}px`, fontWeight: '600' }}>
+                        {getCurrentContent().titleUrl ? (
+                          <a 
+                            href={getCurrentContent().titleUrl} 
+                            style={{ color: linkColor, textDecoration: 'none' }}
+                            dangerouslySetInnerHTML={{ __html: getCurrentContent().title }}
+                          />
+                        ) : (
+                          <span dangerouslySetInnerHTML={{ __html: getCurrentContent().title }} />
+                        )}
+                      </span>
+                    )}
+                    {getCurrentContent().title && getCurrentContent().message && showDivider && (
+                      <span style={{ color: dividerColor }}>|</span>
+                    )}
+                    {getCurrentContent().message && (
+                      <span style={{ fontSize: `${messageFontSize}px`, opacity: '0.9' }}>
+                        {getCurrentContent().messageUrl ? (
+                          <a 
+                            href={getCurrentContent().messageUrl} 
+                            style={{ color: linkColor, textDecoration: 'none' }}
+                            dangerouslySetInnerHTML={{ __html: getCurrentContent().message }}
+                          />
+                        ) : (
+                          <span dangerouslySetInnerHTML={{ __html: getCurrentContent().message }} />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Main Content */}
+            {renderContent()}
+
+            {/* Action Button */}
+            {showButton && buttonText && (
+              <div className="px-4 py-2 border-t" style={{ borderColor: dividerColor }}>
+                <button
+                  style={{
+                    backgroundColor: buttonColor,
+                    color: buttonTextColor,
+                    fontFamily: fontFamily,
+                    fontSize: `${fontSize - 2}px`
+                  }}
+                  className="px-4 py-2 rounded hover:opacity-90 transition-opacity"
+                >
+                  {buttonText}
+                </button>
+              </div>
+            )}
+          </div>
+
+
+        </div>
+      </div>
+    </>
   )
-} 
+})
+
+export default LivePreview 

@@ -8,6 +8,16 @@ const ICON_SVG_MAP = {
   info: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="m12 8 .01 0"/></svg>`,
   success: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>`,
   schedule: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>`,
+  // Premium icons
+  shopping: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>`,
+  lightbulb: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 12 2v0a6 6 0 0 0-6 6c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`,
+  sparkles: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`,
+  bell: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/><path d="M22 8c0-2.3-.8-4.3-2-6"/></svg>`,
+  message: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>`,
+  megaphone: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h3l3 3V7l-3 3H4a1 1 0 0 0-1 1Z"/><path d="M21 6v12a2 2 0 0 1-2 2H7"/><path d="M11 19v-8l6-6v12l-6-6Z"/></svg>`,
+  flame: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  package: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><path d="M12 2v8l8 4-8-4-8 4 8-4z"/></svg>`,
+  flask: `<svg class="announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6l-4 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-4-8V2"/><path d="M12 2v6"/><path d="M12 16l.01 0"/></svg>`,
 }
 
 export async function GET(
@@ -69,7 +79,7 @@ export async function GET(
       : `background: ${announcement.background};`
 
     // Get icon SVG if available
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
     const iconSvg = announcement.icon && announcement.icon !== 'none' 
       ? ICON_SVG_MAP[announcement.icon as keyof typeof ICON_SVG_MAP] || ''
       : ''
@@ -90,6 +100,10 @@ export async function GET(
      const isSticky = ${announcement.is_sticky !== false}; // Default to true if undefined
      const positionStyle = isSticky ? 'fixed' : 'relative';
      const isClosable = ${announcement.is_closable === true};
+     
+     // Announcement type and settings
+     const announcementType = '${announcement.type || 'single'}';
+     const typeSettings = ${JSON.stringify(announcement.type_settings || {})};
      
      // Typography and layout settings
      const titleFontSize = ${announcement.title_font_size || 16};
@@ -112,6 +126,147 @@ export async function GET(
      const messageElement = messageUrl ?
        \`<a href="\${messageUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">${announcement.message.replace(/'/g, "\\'")}</a>\` :
        '${announcement.message.replace(/'/g, "\\'")}';
+
+     // Parse carousel content for carousel type
+     let carouselItems = [];
+     if (announcementType === 'carousel') {
+       try {
+         const parsedContent = typeof ${JSON.stringify(announcement.content)} === 'string' ? 
+           JSON.parse(${JSON.stringify(announcement.content)}) : ${JSON.stringify(announcement.content)};
+         carouselItems = Array.isArray(parsedContent) ? parsedContent : [];
+       } catch (e) {
+         console.warn('Failed to parse carousel content, falling back to single mode');
+         carouselItems = [];
+       }
+     }
+
+     // Create announcement content based on type
+     function createAnnouncementContent() {
+       if (announcementType === 'marquee') {
+         const marqueeSpeed = typeSettings.marquee_speed || 2;
+         const marqueeDirection = typeSettings.marquee_direction || 'left';
+         const pauseOnHover = typeSettings.marquee_pause_on_hover || false;
+         
+         const fullContent = titleElement ? 
+           \`<span style="font-size: \${titleFontSize}px; font-weight: 600;">\${titleElement}</span> — <span style="font-size: \${messageFontSize}px; opacity: 0.9;">\${messageElement}</span>\` :
+           \`<span style="font-size: \${messageFontSize}px; opacity: 0.9;">\${messageElement}</span>\`;
+         const animationDirection = marqueeDirection === 'left' ? 'marquee-left-to-right' : 'marquee-right-to-left';
+         const animationDuration = (marqueeSpeed === 1 ? 30 : marqueeSpeed === 2 ? 20 : 15) + 's';
+         
+         return \`
+           <div style="
+             position: absolute;
+             top: 0;
+             left: 0;
+             right: 0;
+             bottom: 0;
+             overflow: hidden;
+             display: flex;
+             align-items: center;
+           ">
+             <div 
+               class="animate-marquee"
+               style="
+                 display: flex;
+                 white-space: nowrap;
+                 animation: \${animationDirection} \${animationDuration} linear infinite;
+                 width: max-content;
+                 \${pauseOnHover ? 'animation-play-state: running;' : ''}
+               "
+               \${pauseOnHover ? 'onmouseenter="this.style.animationPlayState=\\'paused\\'" onmouseleave="this.style.animationPlayState=\\'running\\'"' : ''}
+             >
+               <div style="
+                 display: flex;
+                 align-items: center;
+                 gap: 8px;
+                 padding-right: 10px;
+                 font-size: \${Math.max(titleFontSize, messageFontSize)}px;
+                 line-height: 1.3;
+                 height: 100%;
+               ">
+                 \${fullContent}
+               </div>
+             </div>
+           </div>
+         \`;
+       } else if (announcementType === 'carousel' && carouselItems.length > 0) {
+         const carouselSpeed = typeSettings.carousel_speed || 5000;
+         const pauseOnHover = typeSettings.carousel_pause_on_hover || false;
+         
+         // Create carousel items HTML
+         const carouselItemsHtml = carouselItems.map((item, index) => {
+           const itemTitle = item.title || '';
+           const itemMessage = item.message || '';
+           const itemTitleUrl = item.titleUrl || '';
+           const itemMessageUrl = item.messageUrl || '';
+           
+           const titleEl = itemTitleUrl ? 
+             \`<a href="\${itemTitleUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${itemTitle}</a>\` :
+             itemTitle;
+           
+           const messageEl = itemMessageUrl ?
+             \`<a href="\${itemMessageUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${itemMessage}</a>\` :
+             itemMessage;
+           
+           return \`
+             <div class="carousel-item" style="
+               width: 100%;
+               flex-shrink: 0;
+               display: flex;
+               flex-direction: column;
+               align-items: center;
+               justify-content: center;
+               gap: 4px;
+               line-height: 1.3;
+             ">
+               \${itemTitle ? \`<div style="text-align: center; font-size: \${titleFontSize}px; font-weight: 600; width: 100%;">\${titleEl}</div>\` : ''}
+               \${itemMessage ? \`<div style="text-align: center; font-size: \${messageFontSize}px; opacity: 0.9; width: 100%;">\${messageEl}</div>\` : ''}
+             </div>
+           \`;
+         }).join('');
+         
+         return \`
+           <div id="carousel-container-${slug}" style="
+             flex: 1; 
+             min-width: 0; 
+             overflow: hidden;
+             order: \${contentOrder};
+           ">
+             <div class="carousel-track" style="
+               display: flex;
+               width: \${carouselItems.length * 100}%;
+               transform: translateX(0%);
+               transition: transform 0.5s ease-in-out;
+               height: 100%;
+             ">
+               \${carouselItemsHtml}
+             </div>
+           </div>
+         \`;
+       } else {
+         // Single type (default)
+         return \`
+           <div style="
+             flex: 1; 
+             min-width: 0; 
+             text-align: \${textAlignment};
+             order: \${contentOrder};
+           ">
+             <div style="
+               font-weight: 600; 
+               margin-bottom: 2px; 
+               font-size: \${titleFontSize}px;
+               line-height: 1.3;
+             ">\${titleElement}</div>
+             <div style="
+               opacity: 0.9; 
+               font-size: \${messageFontSize}px;
+               line-height: 1.4;
+             ">\${messageElement}</div>
+           </div>
+         \`;
+       }
+     }
      
      announcementBar.innerHTML = \`
       <div style="
@@ -148,24 +303,7 @@ export async function GET(
           box-sizing: border-box;
         ">
           ${iconSvg && announcement.icon_alignment !== 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: ${announcement.icon_alignment === 'right' ? '2' : '0'};">${iconSvg}</div>` : ''}
-          <div style="
-            flex: 1; 
-            min-width: 0; 
-            text-align: \${textAlignment};
-            order: \${contentOrder};
-          ">
-            <div style="
-              font-weight: 600; 
-              margin-bottom: 2px; 
-              font-size: \${titleFontSize}px;
-              line-height: 1.3;
-            ">\${titleElement}</div>
-            <div style="
-              opacity: 0.9; 
-              font-size: \${messageFontSize}px;
-              line-height: 1.4;
-            ">\${messageElement}</div>
-          </div>
+          \${createAnnouncementContent()}
           ${iconSvg && announcement.icon_alignment === 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: 1;">${iconSvg}</div>` : ''}
         </div>
         \${isClosable ? \`
@@ -196,13 +334,32 @@ export async function GET(
          \`;
      console.log("announcementBar.innerHTML", announcementBar.innerHTML);
 
-     // Add icon styles
+     // Add icon styles and announcement type animations
     const style = document.createElement('style');
     style.textContent = \`
       .announcement-icon {
         width: 100%;
         height: 100%;
         display: block;
+      }
+      
+      /* Marquee animations */
+      @keyframes marquee-left-to-right {
+        from {
+          transform: translateX(-5vw);
+        }
+        to {
+          transform: translateX(5vw);
+        }
+      }
+      
+      @keyframes marquee-right-to-left {
+        from {
+          transform: translateX(5vw);
+        }
+        to {
+          transform: translateX(-5vw);
+        }
       }
       
       /* Ensure full width and proper positioning */
@@ -240,11 +397,68 @@ export async function GET(
       body {
         transition: padding-top 0.3s ease !important;
       }
+      
+      /* Marquee pause on hover */
+      .animate-marquee:hover {
+        animation-play-state: paused !important;
+      }
     \`;
     document.head.appendChild(style);
 
     // Insert at the beginning of body
     document.body.insertBefore(announcementBar, document.body.firstChild);
+
+    // Initialize carousel functionality
+    if (announcementType === 'carousel' && carouselItems.length > 1) {
+      let currentIndex = 0;
+      let carouselInterval = null;
+      let isPaused = false;
+      const carouselSpeed = typeSettings.carousel_speed || 5000;
+      const pauseOnHover = typeSettings.carousel_pause_on_hover || false;
+      
+      const carouselTrack = announcementBar.querySelector('.carousel-track');
+      const carouselContainer = announcementBar.querySelector('#carousel-container-${slug}');
+      
+      function rotateCarousel() {
+        if (carouselTrack && !isPaused) {
+          currentIndex = (currentIndex + 1) % carouselItems.length;
+          carouselTrack.style.transform = \`translateX(-\${currentIndex * (100 / carouselItems.length)}%)\`;
+        }
+      }
+      
+      function startCarousel() {
+        if (carouselInterval) clearInterval(carouselInterval);
+        carouselInterval = setInterval(rotateCarousel, carouselSpeed);
+      }
+      
+      function stopCarousel() {
+        if (carouselInterval) {
+          clearInterval(carouselInterval);
+          carouselInterval = null;
+        }
+      }
+      
+      // Start the carousel
+      startCarousel();
+      
+      // Add pause on hover functionality
+      if (pauseOnHover && carouselContainer) {
+        carouselContainer.addEventListener('mouseenter', function() {
+          isPaused = true;
+          stopCarousel();
+        });
+        
+        carouselContainer.addEventListener('mouseleave', function() {
+          isPaused = false;
+          startCarousel();
+        });
+      }
+      
+      // Clean up on page unload
+      window.addEventListener('beforeunload', function() {
+        stopCarousel();
+      });
+    }
 
      // Simplified single-run spacing with proper height measurement (only for sticky bars)
      const applySpacing = () => {

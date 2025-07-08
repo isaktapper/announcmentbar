@@ -1,3 +1,15 @@
+export type AnnouncementType = 'single' | 'carousel' | 'marquee'
+
+export interface AnnouncementTypeSettings {
+  // Carousel settings
+  carousel_speed?: number // milliseconds between rotations
+  carousel_pause_on_hover?: boolean
+  // Marquee settings  
+  marquee_speed?: number // pixels per second
+  marquee_direction?: 'left' | 'right'
+  marquee_pause_on_hover?: boolean
+}
+
 export interface Announcement {
   id: string
   user_id: string
@@ -6,6 +18,7 @@ export interface Announcement {
   icon: string
   background: string
   background_gradient?: string
+  use_gradient?: boolean
   text_color: string
   visibility: boolean
   is_sticky: boolean
@@ -14,10 +27,21 @@ export interface Announcement {
   title_url?: string
   message_url?: string
   text_alignment: 'left' | 'center' | 'right'
-  icon_alignment: 'left' | 'center' | 'right'
+  icon_alignment: 'left' | 'right' // Removed 'center'
   is_closable: boolean
+  type: AnnouncementType
+  type_settings: AnnouncementTypeSettings
   slug: string
   created_at: string
+  bar_height: number
+  content?: unknown // JSONB content for carousel items
+}
+
+export interface AnnouncementContentItem {
+  title: string
+  message: string
+  titleUrl?: string
+  messageUrl?: string
 }
 
 export interface AnnouncementFormData {
@@ -35,8 +59,13 @@ export interface AnnouncementFormData {
   titleUrl?: string
   messageUrl?: string
   textAlignment: 'left' | 'center' | 'right'
-  iconAlignment: 'left' | 'center' | 'right'
+  iconAlignment: 'left' | 'right' // Removed 'center'
   isClosable: boolean
+  type: AnnouncementType
+  typeSettings: AnnouncementTypeSettings
+  barHeight: number
+  // New: Content management for carousel
+  carouselItems?: AnnouncementContentItem[]
 }
 
 export interface Template {
@@ -55,8 +84,12 @@ export interface Template {
   titleUrl?: string
   messageUrl?: string
   textAlignment: 'left' | 'center' | 'right'
-  iconAlignment: 'left' | 'center' | 'right'
+  iconAlignment: 'left' | 'right' // Removed 'center'
   isClosable: boolean
+  type: AnnouncementType
+  typeSettings: AnnouncementTypeSettings
+  barHeight: number
+  carouselItems?: AnnouncementContentItem[]
 }
 
 export const ICONS = {
@@ -66,6 +99,16 @@ export const ICONS = {
   info: 'Info',
   success: 'CheckCircle',
   schedule: 'Clock',
+  // Premium icons
+  shopping: 'ShoppingCart',
+  lightbulb: 'Lightbulb',
+  sparkles: 'Sparkles',
+  bell: 'BellRing',
+  message: 'MessageCircle',
+  megaphone: 'Megaphone',
+  flame: 'Flame',
+  package: 'Package',
+  flask: 'FlaskConical',
 } as const
 
 export type IconType = keyof typeof ICONS 

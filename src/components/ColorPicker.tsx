@@ -4,41 +4,92 @@ interface ColorPickerProps {
   value: string
   onChange: (color: string) => void
   label: string
-  className?: string
 }
 
-export default function ColorPicker({ value, onChange, label, className = '' }: ColorPickerProps) {
+export default function ColorPicker({ value, onChange, label }: ColorPickerProps) {
+  const handleColorChange = (newColor: string) => {
+    // Ensure color starts with #
+    const color = newColor.startsWith('#') ? newColor : `#${newColor}`
+    onChange(color)
+  }
+
+  const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let hex = e.target.value
+    // Remove # if user types it
+    if (hex.startsWith('#')) {
+      hex = hex.slice(1)
+    }
+    // Only allow valid hex characters
+    if (/^[0-9A-Fa-f]*$/.test(hex) && hex.length <= 6) {
+      handleColorChange(`#${hex}`)
+    }
+  }
+
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    // Get the position of the color preview box
+    const rect = (e.target as HTMLElement).getBoundingClientRect()
+    
+    // Create a visible but tiny color input positioned over the preview box
+    const colorInput = document.createElement('input')
+    colorInput.type = 'color'
+    colorInput.value = value
+    colorInput.style.position = 'fixed'
+    colorInput.style.left = `${rect.left}px`
+    colorInput.style.top = `${rect.top}px`
+    colorInput.style.width = `${rect.width}px`
+    colorInput.style.height = `${rect.height}px`
+    colorInput.style.opacity = '0'
+    colorInput.style.border = 'none'
+    colorInput.style.background = 'transparent'
+    colorInput.style.cursor = 'pointer'
+    colorInput.style.zIndex = '9999'
+    document.body.appendChild(colorInput)
+    
+    colorInput.onchange = (e) => {
+      const target = e.target as HTMLInputElement
+      handleColorChange(target.value)
+      document.body.removeChild(colorInput)
+    }
+    
+    colorInput.onblur = () => {
+      // Clean up when focus is lost
+      setTimeout(() => {
+        if (document.body.contains(colorInput)) {
+          document.body.removeChild(colorInput)
+        }
+      }, 100)
+    }
+    
+    // Focus and trigger the color picker
+    colorInput.focus()
+    colorInput.click()
+  }
+
   return (
-    <div className={`space-y-2 ${className}`}>
-      <label className="block text-xs font-medium text-gray-700 mb-2">
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-900">
         {label}
       </label>
-      <div className="relative group">
-        {/* Color display with hex value */}
-        <div 
-          className="w-full h-12 rounded-lg border border-gray-200 relative overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
+      
+      <div className="flex items-center gap-3">
+        {/* Color Preview */}
+        <div
+          className="w-12 h-10 rounded-lg border border-gray-200 cursor-pointer shadow-sm"
           style={{ backgroundColor: value }}
-        >
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/10"></div>
-          
-          {/* Hex value display */}
-          <div className="absolute inset-x-0 bottom-0 p-2">
-            <div className="bg-black/30 backdrop-blur-sm rounded-md px-2 py-1 text-center">
-              <span className="text-xs font-mono text-white font-medium tracking-wider">
-                {value.toUpperCase()}
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Hidden native color input */}
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          onClick={handlePreviewClick}
         />
+        
+        {/* Hex Input */}
+        <div className="flex-1">
+          <input
+            type="text"
+            value={value.replace('#', '')}
+            onChange={handleHexChange}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono text-black"
+            placeholder="ff0000"
+            maxLength={6}
+          />
+        </div>
       </div>
     </div>
   )
