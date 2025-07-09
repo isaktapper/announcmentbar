@@ -382,7 +382,7 @@ export default function GeoSelector({ selectedCountries, onSelect }: GeoSelector
 
         {/* Dropdown menu */}
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
             {/* Search input */}
             <div className="p-2 border-b border-gray-200">
               <div className="relative">

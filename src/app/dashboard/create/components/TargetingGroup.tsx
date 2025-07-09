@@ -92,7 +92,7 @@ export default function TargetingGroup({
   return (
     <div className="space-y-4">
       {sections.map(({ id, title, isPremium, component }) => (
-        <div key={id} className="border border-gray-200 rounded-lg overflow-hidden">
+        <div key={id} className="border border-gray-200 rounded-lg">
           <button
             type="button"
             onClick={() => toggleSection(id)}
@@ -114,7 +114,7 @@ export default function TargetingGroup({
             </div>
           </button>
           {expandedSection === id && (
-            <div className="px-4 py-3 border-t border-gray-200 bg-white">
+            <div className="px-4 py-3 border-t border-gray-200 bg-white overflow-visible">
               {component}
             </div>
           )}
