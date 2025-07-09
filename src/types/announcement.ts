@@ -1,3 +1,7 @@
+// Add CTA types
+export type CTABorderRadius = 'none' | 'sm' | 'md' | 'lg' | 'pill'
+export type CTASize = 'sm' | 'md' | 'lg'
+
 export type AnnouncementType = 'single' | 'carousel' | 'marquee'
 
 // Font family options with Google Fonts
@@ -37,27 +41,30 @@ export interface Announcement {
   is_sticky: boolean
   title_font_size: number
   message_font_size: number
-  title_url?: string
-  message_url?: string
   text_alignment: 'left' | 'center' | 'right'
-  icon_alignment: 'left' | 'right' // Removed 'center'
+  icon_alignment: 'left' | 'right'
   is_closable: boolean
   type: AnnouncementType
   type_settings: AnnouncementTypeSettings
   slug: string
   created_at: string
   bar_height: number
-  content?: unknown // JSONB content for carousel items
+  content?: unknown
   font_family: FontFamily
-  geo_countries?: string[] // Added: Array of country codes for geo targeting
+  geo_countries?: string[]
   page_paths?: string[]
+  // New CTA fields
+  cta_text?: string
+  cta_url?: string
+  cta_text_color?: string
+  cta_bg_color?: string
+  cta_border_radius?: 'none' | 'sm' | 'md' | 'lg' | 'pill'
+  cta_size?: 'sm' | 'md' | 'lg'
 }
 
 export interface AnnouncementContentItem {
   title: string
   message: string
-  titleUrl?: string
-  messageUrl?: string
 }
 
 export interface AnnouncementFormData {
@@ -72,13 +79,11 @@ export interface AnnouncementFormData {
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
-  titleUrl: string
-  messageUrl: string
   textAlignment: 'left' | 'center' | 'right'
   iconAlignment: 'left' | 'right'
   isClosable: boolean
   type: AnnouncementType
-  typeSettings: Record<string, unknown>
+  typeSettings: AnnouncementTypeSettings
   barHeight: number
   carouselItems: AnnouncementContentItem[]
   fontFamily: FontFamily
@@ -86,11 +91,17 @@ export interface AnnouncementFormData {
   pagePaths: string[]
   scheduledStart: string | null
   scheduledEnd: string | null
+  // New CTA fields
+  ctaText?: string
+  ctaUrl?: string
+  ctaTextColor?: string
+  ctaBgColor?: string
+  ctaBorderRadius?: CTABorderRadius
+  ctaSize?: CTASize
 }
 
 export interface Template {
   id: string
-  name: string
   title: string
   message: string
   icon: string
@@ -101,20 +112,25 @@ export interface Template {
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
-  titleUrl?: string
-  messageUrl?: string
   textAlignment: 'left' | 'center' | 'right'
   iconAlignment: 'left' | 'right'
   isClosable: boolean
   type: AnnouncementType
-  typeSettings: Record<string, unknown>
-  barHeight: number
-  carouselItems: AnnouncementContentItem[]
-  fontFamily: FontFamily | undefined
+  typeSettings: AnnouncementTypeSettings
+  barHeight?: number
+  carouselItems?: AnnouncementContentItem[]
+  fontFamily?: FontFamily
   geo_countries?: string[]
   page_paths?: string[]
   scheduled_start?: string | null
   scheduled_end?: string | null
+  // New CTA fields
+  cta_text?: string
+  cta_url?: string
+  cta_text_color?: string
+  cta_bg_color?: string
+  cta_border_radius?: CTABorderRadius
+  cta_size?: CTASize
 }
 
 export const ICONS = {

@@ -6,7 +6,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { AnnouncementFormData, AnnouncementType, AnnouncementContentItem } from '@/types/announcement'
+import { AnnouncementFormData, AnnouncementType, AnnouncementContentItem, FontFamily } from '@/types/announcement'
 import IconSelector from '../../create/components/IconSelector'
 import FontSelector from '../../create/components/FontSelector'
 import LivePreview from '../../create/components/LivePreview'
@@ -14,6 +14,7 @@ import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from '../../create/components/FormattingToolbar'
 import GeoSelector from '../../create/components/GeoSelector'
 import PageTargeting from '../../create/components/PageTargeting'
+import CTASection from '../../create/components/CTASection'
 
 export default function EditAnnouncementPage() {
   const router = useRouter()
@@ -23,32 +24,38 @@ export default function EditAnnouncementPage() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   
+  // Initialize form data
   const [formData, setFormData] = useState<AnnouncementFormData>({
     title: '',
     message: '',
     icon: 'none',
-    background: '#FFFFFF',
-    backgroundGradient: '#FFFFFF',
+    background: '#FFFFC5',
+    backgroundGradient: '#FFF7A0',
     useGradient: false,
-    textColor: '#000000',
+    textColor: '#1F2937',
     visibility: true,
     isSticky: true,
     titleFontSize: 16,
     messageFontSize: 14,
-    titleUrl: '',
-    messageUrl: '',
     textAlignment: 'center',
     iconAlignment: 'left',
-    isClosable: true,
+    isClosable: false,
     type: 'single',
     typeSettings: {},
     barHeight: 60,
-    carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+    carouselItems: [{ title: '', message: '' }],
     fontFamily: 'Work Sans',
     geoCountries: [],
     pagePaths: [],
     scheduledStart: null,
     scheduledEnd: null,
+    // New CTA fields
+    ctaText: '',
+    ctaUrl: '',
+    ctaTextColor: '#FFFFFF',
+    ctaBgColor: '#000000',
+    ctaBorderRadius: 'md',
+    ctaSize: 'md',
   })
 
   // Debounced state for live preview
@@ -120,8 +127,6 @@ export default function EditAnnouncementPage() {
             isSticky: data.is_sticky ?? true,
             titleFontSize: data.title_font_size || 16,
             messageFontSize: data.message_font_size || 14,
-            titleUrl: '',
-            messageUrl: '',
             textAlignment: data.text_alignment || 'center',
             iconAlignment: data.icon_alignment || 'left',
             isClosable: data.is_closable || false,
@@ -134,6 +139,13 @@ export default function EditAnnouncementPage() {
             pagePaths: data.page_paths || [], // Added: Load page targeting
             scheduledStart: data.scheduled_start || null,
             scheduledEnd: data.scheduled_end || null,
+            // New CTA fields
+            ctaText: data.cta_text || '',
+            ctaUrl: data.cta_url || '',
+            ctaTextColor: data.cta_text_color || '#FFFFFF',
+            ctaBgColor: data.cta_bg_color || '#000000',
+            ctaBorderRadius: data.cta_border_radius || 'md',
+            ctaSize: data.cta_size || 'md',
           }
         } else if (parsedContent && typeof parsedContent === 'object' && !Array.isArray(parsedContent)) {
           // Single/Marquee with JSON object
@@ -149,20 +161,25 @@ export default function EditAnnouncementPage() {
             isSticky: data.is_sticky ?? true,
             titleFontSize: data.title_font_size || 16,
             messageFontSize: data.message_font_size || 14,
-            titleUrl: parsedContent.titleUrl || '',
-            messageUrl: parsedContent.messageUrl || '',
             textAlignment: data.text_alignment || 'center',
             iconAlignment: data.icon_alignment || 'left',
             isClosable: data.is_closable || false,
             type: data.type === 'marquee' ? 'single' : (data.type || 'single'), // Convert marquee to single
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
-            carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+            carouselItems: [{ title: '', message: '' }],
             fontFamily: data.font_family || 'Work Sans',
             geoCountries: data.geo_countries || [], // Added: Load geo targeting
             pagePaths: data.page_paths || [], // Added: Load page targeting
             scheduledStart: data.scheduled_start || null,
             scheduledEnd: data.scheduled_end || null,
+            // New CTA fields
+            ctaText: data.cta_text || '',
+            ctaUrl: data.cta_url || '',
+            ctaTextColor: data.cta_text_color || '#FFFFFF',
+            ctaBgColor: data.cta_bg_color || '#000000',
+            ctaBorderRadius: data.cta_border_radius || 'md',
+            ctaSize: data.cta_size || 'md',
           }
         } else {
           // Fallback to legacy individual fields
@@ -178,20 +195,25 @@ export default function EditAnnouncementPage() {
             isSticky: data.is_sticky ?? true,
             titleFontSize: data.title_font_size || 16,
             messageFontSize: data.message_font_size || 14,
-            titleUrl: data.title_url || '',
-            messageUrl: data.message_url || '',
             textAlignment: data.text_alignment || 'center',
             iconAlignment: data.icon_alignment || 'left',
             isClosable: data.is_closable || false,
             type: data.type === 'marquee' ? 'single' : (data.type || 'single'), // Convert marquee to single
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
-            carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
+            carouselItems: [{ title: '', message: '' }],
             fontFamily: data.font_family || 'Work Sans',
             geoCountries: data.geo_countries || [], // Added: Load geo targeting
             pagePaths: data.page_paths || [], // Added: Load page targeting
             scheduledStart: data.scheduled_start || null,
             scheduledEnd: data.scheduled_end || null,
+            // New CTA fields
+            ctaText: data.cta_text || '',
+            ctaUrl: data.cta_url || '',
+            ctaTextColor: data.cta_text_color || '#FFFFFF',
+            ctaBgColor: data.cta_bg_color || '#000000',
+            ctaBorderRadius: data.cta_border_radius || 'md',
+            ctaSize: data.cta_size || 'md',
           }
         }
 
@@ -249,7 +271,7 @@ export default function EditAnnouncementPage() {
     }
     setFormData(prev => ({
       ...prev,
-      carouselItems: [...(prev.carouselItems || []), { title: '', message: '', titleUrl: '', messageUrl: '' }]
+      carouselItems: [...(prev.carouselItems || []), { title: '', message: '' }]
     }))
   }
 
@@ -257,7 +279,7 @@ export default function EditAnnouncementPage() {
     setFormData(prev => {
       const newItems = [...(prev.carouselItems || [])]
       // Säkerställ att alla fält behålls genom att merge med defaults
-      const currentItem = newItems[index] || { title: '', message: '', titleUrl: '', messageUrl: '' }
+      const currentItem = newItems[index] || { title: '', message: '' }
       newItems[index] = {
         ...currentItem,
         [field]: value
@@ -317,8 +339,6 @@ export default function EditAnnouncementPage() {
         content = {
           title: formData.title || '',
           message: formData.message || '',
-          titleUrl: formData.titleUrl || '',
-          messageUrl: formData.messageUrl || ''
         }
       }
 
@@ -335,35 +355,42 @@ export default function EditAnnouncementPage() {
         displayMessage = content.message || ''
       }
 
+      const updatedAnnouncement = {
+        title: displayTitle,
+        message: displayMessage,
+        icon: formData.icon,
+        background: formData.background,
+        background_gradient: formData.useGradient ? formData.backgroundGradient : null,
+        use_gradient: formData.useGradient,
+        text_color: formData.textColor,
+        visibility: formData.visibility,
+        is_sticky: formData.isSticky,
+        title_font_size: formData.titleFontSize,
+        message_font_size: formData.messageFontSize,
+        text_alignment: formData.textAlignment,
+        icon_alignment: formData.iconAlignment,
+        is_closable: formData.isClosable,
+        type: formData.type,
+        type_settings: formData.typeSettings,
+        bar_height: formData.barHeight,
+        content: content,
+        font_family: formData.fontFamily as FontFamily,
+        geo_countries: formData.geoCountries,
+        page_paths: formData.pagePaths,
+        scheduled_start: formData.scheduledStart || null,
+        scheduled_end: formData.scheduledEnd || null,
+        // New CTA fields
+        cta_text: formData.ctaText || null,
+        cta_url: formData.ctaUrl || null,
+        cta_text_color: formData.ctaTextColor || null,
+        cta_bg_color: formData.ctaBgColor || null,
+        cta_border_radius: formData.ctaBorderRadius || null,
+        cta_size: formData.ctaSize || null,
+      }
+
       const { error: updateError } = await supabase
         .from('announcements')
-        .update({
-          title: displayTitle,
-          message: displayMessage,
-          content: JSON.stringify(content),
-          icon: formData.icon,
-          background: formData.background,
-          background_gradient: formData.backgroundGradient,
-          use_gradient: formData.useGradient,
-          text_color: formData.textColor,
-          visibility: formData.visibility,
-          is_sticky: formData.isSticky,
-          title_font_size: formData.titleFontSize,
-          message_font_size: formData.messageFontSize,
-          title_url: formData.titleUrl,
-          message_url: formData.messageUrl,
-          text_alignment: formData.textAlignment,
-          icon_alignment: formData.iconAlignment,
-          is_closable: formData.isClosable,
-          type: formData.type,
-          type_settings: formData.typeSettings,
-          bar_height: formData.barHeight,
-          font_family: formData.fontFamily,
-          geo_countries: formData.geoCountries, // Added: Update geo targeting
-          page_paths: formData.pagePaths, // Added: Update page targeting
-          scheduled_start: formData.scheduledStart,
-          scheduled_end: formData.scheduledEnd,
-        })
+        .update(updatedAnnouncement)
         .eq('id', params.id)
         .eq('user_id', user.id)
 
@@ -392,7 +419,7 @@ export default function EditAnnouncementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-white via-white to-[#FFFFC5]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -482,7 +509,7 @@ export default function EditAnnouncementPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 2. Announcement Type Section */}
@@ -1095,6 +1122,24 @@ export default function EditAnnouncementPage() {
             </div>
           </div>
 
+          {/* CTA Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <CTASection
+              ctaText={formData.ctaText}
+              ctaUrl={formData.ctaUrl}
+              ctaTextColor={formData.ctaTextColor}
+              ctaBgColor={formData.ctaBgColor}
+              ctaBorderRadius={formData.ctaBorderRadius}
+              ctaSize={formData.ctaSize}
+              onChange={(values) => {
+                setFormData(prev => ({
+                  ...prev,
+                  ...values
+                }))
+              }}
+            />
+          </div>
+
           {/* Submit Button */}
           <div className="flex justify-center pt-2">
             <button
@@ -1108,6 +1153,7 @@ export default function EditAnnouncementPage() {
         </form>
       </div>
 
+      {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )

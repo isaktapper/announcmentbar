@@ -14,6 +14,7 @@ import LivePreview from './components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from './components/FormattingToolbar'
 import TargetingGroup from './components/TargetingGroup'
+import CTASection from './components/CTASection'
 import { getUserPlan } from '@/lib/user-utils'
 
 export default function CreateAnnouncementPage() {
@@ -34,8 +35,6 @@ export default function CreateAnnouncementPage() {
     isSticky: true,
     titleFontSize: 16,
     messageFontSize: 14,
-    titleUrl: '',
-    messageUrl: '',
     textAlignment: 'center',
     iconAlignment: 'left',
     isClosable: false,
@@ -48,6 +47,13 @@ export default function CreateAnnouncementPage() {
     pagePaths: [],
     scheduledStart: null,
     scheduledEnd: null,
+    // New CTA fields with defaults
+    ctaText: '',
+    ctaUrl: '',
+    ctaTextColor: '#FFFFFF',
+    ctaBgColor: '#000000',
+    ctaBorderRadius: 'md',
+    ctaSize: 'md',
   })
 
   // Debounced state for live preview
@@ -99,8 +105,6 @@ export default function CreateAnnouncementPage() {
       isSticky: template.isSticky,
       titleFontSize: template.titleFontSize,
       messageFontSize: template.messageFontSize,
-      titleUrl: template.titleUrl || '',
-      messageUrl: template.messageUrl || '',
       textAlignment: template.textAlignment,
       iconAlignment: template.iconAlignment,
       isClosable: template.isClosable,
@@ -113,6 +117,13 @@ export default function CreateAnnouncementPage() {
       pagePaths: template.page_paths || [], // Preserve page paths from template
       scheduledStart: template.scheduled_start || null,
       scheduledEnd: template.scheduled_end || null,
+      // New CTA fields
+      ctaText: template.cta_text || '',
+      ctaUrl: template.cta_url || '',
+      ctaTextColor: template.cta_text_color || '#FFFFFF',
+      ctaBgColor: template.cta_bg_color || '#000000',
+      ctaBorderRadius: template.cta_border_radius || 'md',
+      ctaSize: template.cta_size || 'md',
     })
   }, [])
 
@@ -193,51 +204,24 @@ export default function CreateAnnouncementPage() {
         }
       }
 
-      // Always prepare content in JSON format
-      let content
-      if (formData.type === 'carousel') {
-        content = formData.carouselItems || []
-      } else {
-        // Single/Marquee content as JSON object
-        content = {
-          title: formData.title || '',
-          message: formData.message || '',
-          titleUrl: formData.titleUrl || '',
-          messageUrl: formData.messageUrl || ''
-        }
-      }
+      // Get plain text versions of title/message
+      const displayTitle = formData.title.replace(/<[^>]*>/g, '')
+      const displayMessage = formData.message.replace(/<[^>]*>/g, '')
 
-      // For backward compatibility, still populate individual fields from JSON content
-      let displayTitle = ''
-      let displayMessage = ''
-      
+      // Prepare content for carousel type
+      let content = null
       if (formData.type === 'carousel') {
-        // For carousel, use first item for display fields
-        const firstItem = formData.carouselItems?.[0]
-        if (firstItem) {
-          const titleDiv = document.createElement('div')
-          titleDiv.innerHTML = firstItem.title || ''
-          displayTitle = titleDiv.textContent || titleDiv.innerText || ''
-          
-          const messageDiv = document.createElement('div')
-          messageDiv.innerHTML = firstItem.message || ''
-          displayMessage = messageDiv.textContent || messageDiv.innerText || ''
-        }
-      } else {
-        // For single/marquee, extract plain text for display fields
-        const titleDiv = document.createElement('div')
-        titleDiv.innerHTML = formData.title || ''
-        displayTitle = titleDiv.textContent || titleDiv.innerText || ''
-        
-        const messageDiv = document.createElement('div')
-        messageDiv.innerHTML = formData.message || ''
-        displayMessage = messageDiv.textContent || messageDiv.innerText || ''
+        content = formData.carouselItems.map(item => ({
+          ...item,
+          title: item.title.replace(/<[^>]*>/g, ''),
+          message: item.message.replace(/<[^>]*>/g, ''),
+        }))
       }
 
       const newAnnouncement = {
         user_id: user.id,
-        title: displayTitle, // Plain text for backward compatibility
-        message: displayMessage, // Plain text for backward compatibility
+        title: displayTitle,
+        message: displayMessage,
         icon: formData.icon,
         background: formData.background,
         background_gradient: formData.useGradient ? formData.backgroundGradient : null,
@@ -247,21 +231,26 @@ export default function CreateAnnouncementPage() {
         is_sticky: formData.isSticky,
         title_font_size: formData.titleFontSize,
         message_font_size: formData.messageFontSize,
-        title_url: formData.titleUrl || null,
-        message_url: formData.messageUrl || null,
         text_alignment: formData.textAlignment,
         icon_alignment: formData.iconAlignment,
         is_closable: formData.isClosable,
         type: formData.type,
         type_settings: formData.typeSettings,
         bar_height: formData.barHeight,
-        content: content, // All formatted content stored here
+        content: content,
         font_family: formData.fontFamily as FontFamily,
-        geo_countries: formData.geoCountries, // Added: Store geo targeting
-        page_paths: formData.pagePaths, // Added: Store page paths
+        geo_countries: formData.geoCountries,
+        page_paths: formData.pagePaths,
         slug: generateSlug(),
         scheduled_start: formData.scheduledStart || null,
         scheduled_end: formData.scheduledEnd || null,
+        // New CTA fields
+        cta_text: formData.ctaText || null,
+        cta_url: formData.ctaUrl || null,
+        cta_text_color: formData.ctaTextColor || null,
+        cta_bg_color: formData.ctaBgColor || null,
+        cta_border_radius: formData.ctaBorderRadius || null,
+        cta_size: formData.ctaSize || null,
       }
 
       const { error: insertError } = await supabase
@@ -299,7 +288,7 @@ export default function CreateAnnouncementPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-white via-white to-[#FFFFC5]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -977,6 +966,24 @@ export default function CreateAnnouncementPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <CTASection
+              ctaText={formData.ctaText}
+              ctaUrl={formData.ctaUrl}
+              ctaTextColor={formData.ctaTextColor}
+              ctaBgColor={formData.ctaBgColor}
+              ctaBorderRadius={formData.ctaBorderRadius}
+              ctaSize={formData.ctaSize}
+              onChange={(values) => {
+                setFormData(prev => ({
+                  ...prev,
+                  ...values
+                }))
+              }}
+            />
           </div>
 
           {/* Targeting Group */}
