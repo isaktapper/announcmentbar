@@ -8,7 +8,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { ScribbleArrow, ScribbleHeart, ScribbleWave } from '../../components/scribbles/ScribbleElements'
 import AnnouncementCard from '../../components/dashboard/AnnouncementCard'
 import { Announcement } from '../../types/announcement'
-import { getUserPlan } from '@/lib/user-utils'
+import { getUserPlan, getUserDisplayName } from '@/lib/user-utils'
 import { useToast } from '@/hooks/useToast'
 
 interface DashboardClientProps {
@@ -20,6 +20,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements)
   const [isLoading, setIsLoading] = useState(false)
   const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
+  const [displayName, setDisplayName] = useState<string>('')
   const router = useRouter()
   const { error } = useToast()
   
@@ -29,16 +30,20 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   )
 
   useEffect(() => {
-    const fetchUserPlan = async () => {
+    const fetchUserData = async () => {
       try {
-        const plan = await getUserPlan(user.id)
+        const [plan, name] = await Promise.all([
+          getUserPlan(user.id),
+          getUserDisplayName(user.id, true)
+        ])
         setUserPlan(plan)
+        setDisplayName(name)
       } catch (error) {
-        console.warn('Error fetching user plan:', error)
+        console.warn('Error fetching user data:', error)
       }
     }
 
-    fetchUserPlan()
+    fetchUserData()
   }, [user.id])
 
   // Check for error state from middleware
@@ -109,7 +114,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
             
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block text-sm text-gray-600">
-                Welcome back, <span className="font-medium">{user.email?.split('@')[0]}</span>!
+                Welcome back, <span className="font-medium">{displayName}</span>!
               </div>
               <button
                 onClick={() => router.push('/profile')}

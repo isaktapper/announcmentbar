@@ -5,9 +5,10 @@ import { User } from '@supabase/supabase-js'
 import { ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
+import { getUserDisplayName } from '@/lib/user-utils'
 
 interface UserProfile {
-  name?: string
+  display_name?: string
   plan: 'free' | 'unlimited'
 }
 
@@ -35,18 +36,12 @@ export default function ProfilePage() {
         // Get profile data from profiles table
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('plan')
+          .select('plan, display_name')
           .eq('id', currentUser.id)
           .single()
         
-        // Get name from auth.users Display name column
-        const name = currentUser.user_metadata?.display_name || 
-                    currentUser.user_metadata?.name || 
-                    currentUser.user_metadata?.full_name || 
-                    'Not provided'
-        
         setProfile({
-          name: name,
+          display_name: profileData?.display_name || await getUserDisplayName(currentUser.id),
           plan: profileData?.plan || 'free'
         })
         
@@ -125,7 +120,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
                   <p className="text-lg text-gray-900">
-                    {profile.name || 'Not provided'}
+                    {profile?.display_name || 'Not provided'}
                   </p>
                 </div>
               </div>
