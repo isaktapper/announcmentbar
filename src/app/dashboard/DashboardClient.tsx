@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Plus, Sparkles, Users, Calendar, User as UserIcon, Wrench, AlertCircle, Zap } from 'lucide-react'
+import { Plus, Sparkles, Users, Calendar, User as UserIcon, Wrench, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { ScribbleArrow, ScribbleHeart, ScribbleWave } from '../../components/scribbles/ScribbleElements'
@@ -21,7 +21,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const [isLoading, setIsLoading] = useState(false)
   const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
   const router = useRouter()
-  const { toasts, success, error, removeToast } = useToast()
+  const { error } = useToast()
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
