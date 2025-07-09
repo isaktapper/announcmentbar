@@ -51,6 +51,33 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  // Check free user restrictions for /create route
+  if (request.nextUrl.pathname === '/dashboard/create' && user) {
+    // Get user's plan
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+
+    if (profileData?.plan === 'free') {
+      // Check if user has any active bars
+      const { data: activeAnnouncements } = await supabase
+        .from('announcements')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('visibility', true)
+
+      if (activeAnnouncements && activeAnnouncements.length > 0) {
+        // Redirect to dashboard with error state
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/dashboard'
+        redirectUrl.searchParams.set('error', 'free_plan_limit')
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+  }
+
   // Auth routes - redirect to dashboard if already authenticated
   if (
     (request.nextUrl.pathname.startsWith('/auth/login') || 
@@ -62,26 +89,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object instead of the supabaseResponse object
-
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/auth/:path*',
   ],
 } 

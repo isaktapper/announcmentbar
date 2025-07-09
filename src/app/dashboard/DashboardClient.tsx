@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Plus, Sparkles, Users, Calendar, User as UserIcon, Wrench } from 'lucide-react'
+import { Plus, Sparkles, Users, Calendar, User as UserIcon, Wrench, AlertCircle, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { ScribbleArrow, ScribbleHeart, ScribbleWave } from '../../components/scribbles/ScribbleElements'
 import AnnouncementCard from '../../components/dashboard/AnnouncementCard'
 import { Announcement } from '../../types/announcement'
+import { getUserPlan } from '@/lib/user-utils'
+import { useToast } from '@/hooks/useToast'
 
 interface DashboardClientProps {
   initialAnnouncements: Announcement[]
@@ -17,12 +19,39 @@ interface DashboardClientProps {
 export default function DashboardClient({ initialAnnouncements, user }: DashboardClientProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements)
   const [isLoading, setIsLoading] = useState(false)
+  const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
   const router = useRouter()
+  const { toasts, success, error, removeToast } = useToast()
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      try {
+        const plan = await getUserPlan(user.id)
+        setUserPlan(plan)
+      } catch (error) {
+        console.warn('Error fetching user plan:', error)
+      }
+    }
+
+    fetchUserPlan()
+  }, [user.id])
+
+  // Check for error state from middleware
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const errorType = params.get('error')
+    
+    if (errorType === 'free_plan_limit') {
+      error("You can only have 1 active bar on the Free plan. Disable one to create another or upgrade your plan.")
+      // Remove error from URL without refreshing
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [error])
 
   const refreshAnnouncements = async () => {
     setIsLoading(true)
@@ -51,6 +80,17 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
     total: announcements.length,
     public: announcements.filter(a => a.visibility === true).length,
     private: announcements.filter(a => a.visibility === false).length,
+  }
+
+  const hasActiveBar = stats.public > 0
+  const canCreateNewBar = userPlan === 'unlimited' || !hasActiveBar
+
+  const handleCreateClick = () => {
+    if (!canCreateNewBar) {
+      error("You can only have 1 active bar on the Free plan. Disable one to create another or upgrade your plan.")
+      return
+    }
+    router.push('/dashboard/create')
   }
 
   return (
@@ -104,24 +144,55 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
             </p>
             
             {/* Create button */}
-            <div className="relative inline-block">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => router.push('/dashboard/create')}
-                  className="inline-flex items-center px-8 py-4 bg-[#FFFFC5] text-black font-semibold rounded-xl shadow-lg hover:shadow-xl hover:bg-yellow-200 transform hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create New Bar
-                </button>
-                <button
-                  onClick={() => window.open('/installation', '_blank')}
-                  className="inline-flex items-center px-4 py-4 text-gray-600 hover:text-gray-900 font-medium rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all"
-                >
-                  <Wrench className="w-5 h-5 mr-2" />
-                  Installation Guide
-                </button>
+            <div className="space-y-4">
+              <div className="relative inline-block">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleCreateClick}
+                    className={`inline-flex items-center px-8 py-4 bg-[#FFFFC5] text-black font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${!canCreateNewBar ? 'opacity-50 cursor-not-allowed hover:bg-[#FFFFC5] hover:translate-y-0 hover:shadow-lg' : 'hover:bg-yellow-200'}`}
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create New Bar
+                  </button>
+                  <button
+                    onClick={() => window.open('/installation', '_blank')}
+                    className="inline-flex items-center px-4 py-4 text-gray-600 hover:text-gray-900 font-medium rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all"
+                  >
+                    <Wrench className="w-5 h-5 mr-2" />
+                    Installation Guide
+                  </button>
+                </div>
+                <ScribbleArrow className="top-0 -right-8 w-6 h-6 text-brand-400 transform rotate-45" />
               </div>
-              <ScribbleArrow className="top-0 -right-8 w-6 h-6 text-brand-400 transform rotate-45" />
+
+              {/* Free Plan Limit Info */}
+              {!canCreateNewBar && (
+                <div className="flex justify-center">
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 max-w-md w-full text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-amber-200 rounded-full p-2 mb-3">
+                        <Zap className="w-4 h-4 text-amber-700" />
+                      </div>
+                      <h4 className="text-base font-semibold text-amber-900 mb-1.5">Ready to Create More Bars?</h4>
+                      <p className="text-sm text-amber-800 mb-4">
+                        Upgrade to Unlimited for just $8 (one-time payment) and create as many active bars as you need, forever!
+                      </p>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => router.push('/profile')}
+                          className="inline-flex items-center px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-amber-600 transform hover:-translate-y-0.5 transition-all duration-200"
+                        >
+                          <Zap className="w-4 h-4 mr-1.5" />
+                          Upgrade to Unlimited
+                        </button>
+                        <div className="text-xs text-amber-700">
+                          or <button onClick={() => router.push('/dashboard')} className="underline hover:text-amber-900">disable an active bar</button> to create a new one
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -205,6 +276,10 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
           )}
         </div>
       </main>
+
+      {/* Toast Container */}
+      {/* The ToastContainer component is now part of useToast, so it's not needed here. */}
+      {/* If you want to customize the toast appearance, you might need to adjust useToast or create a custom component. */}
     </div>
   )
 } 

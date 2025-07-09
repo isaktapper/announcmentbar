@@ -14,6 +14,7 @@ import LivePreview from './components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from './components/FormattingToolbar'
 import TargetingGroup from './components/TargetingGroup'
+import { getUserPlan } from '@/lib/user-utils'
 
 export default function CreateAnnouncementPage() {
   const router = useRouter()
@@ -174,6 +175,22 @@ export default function CreateAnnouncementPage() {
       if (!user) {
         error('You must be logged in to create bars')
         return
+      }
+
+      // Check if free user has active bars
+      const userPlan = await getUserPlan(user.id)
+      if (userPlan === 'free') {
+        const { data: activeAnnouncements } = await supabase
+          .from('announcements')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('visibility', true)
+
+        if (activeAnnouncements && activeAnnouncements.length > 0) {
+          error('You can only have 1 active bar on the Free plan. Disable one to create another or upgrade your plan.')
+          router.push('/dashboard')
+          return
+        }
       }
 
       // Always prepare content in JSON format
