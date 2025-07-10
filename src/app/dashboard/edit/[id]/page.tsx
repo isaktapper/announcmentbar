@@ -2,19 +2,34 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { 
+  ArrowLeftIcon,
+  DocumentTextIcon,
+  PaintBrushIcon,
+  AdjustmentsHorizontalIcon,
+  GlobeAltIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { AnnouncementFormData, AnnouncementType, AnnouncementContentItem, FontFamily } from '@/types/announcement'
+import { AnnouncementFormData, Template, AnnouncementType, AnnouncementContentItem, FontFamily, CarouselItem } from '@/types/announcement'
 import IconSelector from '../../create/components/IconSelector'
 import FontSelector from '../../create/components/FontSelector'
+import TemplatePicker from '../../create/components/TemplatePicker'
 import LivePreview from '../../create/components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from '../../create/components/FormattingToolbar'
 import GeoSelector from '../../create/components/GeoSelector'
 import PageTargeting from '../../create/components/PageTargeting'
-import CTASection from '../../create/components/CTASection'
+import SectionCard from '../../create/components/SectionCard'
+
+interface Section {
+  id: string
+  title: string
+  subtitle: string
+  icon: React.ElementType
+}
 
 export default function EditAnnouncementPage() {
   const router = useRouter()
@@ -24,7 +39,49 @@ export default function EditAnnouncementPage() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   
-  // Initialize form data
+  // Section visibility state
+  const [sections, setSections] = useState<Section[]>([
+    { 
+      id: 'general', 
+      title: 'General', 
+      subtitle: 'Basic bar settings and template',
+      icon: Squares2X2Icon 
+    },
+    { 
+      id: 'content', 
+      title: 'Content', 
+      subtitle: 'Message and formatting',
+      icon: DocumentTextIcon 
+    },
+    { 
+      id: 'appearance', 
+      title: 'Appearance', 
+      subtitle: 'Colors, sizing, and positioning',
+      icon: PaintBrushIcon 
+    },
+    { 
+      id: 'options', 
+      title: 'Options', 
+      subtitle: 'Behavior, scheduling, and display settings',
+      icon: AdjustmentsHorizontalIcon 
+    },
+    { 
+      id: 'targeting', 
+      title: 'Targeting', 
+      subtitle: 'Control where your bar appears',
+      icon: GlobeAltIcon 
+    },
+  ])
+  const [openSections, setOpenSections] = useState<string[]>(['general'])
+
+  const toggleSection = (sectionId: string) => {
+    setOpenSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    )
+  }
+
   const [formData, setFormData] = useState<AnnouncementFormData>({
     title: '',
     message: '',
@@ -41,21 +98,20 @@ export default function EditAnnouncementPage() {
     iconAlignment: 'left',
     isClosable: false,
     type: 'single',
-    typeSettings: {},
+    typeSettings: {
+      marquee_speed: 2,
+      marquee_direction: 'left',
+      marquee_pause_on_hover: true,
+      carousel_speed: 5,
+      carousel_pause_on_hover: true
+    },
     barHeight: 60,
     carouselItems: [{ title: '', message: '' }],
     fontFamily: 'Work Sans',
     geoCountries: [],
     pagePaths: [],
     scheduledStart: null,
-    scheduledEnd: null,
-    // New CTA fields
-    ctaText: '',
-    ctaUrl: '',
-    ctaTextColor: '#FFFFFF',
-    ctaBgColor: '#000000',
-    ctaBorderRadius: 'md',
-    ctaSize: 'md',
+    scheduledEnd: null
   })
 
   // Debounced state for live preview
@@ -101,15 +157,7 @@ export default function EditAnnouncementPage() {
         }
 
         // Parse content and handle different formats
-        let parsedContent = null
-        if (data.content) {
-          try {
-            parsedContent = JSON.parse(data.content)
-          } catch {
-            // If not valid JSON, treat as plain text
-            parsedContent = data.content
-          }
-        }
+        let parsedContent = data.content || null
 
         // Set form data based on content format
         let newFormData
@@ -127,6 +175,8 @@ export default function EditAnnouncementPage() {
             isSticky: data.is_sticky ?? true,
             titleFontSize: data.title_font_size || 16,
             messageFontSize: data.message_font_size || 14,
+            titleUrl: '',
+            messageUrl: '',
             textAlignment: data.text_alignment || 'center',
             iconAlignment: data.icon_alignment || 'left',
             isClosable: data.is_closable || false,
@@ -139,53 +189,12 @@ export default function EditAnnouncementPage() {
             pagePaths: data.page_paths || [], // Added: Load page targeting
             scheduledStart: data.scheduled_start || null,
             scheduledEnd: data.scheduled_end || null,
-            // New CTA fields
-            ctaText: data.cta_text || '',
-            ctaUrl: data.cta_url || '',
-            ctaTextColor: data.cta_text_color || '#FFFFFF',
-            ctaBgColor: data.cta_bg_color || '#000000',
-            ctaBorderRadius: data.cta_border_radius || 'md',
-            ctaSize: data.cta_size || 'md',
-          }
-        } else if (parsedContent && typeof parsedContent === 'object' && !Array.isArray(parsedContent)) {
-          // Single/Marquee with JSON object
-          newFormData = {
-            title: parsedContent.title || '',
-            message: parsedContent.message || '',
-            icon: data.icon || 'none',
-            background: data.background || '#3B82F6',
-            backgroundGradient: data.background_gradient || '#1D4ED8',
-            useGradient: data.use_gradient || false,
-            textColor: data.text_color || '#FFFFFF',
-            visibility: data.visibility ?? true,
-            isSticky: data.is_sticky ?? true,
-            titleFontSize: data.title_font_size || 16,
-            messageFontSize: data.message_font_size || 14,
-            textAlignment: data.text_alignment || 'center',
-            iconAlignment: data.icon_alignment || 'left',
-            isClosable: data.is_closable || false,
-            type: data.type === 'marquee' ? 'single' : (data.type || 'single'), // Convert marquee to single
-            typeSettings: data.type_settings || {},
-            barHeight: data.bar_height || 60,
-            carouselItems: [{ title: '', message: '' }],
-            fontFamily: data.font_family || 'Work Sans',
-            geoCountries: data.geo_countries || [], // Added: Load geo targeting
-            pagePaths: data.page_paths || [], // Added: Load page targeting
-            scheduledStart: data.scheduled_start || null,
-            scheduledEnd: data.scheduled_end || null,
-            // New CTA fields
-            ctaText: data.cta_text || '',
-            ctaUrl: data.cta_url || '',
-            ctaTextColor: data.cta_text_color || '#FFFFFF',
-            ctaBgColor: data.cta_bg_color || '#000000',
-            ctaBorderRadius: data.cta_border_radius || 'md',
-            ctaSize: data.cta_size || 'md',
           }
         } else {
-          // Fallback to legacy individual fields
+          // Single/Marquee with JSON object
           newFormData = {
-            title: data.title || '',
-            message: data.message || '',
+            title: parsedContent?.title || '',
+            message: parsedContent?.message || '',
             icon: data.icon || 'none',
             background: data.background || '#3B82F6',
             backgroundGradient: data.background_gradient || '#1D4ED8',
@@ -195,25 +204,20 @@ export default function EditAnnouncementPage() {
             isSticky: data.is_sticky ?? true,
             titleFontSize: data.title_font_size || 16,
             messageFontSize: data.message_font_size || 14,
+            titleUrl: parsedContent?.titleUrl || '',
+            messageUrl: parsedContent?.messageUrl || '',
             textAlignment: data.text_alignment || 'center',
             iconAlignment: data.icon_alignment || 'left',
             isClosable: data.is_closable || false,
             type: data.type === 'marquee' ? 'single' : (data.type || 'single'), // Convert marquee to single
             typeSettings: data.type_settings || {},
             barHeight: data.bar_height || 60,
-            carouselItems: [{ title: '', message: '' }],
+            carouselItems: [{ title: '', message: '', titleUrl: '', messageUrl: '' }],
             fontFamily: data.font_family || 'Work Sans',
             geoCountries: data.geo_countries || [], // Added: Load geo targeting
             pagePaths: data.page_paths || [], // Added: Load page targeting
             scheduledStart: data.scheduled_start || null,
             scheduledEnd: data.scheduled_end || null,
-            // New CTA fields
-            ctaText: data.cta_text || '',
-            ctaUrl: data.cta_url || '',
-            ctaTextColor: data.cta_text_color || '#FFFFFF',
-            ctaBgColor: data.cta_bg_color || '#000000',
-            ctaBorderRadius: data.cta_border_radius || 'md',
-            ctaSize: data.cta_size || 'md',
           }
         }
 
@@ -264,29 +268,63 @@ export default function EditAnnouncementPage() {
     }))
   }, [])
 
-  const addCarouselItem = () => {
+  const handleCarouselItemChange = (index: number, field: keyof CarouselItem, value: string) => {
+    setFormData(prev => {
+      const newItems = [...(prev.carouselItems || [])]
+      newItems[index] = {
+        ...newItems[index],
+        [field]: value
+      }
+      return { ...prev, carouselItems: newItems }
+    })
+  }
+
+  const handleAddCarouselItem = () => {
     if (formData.carouselItems && formData.carouselItems.length >= 3) {
       error('Maximum 3 carousel items allowed')
       return
     }
     setFormData(prev => ({
       ...prev,
-      carouselItems: [...(prev.carouselItems || []), { title: '', message: '' }]
+      carouselItems: [...(prev.carouselItems || []), { title: '', message: '', titleUrl: '', messageUrl: '' }]
     }))
   }
 
-  const updateCarouselItem = useCallback((index: number, field: keyof AnnouncementContentItem, value: string) => {
-    setFormData(prev => {
-      const newItems = [...(prev.carouselItems || [])]
-      // Säkerställ att alla fält behålls genom att merge med defaults
-      const currentItem = newItems[index] || { title: '', message: '' }
-      newItems[index] = {
-        ...currentItem,
-        [field]: value
-      }
-      return { ...prev, carouselItems: newItems }
+  const handleRemoveCarouselItem = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      carouselItems: prev.carouselItems?.filter((_, i) => i !== index) || []
+    }))
+  }
+
+  const handleTemplateSelect = (template: Template) => {
+    setSelectedTemplate(template.id)
+    setFormData({
+      ...formData,
+      title: template.title,
+      message: template.message,
+      icon: template.icon,
+      background: template.background,
+      backgroundGradient: template.backgroundGradient,
+      useGradient: template.useGradient,
+      textColor: template.textColor,
+      isSticky: template.isSticky,
+      titleFontSize: template.titleFontSize,
+      messageFontSize: template.messageFontSize,
+      textAlignment: template.textAlignment,
+      iconAlignment: template.iconAlignment,
+      isClosable: template.isClosable,
+      type: template.type,
+      typeSettings: template.typeSettings,
+      barHeight: template.barHeight,
+      carouselItems: template.carouselItems,
+      fontFamily: template.fontFamily,
+      geoCountries: template.geoCountries,
+      pagePaths: template.pagePaths,
+      scheduledStart: template.scheduledStart,
+      scheduledEnd: template.scheduledEnd
     })
-  }, [])
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -330,67 +368,49 @@ export default function EditAnnouncementPage() {
         return
       }
 
-      // Always prepare content in JSON format
+      // Format content based on type
       let content
       if (formData.type === 'carousel') {
-        content = formData.carouselItems || []
+        content = formData.carouselItems.map(item => ({
+          title: item.title,
+          message: item.message,
+          titleUrl: item.titleUrl,
+          messageUrl: item.messageUrl
+        }))
       } else {
-        // Single/Marquee content as JSON object
         content = {
-          title: formData.title || '',
-          message: formData.message || '',
+          title: formData.title,
+          message: formData.message,
+          titleUrl: formData.titleUrl,
+          messageUrl: formData.messageUrl
         }
-      }
-
-      // For backward compatibility, still populate individual fields from JSON content
-      let displayTitle = ''
-      let displayMessage = ''
-      if (formData.type === 'carousel' && Array.isArray(content) && content.length > 0) {
-        // Use first item for display
-        const firstItem = content[0]
-        displayTitle = firstItem.title || ''
-        displayMessage = firstItem.message || ''
-      } else if (typeof content === 'object' && !Array.isArray(content)) {
-        displayTitle = content.title || ''
-        displayMessage = content.message || ''
-      }
-
-      const updatedAnnouncement = {
-        title: displayTitle,
-        message: displayMessage,
-        icon: formData.icon,
-        background: formData.background,
-        background_gradient: formData.useGradient ? formData.backgroundGradient : null,
-        use_gradient: formData.useGradient,
-        text_color: formData.textColor,
-        visibility: formData.visibility,
-        is_sticky: formData.isSticky,
-        title_font_size: formData.titleFontSize,
-        message_font_size: formData.messageFontSize,
-        text_alignment: formData.textAlignment,
-        icon_alignment: formData.iconAlignment,
-        is_closable: formData.isClosable,
-        type: formData.type,
-        type_settings: formData.typeSettings,
-        bar_height: formData.barHeight,
-        content: content,
-        font_family: formData.fontFamily as FontFamily,
-        geo_countries: formData.geoCountries,
-        page_paths: formData.pagePaths,
-        scheduled_start: formData.scheduledStart || null,
-        scheduled_end: formData.scheduledEnd || null,
-        // New CTA fields
-        cta_text: formData.ctaText || null,
-        cta_url: formData.ctaUrl || null,
-        cta_text_color: formData.ctaTextColor || null,
-        cta_bg_color: formData.ctaBgColor || null,
-        cta_border_radius: formData.ctaBorderRadius || null,
-        cta_size: formData.ctaSize || null,
       }
 
       const { error: updateError } = await supabase
         .from('announcements')
-        .update(updatedAnnouncement)
+        .update({
+          icon: formData.icon,
+          background: formData.background,
+          background_gradient: formData.useGradient ? formData.backgroundGradient : null,
+          use_gradient: formData.useGradient,
+          text_color: formData.textColor,
+          visibility: formData.visibility,
+          is_sticky: formData.isSticky,
+          title_font_size: formData.titleFontSize,
+          message_font_size: formData.messageFontSize,
+          text_alignment: formData.textAlignment,
+          icon_alignment: formData.iconAlignment,
+          is_closable: formData.isClosable,
+          type: formData.type,
+          type_settings: formData.typeSettings,
+          bar_height: formData.barHeight,
+          content: content,
+          font_family: formData.fontFamily,
+          geo_countries: formData.geoCountries,
+          page_paths: formData.pagePaths,
+          scheduled_start: formData.scheduledStart || null,
+          scheduled_end: formData.scheduledEnd || null
+        })
         .eq('id', params.id)
         .eq('user_id', user.id)
 
@@ -400,12 +420,20 @@ export default function EditAnnouncementPage() {
 
       success('Bar updated successfully!')
       router.push('/dashboard')
-    } catch {
+    } catch (err) {
+      console.error('Error updating announcement:', err)
       error('Failed to update announcement')
     } finally {
       setLoading(false)
     }
   }
+
+  const [showScheduling, setShowScheduling] = useState(false)
+
+  useEffect(() => {
+    // Initialize showScheduling based on whether there are scheduled dates
+    setShowScheduling(Boolean(formData.scheduledStart || formData.scheduledEnd))
+  }, [formData.scheduledStart, formData.scheduledEnd])
 
   if (initialLoading) {
     return (
@@ -419,7 +447,7 @@ export default function EditAnnouncementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-white to-[#FFFFC5]">
+    <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -435,9 +463,9 @@ export default function EditAnnouncementPage() {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900">Edit Bar</h1>
-                              <p className="text-sm text-gray-500 mt-1">
-                  Update your bar design
-                </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Update your bar design
+              </p>
             </div>
             <div className="w-32"></div> {/* Spacer for centering */}
           </div>
@@ -445,255 +473,145 @@ export default function EditAnnouncementPage() {
       </div>
 
       {/* Sticky Live Preview */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-3" style={{ minHeight: '100px' }}>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold text-gray-900">Live Preview</h2>
-              <div className="flex items-center gap-2 text-xs">
-                <div className={`w-2 h-2 rounded-full ${
-                  previewData.visibility ? 'bg-green-500' : 'bg-gray-400'
-                }`}></div>
-                <span className="text-gray-600">
-                  {previewData.visibility ? 'Visible' : 'Hidden'}
-                </span>
-              </div>
-            </div>
-            <div className="rounded-lg overflow-hidden">
-              <LivePreview 
-                type={previewData.type}
-                title={previewData.title}
-                message={previewData.message}
-                titleUrl={previewData.titleUrl}
-                messageUrl={previewData.messageUrl}
-                backgroundColor={previewData.background}
-                backgroundGradient={previewData.backgroundGradient}
-                useGradient={previewData.useGradient || false}
-                textColor={previewData.textColor}
-                linkColor={previewData.textColor}
-                borderColor="#e5e7eb"
-                buttonColor="#3b82f6"
-                buttonTextColor="#ffffff"
-                fontFamily={previewData.fontFamily}
-                fontSize={Math.max(previewData.titleFontSize || 16, previewData.messageFontSize || 14)}
-                titleFontSize={previewData.titleFontSize || 16}
-                messageFontSize={previewData.messageFontSize || 14}
-                textAlignment={previewData.textAlignment || 'center'}
-                showLeftIcon={previewData.iconAlignment === 'left' && previewData.icon !== 'none'}
-                showRightIcon={previewData.iconAlignment === 'right' && previewData.icon !== 'none'}
-                leftIcon={previewData.iconAlignment === 'left' ? previewData.icon : ''}
-                rightIcon={previewData.iconAlignment === 'right' ? previewData.icon : ''}
-                showButton={false}
-                buttonText=""
-                showCloseButton={previewData.isClosable}
-                borderStyle="solid"
-                borderWidth={1}
-                showDivider={true}
-                dividerColor="#d1d5db"
-                marqueeSpeed={Number(previewData.typeSettings.marquee_speed) || 2}
-                marqueeDirection={(previewData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
-                pauseOnHover={
-                  previewData.type === 'marquee' 
-                    ? Boolean(previewData.typeSettings.marquee_pause_on_hover) || false
-                    : previewData.type === 'carousel'
-                    ? Boolean(previewData.typeSettings.carousel_pause_on_hover) || false
-                    : false
-                }
-                carouselItems={previewData.carouselItems || []}
-                carouselRotationSpeed={Number(previewData.typeSettings.carousel_speed || 5000) / 1000}
-                barHeight={previewData.barHeight}
-              />
-            </div>
+      <div className="sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 max-w-4xl mx-auto mt-4">
+            <LivePreview 
+              type={previewData.type}
+              title={previewData.title}
+              message={previewData.message}
+              titleUrl={previewData.titleUrl}
+              messageUrl={previewData.messageUrl}
+              backgroundColor={previewData.background}
+              backgroundGradient={previewData.backgroundGradient}
+              useGradient={previewData.useGradient}
+              textColor={previewData.textColor}
+              linkColor={previewData.textColor}
+              borderColor="#e5e7eb"
+              buttonColor="#3b82f6"
+              buttonTextColor="#ffffff"
+              fontFamily={previewData.fontFamily}
+              fontSize={Math.max(previewData.titleFontSize || 16, previewData.messageFontSize || 14)}
+              titleFontSize={previewData.titleFontSize || 16}
+              messageFontSize={previewData.messageFontSize || 14}
+              textAlignment={previewData.textAlignment || 'center'}
+              showLeftIcon={previewData.iconAlignment === 'left' && previewData.icon !== 'none'}
+              showRightIcon={previewData.iconAlignment === 'right' && previewData.icon !== 'none'}
+              leftIcon={previewData.iconAlignment === 'left' ? previewData.icon : ''}
+              rightIcon={previewData.iconAlignment === 'right' ? previewData.icon : ''}
+              showButton={false}
+              buttonText=""
+              showCloseButton={previewData.isClosable}
+              borderStyle="solid"
+              borderWidth={1}
+              showDivider={true}
+              dividerColor="#d1d5db"
+              marqueeSpeed={Number(previewData.typeSettings.marquee_speed) || 2}
+              marqueeDirection={(previewData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
+              pauseOnHover={
+                previewData.type === 'marquee' 
+                ? Boolean(previewData.typeSettings.marquee_pause_on_hover) || false
+                : previewData.type === 'carousel'
+                ? Boolean(previewData.typeSettings.carousel_pause_on_hover) || false
+                : false
+              }
+              carouselItems={previewData.carouselItems || []}
+              carouselRotationSpeed={Number(previewData.typeSettings.carousel_speed || 5000) / 1000}
+              barHeight={previewData.barHeight}
+            />
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 2. Announcement Type Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            <div className="space-y-4">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          {/* General Section */}
+          <SectionCard
+            id="general"
+            title="General"
+            subtitle="Basic bar settings and template"
+            icon={Squares2X2Icon}
+            isOpen={openSections.includes('general')}
+            onToggle={() => toggleSection('general')}
+          >
+            <div className="space-y-6">
+              {/* Bar Type */}
               <div>
-                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Type</h3>
-              <p className="text-xs text-gray-500">Choose how your bar will be displayed</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* Single Type */}
-                <label className="relative cursor-pointer">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="single"
-                    checked={formData.type === 'single'}
-                    onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
-                    className="sr-only peer"
-                  />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
-                    <div className="w-6 h-6 bg-blue-100 rounded-md mb-2 flex items-center justify-center">
-                      <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                    </div>
-                    <h4 className="font-medium text-gray-900 text-sm mb-0.5">Single</h4>
-                    <p className="text-xs text-gray-500">Default static bar</p>
-                  </div>
-                </label>
-
-                {/* Carousel Type */}
-                <label className="relative cursor-pointer">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="carousel"
-                    checked={formData.type === 'carousel'}
-                    onChange={(e) => handleInputChange('type', e.target.value as AnnouncementType)}
-                    className="sr-only peer"
-                  />
-                  <div className="p-3 border-2 border-gray-200 rounded-lg peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:bg-gray-50">
-                    <div className="w-6 h-6 bg-orange-100 rounded-md mb-2 flex items-center justify-center">
-                      <div className="flex gap-0.5">
-                        <div className="w-1.5 h-1.5 bg-orange-600 rounded"></div>
-                        <div className="w-1.5 h-1.5 bg-orange-400 rounded"></div>
-                        <div className="w-1.5 h-1.5 bg-orange-300 rounded"></div>
-                      </div>
-                    </div>
-                    <h4 className="font-medium text-gray-900 text-sm mb-0.5">Carousel</h4>
-                    <p className="text-xs text-gray-500">Rotates multiple bars</p>
-                  </div>
-                </label>
-
-                {/* Marquee Type - Disabled */}
-                <div className="relative">
-                  <label className="relative cursor-not-allowed opacity-60">
-                    <input
-                      type="radio"
-                      name="type"
-                      value="marquee"
-                      disabled
-                      className="sr-only peer"
-                    />
-                    <div className="p-3 border-2 border-gray-200 rounded-lg bg-gray-50">
-                      <div className="w-6 h-6 bg-green-100 rounded-md mb-2 flex items-center justify-center">
-                        <div className="w-3 h-0.5 bg-green-600 rounded"></div>
-                      </div>
-                      <h4 className="font-medium text-gray-900 text-sm mb-0.5">Marquee</h4>
-                      <p className="text-xs text-gray-500">Scrolling text</p>
-                    </div>
-                  </label>
-                  <div 
-                    className="absolute -top-1 -right-1 px-2 py-1 text-xs font-medium text-gray-800 rounded-full border border-gray-300"
-                    style={{ backgroundColor: '#FFFFC5' }}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bar Type</label>
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('type', 'single')}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${
+                      formData.type === 'single'
+                        ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-500 ring-offset-2'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    Coming Soon
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                      <div className="w-4 h-4 bg-gray-400 rounded"></div>
+                    </div>
+                    <div className="font-medium text-gray-900 mb-1">Single</div>
+                    <div className="text-sm text-gray-500">Static message bar</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('type', 'carousel')}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${
+                      formData.type === 'carousel'
+                        ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-500 ring-offset-2'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                      <div className="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    </div>
+                    <div className="font-medium text-gray-900 mb-1">Carousel</div>
+                    <div className="text-sm text-gray-500">Rotating messages</div>
+                  </button>
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full p-4 border-2 border-gray-200 rounded-lg text-left opacity-60"
+                    >
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                        <div className="w-4 h-0.5 bg-gray-400 rounded"></div>
+                      </div>
+                      <div className="font-medium text-gray-900 mb-1">Marquee</div>
+                      <div className="text-sm text-gray-500">Scrolling text</div>
+                    </button>
+                    <div className="absolute -top-2 -right-2 px-2 py-1 text-xs font-medium bg-[#FFFFC5] text-black rounded-full border border-yellow-300">
+                      Coming Soon
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Type-specific settings */}
-              {formData.type === 'carousel' && (
-                <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                  <h5 className="font-medium text-gray-900 text-sm mb-2">Carousel Settings</h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rotation Speed: {Number(formData.typeSettings.carousel_speed || 5000) / 1000}s
-                      </label>
-                      <input
-                        type="range"
-                        min="2"
-                        max="10"
-                        step="0.5"
-                        value={Number(formData.typeSettings.carousel_speed || 5000) / 1000}
-                        onChange={(e) => handleTypeSettingsChange('carousel_speed', parseFloat(e.target.value) * 1000)}
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="carousel_pause"
-                        checked={Boolean(formData.typeSettings.carousel_pause_on_hover) || false}
-                        onChange={(e) => handleTypeSettingsChange('carousel_pause_on_hover', e.target.checked)}
-                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                      />
-                      <label htmlFor="carousel_pause" className="ml-2 text-sm text-gray-700">
-                        Pause on hover
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {formData.type === 'marquee' && (
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <h5 className="font-medium text-gray-900 text-sm mb-2">Marquee Settings</h5>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Speed</label>
-                      <select
-                        value={Number(formData.typeSettings.marquee_speed || 2)}
-                        onChange={(e) => handleTypeSettingsChange('marquee_speed', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      >
-                        <option value={1}>Slow (30s to cross)</option>
-                        <option value={2}>Normal (20s to cross)</option>
-                        <option value={3}>Fast (15s to cross)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Direction
-                      </label>
-                      <select
-                        value={(formData.typeSettings.marquee_direction as 'left' | 'right') || 'left'}
-                        onChange={(e) => handleTypeSettingsChange('marquee_direction', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      >
-                        <option value="left">Left to Right</option>
-                        <option value="right">Right to Left</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center">
-                    <input
-                      type="checkbox"
-                      id="marquee_pause"
-                      checked={Boolean(formData.typeSettings.marquee_pause_on_hover) || false}
-                      onChange={(e) => handleTypeSettingsChange('marquee_pause_on_hover', e.target.checked)}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
-                    <label htmlFor="marquee_pause" className="ml-2 text-sm text-gray-700">
-                      Pause on hover
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Templates - Hidden in edit mode */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm opacity-60">
-            <div className="space-y-4">
+              {/* Template Picker */}
               <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Templates</h3>
-                <p className="text-xs text-gray-500">Template selection is disabled while editing</p>
-              </div>
-              <div className="text-sm text-gray-500 italic">
-                Templates are only available when creating new bars
+                <label className="block text-sm font-medium text-gray-700 mb-4">Choose a Template</label>
+                <TemplatePicker
+                  selectedTemplate={selectedTemplate}
+                  onSelect={handleTemplateSelect}
+                />
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          {/* 3. Announcement Content Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            <div className="space-y-4">
-              <div>
-                              <h3 className="text-base font-semibold text-gray-900 mb-1">Bar Content</h3>
-              <p className="text-xs text-gray-500">Write your bar message and customize formatting</p>
-              </div>
-
-              {/* Carousel Items - All Visible */}
+          {/* Content Section */}
+          <SectionCard
+            id="content"
+            title="Content"
+            subtitle="Message and formatting"
+            icon={DocumentTextIcon}
+            isOpen={openSections.includes('content')}
+            onToggle={() => toggleSection('content')}
+          >
+            <div className="space-y-6">
               {formData.type === 'carousel' ? (
                 <div className="space-y-4">
                   {formData.carouselItems?.map((item, index) => (
@@ -703,12 +621,7 @@ export default function EditAnnouncementPage() {
                         {formData.carouselItems && formData.carouselItems.length > 1 && (
                           <button
                             type="button"
-                            onClick={() => {
-                              setFormData(prev => ({
-                                ...prev,
-                                carouselItems: (prev.carouselItems || []).filter((_, i) => i !== index)
-                              }))
-                            }}
+                            onClick={() => handleRemoveCarouselItem(index)}
                             className="text-red-600 hover:text-red-800 text-sm"
                           >
                             Remove
@@ -717,443 +630,438 @@ export default function EditAnnouncementPage() {
                       </div>
                       
                       <div className="space-y-3">
-                        {/* Title */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Title (Optional)
                           </label>
                           <FormattingToolbar
                             value={item.title}
-                            onChange={(value) => updateCarouselItem(index, 'title', value)}
+                            onChange={(value) => handleCarouselItemChange(index, 'title', value)}
                             placeholder="Optional title for this item"
                             rows={2}
                           />
                         </div>
 
-                        {/* Message */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Message *
                           </label>
                           <FormattingToolbar
                             value={item.message}
-                            onChange={(value) => updateCarouselItem(index, 'message', value)}
+                            onChange={(value) => handleCarouselItemChange(index, 'message', value)}
                             placeholder="Enter message for this item..."
                             required
                             rows={3}
                           />
                         </div>
-
-                        {/* URLs */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Title URL (Optional)
-                            </label>
-                            <input
-                              type="url"
-                              value={item.titleUrl || ''}
-                              onChange={(e) => updateCarouselItem(index, 'titleUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
-                              placeholder="https://example.com"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Message URL (Optional)
-                            </label>
-                            <input
-                              type="url"
-                              value={item.messageUrl || ''}
-                              onChange={(e) => updateCarouselItem(index, 'messageUrl', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
-                              placeholder="https://example.com"
-                            />
-                          </div>
-                        </div>
                       </div>
                     </div>
                   ))}
                   
-                  {/* Add Item Button */}
-                  {(!formData.carouselItems || formData.carouselItems.length < 3) && (
-                    <button
-                      type="button"
-                      onClick={addCarouselItem}
-                      className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
-                    >
-                      <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Add Item ({formData.carouselItems?.length || 0}/3)
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleAddCarouselItem}
+                    disabled={formData.carouselItems && formData.carouselItems.length >= 3}
+                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:hover:border-gray-300 disabled:hover:text-gray-600"
+                  >
+                    Add Carousel Item
+                  </button>
                 </div>
               ) : (
-                // Single/Marquee Content
                 <div className="space-y-4">
-                  {/* Title */}
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Title (Optional)
                     </label>
                     <FormattingToolbar
                       value={formData.title}
                       onChange={(value) => handleInputChange('title', value)}
-                      placeholder="Optional title for your announcement"
+                      placeholder="Optional title for your bar"
                       rows={2}
                     />
                   </div>
 
-                  {/* Message */}
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Message *
                     </label>
                     <FormattingToolbar
                       value={formData.message}
                       onChange={(value) => handleInputChange('message', value)}
-                      placeholder="Enter your announcement message..."
+                      placeholder="Enter your bar message..."
                       required
                       rows={4}
                     />
                   </div>
+                </div>
+              )}
 
-                  {/* URLs */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Typography */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">Typography</label>
+                <div className="space-y-4">
+                  <FontSelector
+                    selectedFont={formData.fontFamily}
+                    onSelect={(font) => handleInputChange('fontFamily', font)}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="titleUrl" className="block text-sm font-medium text-gray-900 mb-2">
-                        Title URL (Optional)
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Title Size: {formData.titleFontSize}px
                       </label>
                       <input
-                        type="url"
-                        id="titleUrl"
-                        value={formData.titleUrl || ''}
-                        onChange={(e) => handleInputChange('titleUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
-                        placeholder="https://example.com"
+                        type="range"
+                        min="12"
+                        max="24"
+                        value={formData.titleFontSize}
+                        onChange={(e) => handleInputChange('titleFontSize', parseInt(e.target.value))}
+                        className="w-full"
                       />
                     </div>
                     <div>
-                      <label htmlFor="messageUrl" className="block text-sm font-medium text-gray-900 mb-2">
-                        Message URL (Optional)
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Message Size: {formData.messageFontSize}px
                       </label>
                       <input
-                        type="url"
-                        id="messageUrl"
-                        value={formData.messageUrl || ''}
-                        onChange={(e) => handleInputChange('messageUrl', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
-                        placeholder="https://example.com"
+                        type="range"
+                        min="10"
+                        max="20"
+                        value={formData.messageFontSize}
+                        onChange={(e) => handleInputChange('messageFontSize', parseInt(e.target.value))}
+                        className="w-full"
                       />
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Text Alignment */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Text Alignment
+                </label>
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('textAlignment', 'left')}
+                    disabled={formData.type === 'carousel'}
+                    className={`px-4 py-2 border rounded-lg ${
+                      formData.textAlignment === 'left'
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    } disabled:opacity-50`}
+                  >
+                    Left
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('textAlignment', 'center')}
+                    className={`px-4 py-2 border rounded-lg ${
+                      formData.textAlignment === 'center'
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Center
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('textAlignment', 'right')}
+                    disabled={formData.type === 'carousel'}
+                    className={`px-4 py-2 border rounded-lg ${
+                      formData.textAlignment === 'right'
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    } disabled:opacity-50`}
+                  >
+                    Right
+                  </button>
+                </div>
+                {formData.type === 'carousel' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Left/Right alignment disabled for carousel
+                  </p>
+                )}
+              </div>
 
               {/* Icon Selector */}
               <IconSelector
                 selectedIcon={formData.icon}
                 onSelect={(icon) => handleInputChange('icon', icon)}
               />
-            </div>
-          </div>
 
-          {/* 4. Appearance Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Appearance</h3>
-                <p className="text-xs text-gray-500">Customize colors, sizing, and positioning</p>
-              </div>
-
-              {/* Background Options */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-900">
-                  Background
-                </label>
-                
-                {/* Gradient Toggle */}
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="useGradient"
-                    checked={formData.useGradient}
-                    onChange={(e) => handleInputChange('useGradient', e.target.checked)}
-                    className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
-                  />
-                  <label htmlFor="useGradient" className="text-sm text-gray-700">
-                    Use gradient background
+              {/* Icon Alignment - Only show if an icon is selected */}
+              {formData.icon !== 'none' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Icon Position
                   </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('iconAlignment', 'left')}
+                      className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm rounded-lg border transition-all ${
+                        formData.iconAlignment === 'left'
+                          ? 'border-brand-500 bg-brand-50 text-brand-700'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="text-lg">=</span>
+                      <span>Left</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('iconAlignment', 'right')}
+                      className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm rounded-lg border transition-all ${
+                        formData.iconAlignment === 'right'
+                          ? 'border-brand-500 bg-brand-50 text-brand-700'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <span>Right</span>
+                      <span className="text-lg">=</span>
+                    </button>
+                  </div>
                 </div>
+              )}
+            </div>
+          </SectionCard>
 
-                {/* Color Pickers */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ColorPicker
-                    value={formData.background}
-                    onChange={(color) => handleInputChange('background', color)}
-                    label={formData.useGradient ? 'Start Color' : 'Background Color'}
-                  />
-                  
-                  {formData.useGradient && (
-                    <ColorPicker
-                      value={formData.backgroundGradient || '#FFF7A0'}
-                      onChange={(color) => handleInputChange('backgroundGradient', color)}
-                      label="End Color"
+          {/* Appearance Section */}
+          <SectionCard
+            id="appearance"
+            title="Appearance"
+            subtitle="Colors, sizing, and positioning"
+            icon={PaintBrushIcon}
+            isOpen={openSections.includes('appearance')}
+            onToggle={() => toggleSection('appearance')}
+          >
+            <div className="space-y-6">
+              {/* Background */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">Background</label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="useGradient"
+                      checked={formData.useGradient}
+                      onChange={(e) => handleInputChange('useGradient', e.target.checked)}
+                      className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                     />
-                  )}
+                    <label htmlFor="useGradient" className="text-sm text-gray-700">
+                      Use gradient background
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <ColorPicker
+                      value={formData.background}
+                      onChange={(color) => handleInputChange('background', color)}
+                      label={formData.useGradient ? 'Start Color' : 'Background Color'}
+                    />
+                    
+                    {formData.useGradient && (
+                      <ColorPicker
+                        value={formData.backgroundGradient || '#FFF7A0'}
+                        onChange={(color) => handleInputChange('backgroundGradient', color)}
+                        label="End Color"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Text Color */}
-              <ColorPicker
-                value={formData.textColor}
-                onChange={(color) => handleInputChange('textColor', color)}
-                label="Text and Icon Color"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">Text Color</label>
+                <ColorPicker
+                  value={formData.textColor}
+                  onChange={(color) => handleInputChange('textColor', color)}
+                  label="Text Color"
+                />
+              </div>
 
-              {/* Bar Height Slider */}
-              <div className="space-y-2">
-                <label htmlFor="barHeight" className="block text-sm font-medium text-gray-900">
+              {/* Bar Height */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Bar Height: {formData.barHeight}px
                 </label>
                 <input
                   type="range"
-                  id="barHeight"
                   min="40"
                   max="120"
                   value={formData.barHeight}
                   onChange={(e) => handleInputChange('barHeight', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full"
                 />
               </div>
+            </div>
+          </SectionCard>
 
-              {/* Typography Section */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-900">
-                  Typography
-                </label>
-                
-                {/* Font Family Selector */}
-                <FontSelector
-                  selectedFont={formData.fontFamily}
-                  onSelect={(font) => handleInputChange('fontFamily', font)}
-                />
-
-                {/* Font Size Sliders */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Title Font Size */}
-                  <div>
-                    <label htmlFor="titleFontSize" className="block text-sm font-medium text-gray-700 mb-2">
-                      Title Size: {formData.titleFontSize}px
-                    </label>
-                    <input
-                      type="range"
-                      id="titleFontSize"
-                      min="12"
-                      max="24"
-                      value={formData.titleFontSize}
-                      onChange={(e) => handleInputChange('titleFontSize', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Message Font Size */}
-                  <div>
-                    <label htmlFor="messageFontSize" className="block text-sm font-medium text-gray-700 mb-2">
-                      Message Size: {formData.messageFontSize}px
-                    </label>
-                    <input
-                      type="range"
-                      id="messageFontSize"
-                      min="10"
-                      max="20"
-                      value={formData.messageFontSize}
-                      onChange={(e) => handleInputChange('messageFontSize', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Alignment Controls */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-900">
-                  Alignment
-                </label>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Text Alignment */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Text Alignment
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(['left', 'center', 'right'] as const).map((alignment) => {
-                        const isDisabled = formData.type === 'carousel' && (alignment === 'left' || alignment === 'right')
-                        const isSelected = formData.textAlignment === alignment
-                        
-                        return (
-                          <button
-                            key={alignment}
-                            type="button"
-                            onClick={() => !isDisabled && handleInputChange('textAlignment', alignment)}
-                            disabled={isDisabled}
-                            className={`px-3 py-2 text-sm rounded-lg border transition-all capitalize ${
-                              isDisabled
-                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                : isSelected
-                                ? 'bg-brand-600 border-brand-600 text-gray-900'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                            }`}
-                          >
-                            {alignment}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    {formData.type === 'carousel' && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Left/Right alignment disabled for carousel
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Icon Alignment */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icon Position
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(['left', 'right'] as const).map((alignment) => {
-                        const isSelected = formData.iconAlignment === alignment
-                        
-                        return (
-                          <button
-                            key={alignment}
-                            type="button"
-                            onClick={() => handleInputChange('iconAlignment', alignment)}
-                            className={`px-3 py-2 text-sm rounded-lg border transition-all capitalize ${
-                              isSelected
-                                ? 'bg-brand-600 border-brand-600 text-gray-900'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                            }`}
-                          >
-                            {alignment}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Geo Targeting */}
-              <GeoSelector
-                selectedCountries={formData.geoCountries || []}
-                onSelect={(countries) => handleInputChange('geoCountries', countries)}
-              />
-
-              {/* Page Targeting */}
-              <PageTargeting
-                pagePaths={formData.pagePaths || []}
-                onChange={(paths) => handleInputChange('pagePaths', paths)}
-              />
-
-              {/* Options */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-900">
-                  Options
-                </label>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Close Button Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div>
-                      <div className="font-medium text-gray-900">Close Button</div>
-                      <div className="text-sm text-gray-500">Allow users to dismiss</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isClosable}
-                        onChange={(e) => handleInputChange('isClosable', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                    </label>
-                  </div>
-
-                  {/* Sticky Position Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div>
-                      <div className="font-medium text-gray-900">Sticky Position</div>
-                      <div className="text-sm text-gray-500">Stays at top when scrolling</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isSticky}
-                        onChange={(e) => handleInputChange('isSticky', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Visibility Toggle */}
+          {/* Options Section */}
+          <SectionCard
+            id="options"
+            title="Options"
+            subtitle="Behavior, scheduling, and display settings"
+            icon={AdjustmentsHorizontalIcon}
+            isOpen={openSections.includes('options')}
+            onToggle={() => toggleSection('options')}
+          >
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Close Button Toggle */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
-                    <div className="font-medium text-gray-900">Visibility</div>
-                    <div className="text-sm text-gray-500">Whether this bar is active</div>
+                    <div className="font-medium text-gray-900">Close Button</div>
+                    <div className="text-sm text-gray-500">Allow users to dismiss</div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.visibility}
-                      onChange={(e) => handleInputChange('visibility', e.target.checked)}
+                      checked={formData.isClosable}
+                      onChange={(e) => handleInputChange('isClosable', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                  </label>
+                </div>
+
+                {/* Sticky Position Toggle */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div>
+                    <div className="font-medium text-gray-900">Sticky Position</div>
+                    <div className="text-sm text-gray-500">Keep bar visible while scrolling</div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isSticky}
+                      onChange={(e) => handleInputChange('isSticky', e.target.checked)}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                   </label>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* CTA Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <CTASection
-              ctaText={formData.ctaText}
-              ctaUrl={formData.ctaUrl}
-              ctaTextColor={formData.ctaTextColor}
-              ctaBgColor={formData.ctaBgColor}
-              ctaBorderRadius={formData.ctaBorderRadius}
-              ctaSize={formData.ctaSize}
-              onChange={(values) => {
-                setFormData(prev => ({
-                  ...prev,
-                  ...values
-                }))
-              }}
-            />
-          </div>
+              {/* Scheduling */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div>
+                  <div className="font-medium text-gray-900">Schedule Announcement</div>
+                  <div className="text-sm text-gray-500">Set when the bar goes live and expires</div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showScheduling}
+                    onChange={(e) => {
+                      setShowScheduling(e.target.checked)
+                      if (!e.target.checked) {
+                        handleInputChange('scheduledStart', '')
+                        handleInputChange('scheduledEnd', '')
+                      }
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                </label>
+              </div>
+
+              {showScheduling && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Start Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      value={formData.scheduledStart || ''}
+                      onChange={(e) => handleInputChange('scheduledStart', e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">End Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      value={formData.scheduledEnd || ''}
+                      onChange={(e) => handleInputChange('scheduledEnd', e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </SectionCard>
+
+          {/* Targeting Section */}
+          <SectionCard
+            id="targeting"
+            title="Targeting"
+            subtitle="Control where your bar appears"
+            icon={GlobeAltIcon}
+            isOpen={openSections.includes('targeting')}
+            onToggle={() => toggleSection('targeting')}
+          >
+            <div className="space-y-6">
+              {/* Page Targeting */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Show on these paths
+                </label>
+                <div className="space-y-2">
+                  {formData.pagePaths.map((path, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={path}
+                        onChange={(e) => handleInputChange('pagePaths', [...formData.pagePaths.slice(0, index), e.target.value, ...formData.pagePaths.slice(index + 1)])}
+                        placeholder={index === 0 ? "Ex. /products or /dashboard" : "/"}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400/60 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('pagePaths', formData.pagePaths.filter((_, i) => i !== index))}
+                        className="p-2 text-gray-400 hover:text-gray-600"
+                      >
+                        <span className="text-xl">×</span>
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('pagePaths', [...formData.pagePaths, ''])}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                  >
+                    Add Path
+                  </button>
+                </div>
+              </div>
+
+              {/* Geo Targeting */}
+              <div className="relative">
+                <GeoSelector
+                  selectedCountries={formData.geoCountries}
+                  onSelect={(countries) => handleInputChange('geoCountries', countries)}
+                />
+              </div>
+            </div>
+          </SectionCard>
 
           {/* Submit Button */}
           <div className="flex justify-center pt-2">
             <button
               type="submit"
+              onClick={handleSubmit}
               disabled={loading}
               className="px-6 py-3 bg-[#FFFFC5] text-black font-medium rounded-lg hover:bg-yellow-200 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Updating...' : 'Update Bar'}
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </main>
 
-      {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )

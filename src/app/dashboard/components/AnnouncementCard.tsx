@@ -63,8 +63,16 @@ export default function AnnouncementCard({
 }: AnnouncementCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
-    title: announcement.title,
-    message: announcement.message,
+    title: (() => {
+      const div = document.createElement('div')
+      div.innerHTML = (announcement.content && announcement.content.title) || ''
+      return div.textContent || div.innerText || ''
+    })(),
+    message: (() => {
+      const div = document.createElement('div')
+      div.innerHTML = (announcement.content && announcement.content.message) || ''
+      return div.textContent || div.innerText || ''
+    })(),
     background: announcement.background,
     background_gradient: announcement.background_gradient,
     text_color: announcement.text_color,
@@ -75,8 +83,8 @@ export default function AnnouncementCard({
   const handleEdit = () => {
     setIsEditing(true)
     setEditData({
-      title: announcement.title,
-      message: announcement.message,
+      title: (announcement.content && announcement.content.title) || '',
+      message: (announcement.content && announcement.content.message) || '',
       background: announcement.background,
       background_gradient: announcement.background_gradient,
       text_color: announcement.text_color,
@@ -86,8 +94,8 @@ export default function AnnouncementCard({
   const handleCancelEdit = () => {
     setIsEditing(false)
     setEditData({
-      title: announcement.title,
-      message: announcement.message,
+      title: (announcement.content && announcement.content.title) || '',
+      message: (announcement.content && announcement.content.message) || '',
       background: announcement.background,
       background_gradient: announcement.background_gradient,
       text_color: announcement.text_color,
@@ -102,8 +110,12 @@ export default function AnnouncementCard({
       const { data, error } = await supabase
         .from('announcements')
         .update({
-          title: editData.title,
-          message: editData.message,
+          content: {
+            title: editData.title,
+            message: editData.message,
+            titleUrl: announcement.content?.titleUrl || '',
+            messageUrl: announcement.content?.messageUrl || ''
+          },
           background: editData.background,
           text_color: editData.text_color,
         })
@@ -118,9 +130,9 @@ export default function AnnouncementCard({
 
       onUpdate(data)
       setIsEditing(false)
-              onSuccess('Bar updated successfully')
+      onSuccess('Bar updated successfully')
     } catch {
-              onError('Failed to update bar')
+      onError('Failed to update bar')
     } finally {
       setLoading(false)
     }
@@ -281,9 +293,9 @@ export default function AnnouncementCard({
                   marginBottom: '2px'
                 }}
               >
-                {announcement.title_url ? (
+                {announcement.content?.titleUrl ? (
                   <a 
-                    href={announcement.title_url} 
+                    href={announcement.content.titleUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
@@ -292,10 +304,18 @@ export default function AnnouncementCard({
                       textDecorationColor: 'rgba(255,255,255,0.5)'
                     }}
                   >
-                    {announcement.title}
+                    {(() => {
+                      const div = document.createElement('div')
+                      div.innerHTML = announcement.content.title
+                      return div.textContent || div.innerText || ''
+                    })()}
                   </a>
                 ) : (
-                  announcement.title
+                  (() => {
+                    const div = document.createElement('div')
+                    div.innerHTML = announcement.content?.title || ''
+                    return div.textContent || div.innerText || ''
+                  })()
                 )}
               </div>
               <div 
@@ -305,9 +325,9 @@ export default function AnnouncementCard({
                   lineHeight: 1.4
                 }}
               >
-                {announcement.message_url ? (
+                {announcement.content?.messageUrl ? (
                   <a 
-                    href={announcement.message_url} 
+                    href={announcement.content.messageUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
@@ -316,10 +336,18 @@ export default function AnnouncementCard({
                       textDecorationColor: 'rgba(255,255,255,0.5)'
                     }}
                   >
-                    {announcement.message}
+                    {(() => {
+                      const div = document.createElement('div')
+                      div.innerHTML = announcement.content.message
+                      return div.textContent || div.innerText || ''
+                    })()}
                   </a>
                 ) : (
-                  announcement.message
+                  (() => {
+                    const div = document.createElement('div')
+                    div.innerHTML = announcement.content?.message || ''
+                    return div.textContent || div.innerText || ''
+                  })()
                 )}
               </div>
             </div>

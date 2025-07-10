@@ -2,57 +2,22 @@
 
 import React, { useState } from 'react'
 import { 
-  Edit3, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  Copy, 
-  AlertTriangle,
-  AlertCircle,
-  Info,
-  CheckCircle,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  ShoppingCart,
-  Lightbulb,
-  Sparkles,
-  BellRing,
-  MessageCircle,
-  Megaphone,
-  Flame,
-  Package,
-  FlaskConical
-} from 'lucide-react'
-import { Announcement } from '../../types/announcement'
+  TrashIcon,
+  ClipboardIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline'
+import { Clock } from 'lucide-react'
+import { Switch } from '@headlessui/react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
+import { Announcement } from '../../types/announcement'
 
 interface AnnouncementCardProps {
   announcement: Announcement
   onUpdate: () => void
 }
 
-const iconMap = {
-  none: null,
-  warning: AlertTriangle,
-  alert: AlertCircle,
-  info: Info,
-  success: CheckCircle,
-  schedule: Clock,
-  shopping: ShoppingCart,
-  lightbulb: Lightbulb,
-  sparkles: Sparkles,
-  bell: BellRing,
-  message: MessageCircle,
-  megaphone: Megaphone,
-  flame: Flame,
-  package: Package,
-  flask: FlaskConical,
-}
-
 export default function AnnouncementCard({ announcement, onUpdate }: AnnouncementCardProps) {
-  const [showPreview, setShowPreview] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -62,8 +27,6 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
   const router = useRouter()
-  
-  const IconComponent = iconMap[announcement.icon as keyof typeof iconMap]
 
   const handleToggleVisibility = async () => {
     setIsUpdating(true)
@@ -112,269 +75,119 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
   }
 
   const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + '...'
-  }
-
-  const getBackgroundStyle = () => {
-    if (announcement.background_gradient) {
-      return { background: announcement.background_gradient }
-    }
-    return { backgroundColor: announcement.background }
+    // First strip HTML tags
+    const div = document.createElement('div')
+    div.innerHTML = text
+    const plainText = div.textContent || div.innerText || ''
+    
+    // Then truncate
+    if (plainText.length <= maxLength) return plainText
+    return plainText.substring(0, maxLength) + '...'
   }
 
   return (
     <>
-      <div className="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <div 
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
-                  style={getBackgroundStyle()}
-                >
-                  {IconComponent && <IconComponent className="w-5 h-5" />}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-lg">{announcement.title}</h3>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    announcement.visibility 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                                      {announcement.visibility ? (
-                    <><Eye className="w-3 h-3 mr-1" /> Active</>
-                  ) : (
-                    <><EyeOff className="w-3 h-3 mr-1" /> Inactive</>
-                  )}
+      <div className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-4">
+        <div className="flex flex-col h-full max-h-[150px]">
+          {/* Header with Title and Status */}
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium text-gray-900 truncate pr-4">
+              {(() => {
+                const div = document.createElement('div')
+                div.innerHTML = (announcement.content && announcement.content.title) || 'Untitled Bar'
+                return div.textContent || div.innerText || 'Untitled Bar'
+              })()}
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs ${announcement.visibility ? 'text-green-600' : 'text-gray-400'}`}>
+                {announcement.visibility ? 'Active' : 'Inactive'}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(announcement.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => router.push(`/dashboard/edit/${announcement.id}`)}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Edit"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleToggleVisibility}
+              <Switch
+                checked={announcement.visibility}
+                onChange={handleToggleVisibility}
                 disabled={isUpdating}
-                className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
-                title={`Make ${announcement.visibility ? 'inactive' : 'active'}`}
+                className={`${
+                  announcement.visibility ? 'bg-green-500' : 'bg-gray-200'
+                } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50`}
               >
-                {announcement.visibility ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="Delete"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                <span
+                  className={`${
+                    announcement.visibility ? 'translate-x-5' : 'translate-x-1'
+                  } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
+                />
+              </Switch>
             </div>
           </div>
 
-          {/* Message */}
-          <p className="text-gray-600 mb-4 leading-relaxed">
-            {truncateText(announcement.message, 120)}
+          {/* Message Preview */}
+          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+            {truncateText((announcement.content && announcement.content.message) || '', 120)}
           </p>
 
-          {/* Slug and copy */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">Slug:</span>
-              <code className="px-2 py-1 bg-gray-100 rounded text-sm font-mono text-gray-700">
+          {/* Bottom Section with Slug and Actions */}
+          <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+            {/* Slug with Copy Button */}
+            <div className="flex items-center gap-2">
+              <code className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
                 {announcement.slug}
               </code>
-              <button
-                onClick={copyEmbedScript}
-                className={`p-1 rounded transition-colors ${
-                  copySuccess 
-                    ? 'text-green-600 bg-green-50' 
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }`}
-                title="Copy embed script"
-              >
-                <Copy className="w-4 h-4" />
-              </button>
-              {copySuccess && (
-                <span className="text-xs text-green-600 font-medium">Copied!</span>
-              )}
-            </div>
-            
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <span>Preview</span>
-              {showPreview ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Preview */}
-        {showPreview && (
-          <div className="border-t border-gray-200 p-6 bg-gray-50">
-            <div className="relative">
-              <div 
-                className="flex items-center p-4 rounded-lg relative"
-                style={{
-                  ...getBackgroundStyle(),
-                  color: announcement.text_color,
-                  minHeight: '40px',
-                  justifyContent: announcement.text_alignment === 'left' ? 'flex-start' : 
-                                 announcement.text_alignment === 'right' ? 'flex-end' : 'center',
-                  paddingRight: announcement.is_closable ? '48px' : '16px',
-                }}
-              >
-                {/* Icon - Left alignment */}
-                {IconComponent && announcement.icon_alignment === 'left' && (
-                  <div 
-                    className="flex-shrink-0 mr-3"
-                    style={{ 
-                      order: '0',
-                      width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
-                      height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
-                    }}
-                  >
-                    <IconComponent style={{ width: '100%', height: '100%' }} />
+              {announcement.scheduledStart && (
+                <div className="group relative">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Scheduled</span>
                   </div>
-                )}
-                
-                {/* Content */}
-                <div 
-                  className="flex-1"
-                  style={{ 
-                    textAlign: announcement.text_alignment || 'center',
-                    order: '1'
-                  }}
-                >
-                  <div 
-                    className="font-semibold mb-1"
-                    style={{ 
-                      fontSize: `${announcement.title_font_size || 16}px`,
-                      lineHeight: 1.3
-                    }}
-                  >
-                    {announcement.title_url ? (
-                      <a 
-                        href={announcement.title_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          color: 'inherit', 
-                          textDecoration: 'underline',
-                          textDecorationColor: 'rgba(255,255,255,0.5)'
-                        }}
-                      >
-                        {announcement.title}
-                      </a>
-                    ) : (
-                      announcement.title
-                    )}
-                  </div>
-                  <div 
-                    className="opacity-90"
-                    style={{ 
-                      fontSize: `${announcement.message_font_size || 14}px`,
-                      lineHeight: 1.4
-                    }}
-                  >
-                    {announcement.message_url ? (
-                      <a 
-                        href={announcement.message_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          color: 'inherit', 
-                          textDecoration: 'underline',
-                          textDecorationColor: 'rgba(255,255,255,0.5)'
-                        }}
-                      >
-                        {announcement.message}
-                      </a>
-                    ) : (
-                      announcement.message
-                    )}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
+                    {`Active from ${new Date(announcement.scheduledStart).toLocaleString()} to ${announcement.scheduledEnd ? new Date(announcement.scheduledEnd).toLocaleString() : 'indefinitely'}`}
                   </div>
                 </div>
-
-                {/* Icon - Right alignment */}
-                {IconComponent && announcement.icon_alignment === 'right' && (
-                  <div 
-                    className="flex-shrink-0 ml-3"
-                    style={{ 
-                      order: '2',
-                      width: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`,
-                      height: `${Math.max(announcement.title_font_size || 16, announcement.message_font_size || 14) + 2}px`
-                    }}
-                  >
-                    <IconComponent style={{ width: '100%', height: '100%' }} />
-                  </div>
+              )}
+              <button
+                onClick={copyEmbedScript}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title={copySuccess ? 'Copied!' : 'Copy embed code'}
+              >
+                {copySuccess ? (
+                  <CheckIcon className="w-4 h-4 text-green-500" />
+                ) : (
+                  <ClipboardIcon className="w-4 h-4" />
                 )}
-
-                {/* Close button */}
-                {announcement.is_closable && (
-                  <button
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lg opacity-70 hover:opacity-100 transition-opacity"
-                    style={{ color: announcement.text_color }}
-                    title="Close announcement"
-                  >
-                    ×
+              </button>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+            <button
+                onClick={() => router.push(`/dashboard/edit/${announcement.id}`)}
+                className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+                Edit
+            </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                title="Delete"
+              >
+                <TrashIcon className="w-4 h-4" />
                   </button>
-                )}
-              </div>
-              <div className="mt-2 text-xs text-gray-500 text-center">
-                Live preview of your bar banner
-              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Delete confirmation modal */}
+      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Delete Bar</h3>
-                <p className="text-sm text-gray-500">This action cannot be undone</p>
-              </div>
-            </div>
-            
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete &quot;{announcement.title}&quot;? This will permanently remove the bar and any embedded instances will stop working.
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Bar</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete &quot;{(() => {
+                const div = document.createElement('div')
+                div.innerHTML = (announcement.content && announcement.content.title) || 'Untitled Bar'
+                return div.textContent || div.innerText || 'Untitled Bar'
+              })()}&quot;? This will permanently remove the bar and any embedded instances will stop working.
             </p>
-            
-            <div className="flex space-x-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
