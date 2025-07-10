@@ -22,10 +22,10 @@ export default function SectionCard({
   onToggle 
 }: SectionCardProps) {
   return (
-    <div className="mb-4">
+    <div className="mb-4 bg-white rounded-lg shadow-sm">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200"
         data-section-id={id}
       >
         <div className="flex items-center gap-3">
@@ -47,7 +47,7 @@ export default function SectionCard({
         </svg>
       </button>
       {isOpen && (
-        <div className="px-4 py-3 border-t border-gray-200">
+        <div className="px-4 py-3 border-t border-gray-100 bg-white">
           {children}
         </div>
       )}
