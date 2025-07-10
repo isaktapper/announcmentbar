@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Plus, Sparkles, Users, Calendar, User as UserIcon, Wrench, Zap } from 'lucide-react'
+import { Plus, Sparkles, BarChart2, CheckCircle, MinusCircle, User as UserIcon, Wrench, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { ScribbleArrow, ScribbleHeart, ScribbleWave } from '../../components/scribbles/ScribbleElements'
@@ -21,6 +21,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const [isLoading, setIsLoading] = useState(false)
   const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
   const [displayName, setDisplayName] = useState<string>('')
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const router = useRouter()
   const { error } = useToast()
   
@@ -87,6 +88,12 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
     private: announcements.filter(a => a.visibility === false).length,
   }
 
+  const filteredAnnouncements = announcements.filter(announcement => {
+    if (activeFilter === 'active') return announcement.visibility === true;
+    if (activeFilter === 'inactive') return announcement.visibility === false;
+    return true;
+  });
+
   const hasActiveBar = stats.public > 0
   const canCreateNewBar = userPlan === 'unlimited' || !hasActiveBar
 
@@ -150,15 +157,15 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
             
             {/* Create button */}
             <div className="space-y-4">
-              <div className="relative inline-block">
+            <div className="relative inline-block">
                 <div className="flex items-center gap-3">
-                  <button
+              <button
                     onClick={handleCreateClick}
                     className={`inline-flex items-center px-8 py-4 bg-[#FFFFC5] text-black font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${!canCreateNewBar ? 'opacity-50 cursor-not-allowed hover:bg-[#FFFFC5] hover:translate-y-0 hover:shadow-lg' : 'hover:bg-yellow-200'}`}
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Create New Bar
-                  </button>
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Create New Bar
+              </button>
                   <button
                     onClick={() => window.open('/installation', '_blank')}
                     className="inline-flex items-center px-4 py-4 text-gray-600 hover:text-gray-900 font-medium rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all"
@@ -167,7 +174,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
                     Installation Guide
                   </button>
                 </div>
-                <ScribbleArrow className="top-0 -right-8 w-6 h-6 text-brand-400 transform rotate-45" />
+              <ScribbleArrow className="top-0 -right-8 w-6 h-6 text-brand-400 transform rotate-45" />
               </div>
 
               {/* Free Plan Limit Info */}
@@ -204,39 +211,48 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-          <div className="relative bg-white rounded-xl p-6 shadow-sm border border-gray-200 group hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => setActiveFilter('all')}
+            className={`relative bg-white rounded-xl p-6 shadow-sm border ${activeFilter === 'all' ? 'border-brand-600 ring-1 ring-brand-600' : 'border-gray-200'} group hover:shadow-md transition-all cursor-pointer`}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total</p>
                 <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
               </div>
               <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-brand-600" />
+                <BarChart2 className="w-6 h-6 text-brand-600" />
               </div>
             </div>
             <ScribbleWave className="bottom-2 left-4 w-8 h-2 text-brand-200 group-hover:text-brand-300 transition-colors" />
           </div>
           
-          <div className="relative bg-white rounded-xl p-6 shadow-sm border border-gray-200 group hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => setActiveFilter('active')}
+            className={`relative bg-white rounded-xl p-6 shadow-sm border ${activeFilter === 'active' ? 'border-green-600 ring-1 ring-green-600' : 'border-gray-200'} group hover:shadow-md transition-all cursor-pointer`}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active</p>
                 <p className="text-3xl font-bold text-green-600">{stats.public}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
+                <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
             </div>
           </div>
           
-          <div className="relative bg-white rounded-xl p-6 shadow-sm border border-gray-200 group hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => setActiveFilter('inactive')}
+            className={`relative bg-white rounded-xl p-6 shadow-sm border ${activeFilter === 'inactive' ? 'border-gray-600 ring-1 ring-gray-600' : 'border-gray-200'} group hover:shadow-md transition-all cursor-pointer`}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Inactive</p>
                 <p className="text-3xl font-bold text-gray-600">{stats.private}</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-gray-600" />
+                <MinusCircle className="w-6 h-6 text-gray-600" />
               </div>
             </div>
           </div>
@@ -269,8 +285,8 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
               </button>
             </div>
           ) : (
-            <div className="grid gap-6">
-              {announcements.map((announcement) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredAnnouncements.map((announcement) => (
                 <AnnouncementCard
                   key={announcement.id}
                   announcement={announcement}

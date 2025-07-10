@@ -1,125 +1,118 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ChevronDown, Crown } from 'lucide-react'
-import PageTargeting from './PageTargeting'
-import GeoSelector from './GeoSelector'
-import ScheduledVisibility from './ScheduledVisibility'
-import { getUserPlan } from '@/lib/user-utils'
-import { createClient } from '@/lib/supabase-client'
+import { useState } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import { countries } from 'countries-list'
 
 interface TargetingGroupProps {
   pagePaths: string[]
   geoCountries: string[]
-  scheduledStart: string | null
-  scheduledEnd: string | null
   onPagePathsChange: (paths: string[]) => void
   onGeoCountriesChange: (countries: string[]) => void
-  onScheduledTimeChange: (startTime: string | null, endTime: string | null) => void
 }
 
 export default function TargetingGroup({
   pagePaths,
   geoCountries,
-  scheduledStart,
-  scheduledEnd,
   onPagePathsChange,
   onGeoCountriesChange,
-  onScheduledTimeChange
 }: TargetingGroupProps) {
-  const [expandedSection, setExpandedSection] = useState<string | null>(null)
-  const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
+  const [newPath, setNewPath] = useState('')
 
-  useEffect(() => {
-    const fetchUserPlan = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          const plan = await getUserPlan(user.id)
-          setUserPlan(plan)
-        }
-      } catch (error) {
-        console.warn('Error fetching user plan:', error)
-      }
+  // Convert countries object to array of options
+  const countryOptions = Object.entries(countries).map(([code, data]) => ({
+    code,
+    name: data.name,
+  }))
+
+  const handleAddPath = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPath.trim()) {
+      onPagePathsChange([...pagePaths, newPath.trim()])
+      setNewPath('')
     }
-
-    fetchUserPlan()
-  }, [])
-
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section)
   }
 
-  const sections = [
-    {
-      id: 'page',
-      title: 'Page Targeting',
-      isPremium: true,
-      component: (
-        <PageTargeting
-          pagePaths={pagePaths}
-          onChange={onPagePathsChange}
-        />
-      )
-    },
-    {
-      id: 'geo',
-      title: 'Geo Targeting',
-      isPremium: true,
-      component: (
-        <GeoSelector
-          selectedCountries={geoCountries}
-          onSelect={onGeoCountriesChange}
-        />
-      )
-    },
-    {
-      id: 'schedule',
-      title: 'Scheduled Visibility',
-      isPremium: true,
-      component: (
-        <ScheduledVisibility
-          startTime={scheduledStart}
-          endTime={scheduledEnd}
-          onChange={onScheduledTimeChange}
-        />
-      )
-    }
-  ]
+  const handleRemovePath = (pathToRemove: string) => {
+    onPagePathsChange(pagePaths.filter(path => path !== pathToRemove))
+  }
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+    onGeoCountriesChange(selectedOptions)
+  }
 
   return (
-    <div className="space-y-4">
-      {sections.map(({ id, title, isPremium, component }) => (
-        <div key={id} className="border border-gray-200 rounded-lg">
+    <div className="space-y-6">
+      {/* Page Paths */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Page Paths
+        </label>
+        <p className="text-sm text-gray-500 mb-4">
+          Show this bar only on specific pages. Leave empty to show on all pages.
+        </p>
+
+        <form onSubmit={handleAddPath} className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newPath}
+            onChange={(e) => setNewPath(e.target.value)}
+            placeholder="/example-path"
+            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg"
+          />
           <button
-            type="button"
-            onClick={() => toggleSection(id)}
-            className="w-full px-4 py-3 bg-white flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+            type="submit"
+            disabled={!newPath.trim()}
+            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="text-sm font-medium text-gray-900">{title}</span>
-            <div className="flex items-center gap-2">
-              {isPremium && userPlan === 'free' && (
-                <span className="inline-flex items-center bg-yellow-100 text-yellow-800 text-xs px-2.5 py-1 rounded-full">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Premium Feature
-                </span>
-              )}
-              <ChevronDown
-                className={`w-5 h-5 text-gray-500 transition-transform ${
-                  expandedSection === id ? 'transform rotate-180' : ''
-                }`}
-              />
-            </div>
+            Add Path
           </button>
-          {expandedSection === id && (
-            <div className="px-4 py-3 border-t border-gray-200 bg-white overflow-visible">
-              {component}
-            </div>
-          )}
-        </div>
-      ))}
+        </form>
+
+        {pagePaths.length > 0 && (
+          <div className="space-y-2">
+            {pagePaths.map((path) => (
+              <div
+                key={path}
+                className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg"
+              >
+                <span className="text-sm text-gray-700">{path}</span>
+                <button
+                  onClick={() => handleRemovePath(path)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Geo Targeting */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Country Targeting
+        </label>
+        <p className="text-sm text-gray-500 mb-4">
+          Show this bar only to visitors from specific countries. Leave empty to show to all countries.
+        </p>
+
+        <select
+          multiple
+          value={geoCountries}
+          onChange={handleCountryChange}
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg"
+          size={5}
+        >
+          {countryOptions.map(({ code, name }) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 } 

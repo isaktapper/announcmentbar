@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeftIcon,
@@ -13,23 +13,15 @@ import {
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { AnnouncementFormData, Template, AnnouncementType, AnnouncementContentItem, FontFamily, CarouselItem } from '@/types/announcement'
+import { AnnouncementFormData, Template, CarouselItem } from '@/types/announcement'
 import IconSelector from '../../create/components/IconSelector'
 import FontSelector from '../../create/components/FontSelector'
 import TemplatePicker from '../../create/components/TemplatePicker'
 import LivePreview from '../../create/components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from '../../create/components/FormattingToolbar'
-import GeoSelector from '../../create/components/GeoSelector'
-import PageTargeting from '../../create/components/PageTargeting'
 import SectionCard from '../../create/components/SectionCard'
-
-interface Section {
-  id: string
-  title: string
-  subtitle: string
-  icon: React.ElementType
-}
+import GeoSelector from '../../create/components/GeoSelector'
 
 export default function EditAnnouncementPage() {
   const router = useRouter()
@@ -40,38 +32,6 @@ export default function EditAnnouncementPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   
   // Section visibility state
-  const [sections, setSections] = useState<Section[]>([
-    { 
-      id: 'general', 
-      title: 'General', 
-      subtitle: 'Basic bar settings and template',
-      icon: Squares2X2Icon 
-    },
-    { 
-      id: 'content', 
-      title: 'Content', 
-      subtitle: 'Message and formatting',
-      icon: DocumentTextIcon 
-    },
-    { 
-      id: 'appearance', 
-      title: 'Appearance', 
-      subtitle: 'Colors, sizing, and positioning',
-      icon: PaintBrushIcon 
-    },
-    { 
-      id: 'options', 
-      title: 'Options', 
-      subtitle: 'Behavior, scheduling, and display settings',
-      icon: AdjustmentsHorizontalIcon 
-    },
-    { 
-      id: 'targeting', 
-      title: 'Targeting', 
-      subtitle: 'Control where your bar appears',
-      icon: GlobeAltIcon 
-    },
-  ])
   const [openSections, setOpenSections] = useState<string[]>(['general'])
 
   const toggleSection = (sectionId: string) => {
@@ -157,7 +117,7 @@ export default function EditAnnouncementPage() {
         }
 
         // Parse content and handle different formats
-        let parsedContent = data.content || null
+        const parsedContent = data.content || null
 
         // Set form data based on content format
         let newFormData
@@ -237,7 +197,7 @@ export default function EditAnnouncementPage() {
     }
   }, [params.id, router])
 
-  const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: string | boolean | number | AnnouncementType | string[]) => {
+  const handleInputChange = (field: keyof AnnouncementFormData, value: string | boolean | number | string[]) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value }
       
@@ -259,14 +219,7 @@ export default function EditAnnouncementPage() {
     if (selectedTemplate) {
       setSelectedTemplate(null)
     }
-  }, [selectedTemplate])
-
-  const handleTypeSettingsChange = useCallback((key: string, value: unknown) => {
-    setFormData(prev => ({
-      ...prev,
-      typeSettings: { ...prev.typeSettings, [key]: value }
-    }))
-  }, [])
+  }
 
   const handleCarouselItemChange = (index: number, field: keyof CarouselItem, value: string) => {
     setFormData(prev => {
@@ -1041,8 +994,8 @@ export default function EditAnnouncementPage() {
               {/* Geo Targeting */}
               <div className="relative">
                 <GeoSelector
-                  selectedCountries={formData.geoCountries}
-                  onSelect={(countries) => handleInputChange('geoCountries', countries)}
+                  initialCountries={formData.geoCountries}
+                  onCountriesChange={(countries) => handleInputChange('geoCountries', countries)}
                 />
               </div>
             </div>

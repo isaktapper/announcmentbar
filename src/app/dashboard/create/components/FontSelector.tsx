@@ -12,17 +12,12 @@ interface FontSelectorProps {
 }
 
 // Font definitions with Google Fonts
-const FONTS: { [key in FontFamily]: { name: string; cssName: string; isPremium: boolean; fallback: string } } = {
+const fontOptions = {
   'Work Sans': { name: 'Work Sans', cssName: 'Work Sans', isPremium: false, fallback: 'sans-serif' },
   'Inter': { name: 'Inter', cssName: 'Inter', isPremium: true, fallback: 'sans-serif' },
-  'Lato': { name: 'Lato', cssName: 'Lato', isPremium: true, fallback: 'sans-serif' },
   'Roboto': { name: 'Roboto', cssName: 'Roboto', isPremium: true, fallback: 'sans-serif' },
-  'Rubik': { name: 'Rubik', cssName: 'Rubik', isPremium: true, fallback: 'sans-serif' },
-  'Poppins': { name: 'Poppins', cssName: 'Poppins', isPremium: true, fallback: 'sans-serif' },
-  'Space Grotesk': { name: 'Space Grotesk', cssName: 'Space Grotesk', isPremium: true, fallback: 'sans-serif' },
-  'DM Sans': { name: 'DM Sans', cssName: 'DM Sans', isPremium: true, fallback: 'sans-serif' },
-  'Playfair Display': { name: 'Playfair Display', cssName: 'Playfair Display', isPremium: true, fallback: 'serif' },
-  'Bricolage Grotesque': { name: 'Bricolage Grotesque', cssName: 'Bricolage Grotesque', isPremium: true, fallback: 'sans-serif' },
+  'Open Sans': { name: 'Open Sans', cssName: 'Open Sans', isPremium: true, fallback: 'sans-serif' },
+  'System UI': { name: 'System UI', cssName: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial', isPremium: false, fallback: 'sans-serif' }
 }
 
 export default function FontSelector({ selectedFont, onSelect }: FontSelectorProps) {
@@ -51,7 +46,7 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
   }, [])
 
   const handleFontSelect = (font: FontFamily) => {
-    const fontConfig = FONTS[font]
+    const fontConfig = fontOptions[font]
     
     // Check if font is premium and user is on free plan
     if (fontConfig.isPremium && userPlan === 'free') {
@@ -69,7 +64,7 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
   }
 
   const getFontOptionClass = (font: FontFamily) => {
-    const fontConfig = FONTS[font]
+    const fontConfig = fontOptions[font]
     const isSelected = selectedFont === font
     const isDisabled = fontConfig.isPremium && userPlan === 'free'
     
@@ -83,7 +78,7 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
   }
 
   const renderFontOption = (font: FontFamily) => {
-    const fontConfig = FONTS[font]
+    const fontConfig = fontOptions[font]
     const isSelected = selectedFont === font
     const isDisabled = fontConfig.isPremium && userPlan === 'free'
 
@@ -133,10 +128,10 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={getDropdownButtonClass()}
           style={{ 
-            fontFamily: `'${FONTS[selectedFont].cssName}', ${FONTS[selectedFont].fallback}`
+            fontFamily: `'${fontOptions[selectedFont].cssName}', ${fontOptions[selectedFont].fallback}`
           }}
         >
-          <span>{FONTS[selectedFont].name}</span>
+          <span>{fontOptions[selectedFont].name}</span>
           <svg 
             className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
             fill="none" 
@@ -165,7 +160,7 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
             
             {/* Font Options */}
             <div className="py-1">
-              {Object.keys(FONTS).map(font => renderFontOption(font as FontFamily))}
+              {Object.keys(fontOptions).map(font => renderFontOption(font as FontFamily))}
             </div>
           </div>
         )}

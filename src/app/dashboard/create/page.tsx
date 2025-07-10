@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   ArrowLeftIcon,
@@ -13,64 +13,21 @@ import {
 import { createClient } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { AnnouncementFormData, Template, AnnouncementType, AnnouncementContentItem, FontFamily, CarouselItem } from '@/types/announcement'
+import { AnnouncementFormData, Template, CarouselItem } from '@/types/announcement'
 import IconSelector from './components/IconSelector'
 import FontSelector from './components/FontSelector'
 import TemplatePicker from './components/TemplatePicker'
 import LivePreview from './components/LivePreview'
 import ColorPicker from '@/components/ColorPicker'
 import FormattingToolbar from './components/FormattingToolbar'
-import TargetingGroup from './components/TargetingGroup'
-import { getUserPlan } from '@/lib/user-utils'
 import SectionCard from './components/SectionCard'
 import GeoSelector from './components/GeoSelector'
-
-interface Section {
-  id: string
-  title: string
-  subtitle: string
-  icon: React.ElementType
-}
 
 export default function CreateAnnouncementPage() {
   const router = useRouter()
   const { toasts, success, error, removeToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  
-  // Section visibility state
-  const [sections, setSections] = useState<Section[]>([
-    { 
-      id: 'general', 
-      title: 'General', 
-      subtitle: 'Basic bar settings and template',
-      icon: Squares2X2Icon 
-    },
-    { 
-      id: 'content', 
-      title: 'Content', 
-      subtitle: 'Message and formatting',
-      icon: DocumentTextIcon 
-    },
-    { 
-      id: 'appearance', 
-      title: 'Appearance', 
-      subtitle: 'Colors, sizing, and positioning',
-      icon: PaintBrushIcon 
-    },
-    { 
-      id: 'options', 
-      title: 'Options', 
-      subtitle: 'Behavior, scheduling, and display settings',
-      icon: AdjustmentsHorizontalIcon 
-    },
-    { 
-      id: 'targeting', 
-      title: 'Targeting', 
-      subtitle: 'Control where your bar appears',
-      icon: GlobeAltIcon 
-    },
-  ])
   const [openSections, setOpenSections] = useState<string[]>(['general'])
 
   const toggleSection = (sectionId: string) => {
@@ -168,26 +125,6 @@ export default function CreateAnnouncementPage() {
       [field]: value
     }))
   }
-
-  const handleTypeSettingsChange = useCallback((key: string, value: unknown) => {
-    setFormData(prev => ({
-      ...prev,
-      typeSettings: { ...prev.typeSettings, [key]: value }
-    }))
-  }, [])
-
-  const updateCarouselItem = useCallback((index: number, field: keyof AnnouncementContentItem, value: string) => {
-    setFormData(prev => {
-      const newItems = [...(prev.carouselItems || [])]
-      // Säkerställ att alla fält behålls genom att merge med defaults
-      const currentItem = newItems[index] || { title: '', message: '' }
-      newItems[index] = {
-        ...currentItem,
-        [field]: value
-      }
-      return { ...prev, carouselItems: newItems }
-    })
-  }, [])
 
   // Handle carousel item changes
   const handleCarouselItemChange = (index: number, field: keyof CarouselItem, value: string) => {
@@ -891,8 +828,8 @@ export default function CreateAnnouncementPage() {
               {/* Country Targeting */}
               <div className="relative">
                 <GeoSelector
-                  selectedCountries={formData.geoCountries}
-                  onSelect={(countries) => handleInputChange('geoCountries', countries)}
+                  initialCountries={formData.geoCountries}
+                  onCountriesChange={(countries) => handleInputChange('geoCountries', countries)}
                 />
               </div>
             </div>
