@@ -418,6 +418,8 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
+    'line-height: ' + (announcement.barHeight || 60) + 'px',
+    'overflow: hidden',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
