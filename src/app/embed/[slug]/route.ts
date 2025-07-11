@@ -198,6 +198,7 @@ export async function GET(
       textColor: announcement.text_color,
       fontFamily: announcement.font_family,
       isSticky: announcement.is_sticky,
+      isClosable: announcement.is_closable,
       barHeight: announcement.bar_height,
       iconAlignment: announcement.icon_alignment,
       carouselItems:
@@ -349,12 +350,12 @@ export async function GET(
             class="announcement-carousel-item" 
             data-index="\${index}"
             style="
-              opacity: \${index === 0 ? '1' : '0'};
-              position: \${index === 0 ? 'relative' : 'absolute'};
+              position: absolute;
               top: 0;
               left: 0;
               width: 100%;
-              transition: opacity 0.3s ease-in-out;
+              transition: transform 0.4s ease-in-out;
+              transform: translateX(\${index === 0 ? '0' : '100%'});
               \${item.background ? \`background-color: \${item.background};\` : ''}
               \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
               \${item.textColor ? \`color: \${item.textColor};\` : ''}
@@ -453,17 +454,16 @@ export async function GET(
       const items = announcementBar.querySelectorAll('.announcement-carousel-item');
       const indicators = announcementBar.querySelectorAll('.announcement-carousel-indicator');
       
-      // Hide current item
-      items[currentIndex].style.opacity = '0';
-      items[currentIndex].style.position = 'absolute';
+      // Slide out current item to left
+      items[currentIndex].style.transform = 'translateX(-100%)';
+ 
       if(indicators.length){indicators[currentIndex].style.opacity='0.3';}
-      
+       
       // Update index
       currentIndex = (currentIndex + 1) % items.length;
       
       // Show next item
-      items[currentIndex].style.opacity = '1';
-      items[currentIndex].style.position = 'relative';
+      items[currentIndex].style.transform = 'translateX(0)';
       if(indicators.length){indicators[currentIndex].style.opacity='1';}
     }
 
