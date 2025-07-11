@@ -214,6 +214,24 @@ export async function GET(
   
   ${pageTargetingScript}
 
+  // Helper functions for CTA
+  function getButtonSizeClasses(size){
+    switch(size){
+      case 'small': return 'text-xs px-2.5 py-1.5';
+      case 'medium': return 'text-sm px-3.5 py-2';
+      case 'large': return 'text-base px-4 py-2.5';
+      default: return 'text-sm px-3.5 py-2';
+    }
+  }
+  function getBorderRadiusValue(style){
+    switch(style){
+      case 'sharp': return '0px';
+      case 'soft': return '6px';
+      case 'pill': return '9999px';
+      default: return '6px';
+    }
+  }
+
   // Check if announcement bar already exists
   if (document.getElementById('announcement-bar-' + slug)) {
     return;
@@ -317,7 +335,7 @@ export async function GET(
       if (!announcement.cta_enabled || !announcement.cta_text) return ''
 
       const buttonClasses = \`
-        ${getButtonSizeClasses(announcement.cta_size)}
+        \${getButtonSizeClasses(announcement.cta_size)}
         inline-flex items-center justify-center
         transition-colors duration-200
         hover:opacity-90
