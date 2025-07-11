@@ -332,7 +332,7 @@ export async function GET(
     }
 
     function renderCTAButton(announcement) {
-      if (!announcement.cta_enabled || !announcement.cta_text) return ''
+      if (!announcement.cta_text) return ''
 
       const buttonClasses = \`
         \${getButtonSizeClasses(announcement.cta_size)}
@@ -342,18 +342,7 @@ export async function GET(
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
       \`.trim();
 
-      return \`
-        <button 
-          class="\${buttonClasses}"
-          style="
-            background-color: \${announcement.cta_background_color};
-            color: \${announcement.cta_text_color};
-            border-radius: \${getBorderRadiusValue(announcement.cta_border_radius)};
-          "
-        >
-          \${announcement.cta_text}
-        </button>
-      \`
+      return '<a href="' + (announcement.cta_url || '#') + '" target="_blank" rel="noopener noreferrer" class="' + buttonClasses + '" style="background-color:' + announcement.cta_background_color + ';color:' + announcement.cta_text_color + ';border-radius:' + getBorderRadiusValue(announcement.cta_border_radius) + ';">' + announcement.cta_text + '</a>';
     }
 
     function renderIcon() {
