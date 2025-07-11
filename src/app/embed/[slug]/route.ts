@@ -327,7 +327,12 @@ export async function GET(
 
     function getContentWrapperClasses() {
       const baseClasses = 'flex';
-      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : (textAlignment === 'right' ? 'flex-row-reverse items-center gap-2' : 'flex-row items-center gap-2');
+      const directionClasses =
+        textAlignment === 'left'
+          ? 'flex-row items-center gap-2'
+          : textAlignment === 'right'
+          ? 'flex-row-reverse items-center gap-2'
+          : 'flex-col items-center gap-1';
       return \`\${baseClasses} \${directionClasses}\`;
     }
 
@@ -412,7 +417,7 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
-    'padding: 0',
+    'padding: 0 8px',
     'box-sizing: border-box',
     'z-index: 999999',
     'font-family: ' + getFontFamily(announcement.fontFamily),
