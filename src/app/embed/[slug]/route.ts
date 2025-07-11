@@ -326,7 +326,9 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      return 'flex flex-row items-center gap-3';
+      const baseClasses = 'flex';
+      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : (textAlignment === 'right' ? 'flex-row-reverse items-center gap-2' : 'flex-row items-center gap-2');
+      return \`\${baseClasses} \${directionClasses}\`;
     }
 
     function renderCTAButton(announcement) {
