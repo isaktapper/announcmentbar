@@ -59,19 +59,27 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
+  console.log('Route execution started');
+  console.log('Slug used:', params.slug);
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const { data: announcement } = await supabase
+    const { data: announcement, error } = await supabase
       .from('announcements')
       .select('*')
       .eq('slug', params.slug)
       .single()
 
+    console.log('Announcement data:', announcement);
+    if (error) {
+      console.error('Error fetching announcement:', error);
+    }
+
     if (!announcement) {
+      console.log('No announcement found for slug:', params.slug);
       return new NextResponse('Not found', { status: 404 })
     }
 
@@ -464,4 +472,5 @@ export async function GET(
       },
     })
   }
+  console.log('Route execution ended');
 } 
