@@ -412,27 +412,27 @@ export async function GET(
     'display: flex',
     'justify-content: center',
     'align-items: center',
-    `height: ${announcement.barHeight || 60}px`,
+    'height: ' + (announcement.barHeight || 60) + 'px',
     'padding: 0 16px',
     'box-sizing: border-box',
     'z-index: 999999',
-    `font-family: ${getFontFamily(announcement.fontFamily)}`,
+    'font-family: ' + getFontFamily(announcement.fontFamily),
     announcement.useGradient && announcement.backgroundGradient
-      ? `background: linear-gradient(135deg, ${announcement.background}, ${announcement.backgroundGradient})`
-      : `background: ${announcement.background}`,
-    `color: ${announcement.textColor}`,
+      ? 'background: linear-gradient(135deg, ' + announcement.background + ', ' + announcement.backgroundGradient + ')'
+      : 'background: ' + announcement.background,
+    'color: ' + announcement.textColor,
     announcement.isSticky ? 'position: fixed; top: 0; left: 0;' : 'position: relative;',
   ].filter(Boolean).join(';');
 
   announcementBar.setAttribute('style', baseStyles);
 
   // Expose bar height as CSS var for host page convenience
-  document.documentElement.style.setProperty('--announcement-bar-height', `${announcement.barHeight || 60}px`);
+  document.documentElement.style.setProperty('--announcement-bar-height', (announcement.barHeight || 60) + 'px');
 
   // If sticky, push body down so it doesn't overlap
   if (announcement.isSticky) {
     const currentMarginTop = parseFloat(getComputedStyle(document.body).marginTop) || 0;
-    document.body.style.marginTop = `${currentMarginTop + (announcement.barHeight || 60)}px`;
+    document.body.style.marginTop = (currentMarginTop + (announcement.barHeight || 60)) + 'px';
   }
 
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
@@ -489,6 +489,7 @@ export async function GET(
     startRotation();
   }
 })();`
+;
 
   // Debug: output first 300 chars of generated JS
   console.log('📜 jsCode preview:', jsCode.slice(0, 300));
