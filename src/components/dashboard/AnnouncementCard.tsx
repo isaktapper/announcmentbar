@@ -82,13 +82,14 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
     }
   }
 
-  const handleCopySlug = async (slug: string) => {
+  const handleCopyEmbedScript = async () => {
+    const embedScript = `<script src="${window.location.origin}/embed/${announcement.slug}.js" defer></script>`;
     try {
-      await navigator.clipboard.writeText(slug)
-      setCopySuccess(true)
-      setTimeout(() => setCopySuccess(false), 2000)
+      await navigator.clipboard.writeText(embedScript);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
     } catch (error) {
-      console.error('Failed to copy slug:', error)
+      console.error('Failed to copy embed script:', error);
     }
   }
 
@@ -139,13 +140,16 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
               </span>
 
               {/* Slug with Copy Button */}
-              <code className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded flex items-center gap-1">
-                {announcement.slug}
+              <code className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${copySuccess ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-500'}`}
+                title={copySuccess ? 'Copied!' : 'Copy embed script'}
+              >
+                {copySuccess ? 'Copied!' : announcement.slug}
                 <button
-                  onClick={() => handleCopySlug(announcement.slug)}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={handleCopyEmbedScript}
+                  className={`text-gray-400 hover:text-gray-600 ${copySuccess ? 'text-green-500' : ''}`}
+                  title={copySuccess ? 'Copied!' : 'Copy embed script'}
                 >
-                  <DocumentDuplicateIcon className="w-3 h-3" />
+                  {copySuccess ? <CheckIcon className="w-3 h-3" /> : <DocumentDuplicateIcon className="w-3 h-3" />}
                 </button>
               </code>
             </div>

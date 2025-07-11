@@ -1,14 +1,15 @@
 LAUNCH CHECKLIST
 
 Hög
-- Carousel, fixa (NÄSTAN KLAR)
+- Carousel, fixa (KLAR)
 - Fixa CTA, ta bort URL (KLAR)
 - Integrera Stripe (PÅGÅENDE)
 - Fixa Cron
+- Fixa email sender
 
 Mellan
 - Sätt upp supportmejl
-- Det syns inte på announcment cards om ett card är scheduled. Om ett card är scheduled ska statusen sättas som "Inaktiv" som default och det ska stå på kortet i dashboarden att det är schemalagt, med en tooltip där det står mellan vilka datum och tider, samt att baren kommer aktiveras automatiskt.
+- Det syns inte på announcment cards om ett card är scheduled. (KLAR)
 
 
 Låg
