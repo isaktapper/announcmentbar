@@ -326,14 +326,9 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      const baseClasses = 'flex';
-      const directionClasses =
-        textAlignment === 'left'
-          ? 'flex-row items-center gap-2'
-          : textAlignment === 'right'
-          ? 'flex-row-reverse items-center gap-2'
-          : 'flex-col items-center gap-1';
-      return \`\${baseClasses} \${directionClasses}\`;
+      var baseClasses = 'flex items-center gap-2';
+      var justify = textAlignment === 'center' ? 'justify-center' : (textAlignment === 'right' ? 'justify-end flex-row-reverse' : 'justify-start');
+      return baseClasses + ' ' + justify;
     }
 
     function renderCTAButton(announcement) {
@@ -396,10 +391,12 @@ export async function GET(
 
       return '<div class="' + getContentWrapperClasses() + '">' +
              leftIcon +
+             '<div style="display:flex;flex-direction:column;align-items:' + (textAlignment==='right'?'flex-end':textAlignment==='center'?'center':'flex-start') + ';gap:2px;">' +
              (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
              '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
-             rightIcon +
+             '</div>' +
              renderCTAButton(announcement) +
+             rightIcon +
              '</div>';
     }
 
@@ -417,7 +414,7 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
-    'padding: 0 8px',
+    'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
     'font-family: ' + getFontFamily(announcement.fontFamily),
@@ -433,7 +430,10 @@ export async function GET(
   // Expose bar height as CSS var for host page convenience
   document.documentElement.style.setProperty('--announcement-bar-height', (announcement.barHeight || 60) + 'px');
 
-  // If sticky, push body down so it doesn't overlap
+  // Remove default margins so bar touches viewport edges
+  document.body.style.marginLeft = '0';
+  document.body.style.marginRight = '0';
+
   if (announcement.isSticky) {
     const currentMarginTop = parseFloat(getComputedStyle(document.body).marginTop) || 0;
     document.body.style.marginTop = (currentMarginTop + (announcement.barHeight || 60)) + 'px';
