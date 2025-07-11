@@ -59,8 +59,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  console.log('Route execution started');
-  console.log('Slug used:', params.slug);
+  console.log("🔍 Received embed request for slug:", params.slug);
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,12 +70,10 @@ export async function GET(
       .from('announcements')
       .select('*')
       .eq('slug', params.slug)
+      .eq('visibility', true)
       .single()
 
-    console.log('Announcement data:', announcement);
-    if (error) {
-      console.error('Error fetching announcement:', error);
-    }
+    console.log("📦 Supabase result:", { announcement, error });
 
     if (!announcement) {
       console.log('No announcement found for slug:', params.slug);
