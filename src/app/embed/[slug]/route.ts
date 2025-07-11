@@ -411,7 +411,7 @@ export async function GET(
     'display: flex',
     'justify-content: center',
     'align-items: center',
-    // dynamic height
+    // no fixed height, allow content to define height
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
@@ -425,14 +425,13 @@ export async function GET(
 
   announcementBar.setAttribute('style', baseStyles);
 
-  // Expose bar height as CSS var for host page convenience
-  // Recompute height now that content is inserted
-  const barHeightComputed = announcementBar.offsetHeight;
-  document.documentElement.style.setProperty('--announcement-bar-height', barHeightComputed + 'px');
+  // After inserting, measure actual height and expose as CSS var
+  const measuredHeight = announcementBar.offsetHeight;
+  document.documentElement.style.setProperty('--announcement-bar-height', measuredHeight + 'px');
+
+  // If sticky, push body down so it doesn't overlap
   if (announcement.isSticky) {
-    const currentMarginTop = parseFloat(getComputedStyle(document.body).marginTop) || 0;
-    const diff = barHeightComputed - (announcement.barHeight || 0);
-    if (diff !== 0) document.body.style.marginTop = (currentMarginTop + diff) + 'px';
+    document.body.style.marginTop = measuredHeight + 'px';
   }
 
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
