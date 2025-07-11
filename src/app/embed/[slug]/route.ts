@@ -187,10 +187,19 @@ export async function GET(
       ? ICON_SVG_MAP[announcement.icon as keyof typeof ICON_SVG_MAP] || ''
       : ''
 
-    // Generate the JavaScript code
+    // Prepare announcement data for the embed script so that title / message are always present
+    const serializedAnnouncement = {
+      ...announcement,
+      // Ensure top-level title & message for single bars
+      title: (announcement as any).title ?? (announcement.content?.title ?? ''),
+      message: (announcement as any).message ?? (announcement.content?.message ?? ''),
+      // Ensure carouselItems array is always present / compatible
+      carouselItems: (announcement as any).carouselItems ?? (announcement.content?.items ?? []),
+    }
+
     const jsCode = `
 (function() {
-  const announcement = ${JSON.stringify(announcement)};
+  const announcement = ${JSON.stringify(serializedAnnouncement)};
   const slug = "${slug}";
   
   ${pageTargetingScript}
