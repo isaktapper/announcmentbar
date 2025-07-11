@@ -326,8 +326,7 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      const baseClasses = 'flex items-center gap-3';
-      return baseClasses;
+      return 'flex flex-row items-center gap-3';
     }
 
     function renderCTAButton(announcement) {
@@ -388,19 +387,12 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
-      const ctaHTML = renderCTAButton(announcement);
-
-      let contentHTML;
-      if(textAlignment === 'right'){
-        contentHTML = ctaHTML + (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') + '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>';
-      }else{
-        contentHTML = (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') + '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' + ctaHTML;
-      }
-
       return '<div class="' + getContentWrapperClasses() + '">' +
              leftIcon +
-             contentHTML +
+             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
              rightIcon +
+             renderCTAButton(announcement) +
              '</div>';
     }
 
@@ -418,8 +410,6 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
-    'line-height: ' + (announcement.barHeight || 60) + 'px',
-    'overflow: hidden',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
