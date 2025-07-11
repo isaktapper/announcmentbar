@@ -294,7 +294,7 @@ export async function GET(
       return \`\${baseClasses} \${directionClasses}\`;
     }
 
-    function renderCTAButton(announcement: any) {
+    function renderCTAButton(announcement) {
       if (!announcement.cta_enabled || !announcement.cta_text) return ''
 
       const buttonClasses = \`
@@ -450,6 +450,9 @@ export async function GET(
     startRotation();
   }
 })();`
+
+  // Debug: output first 300 chars of generated JS
+  console.log('📜 jsCode preview:', jsCode.slice(0, 300));
 
     return new NextResponse(jsCode, {
       headers: {
