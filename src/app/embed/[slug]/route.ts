@@ -368,40 +368,12 @@ export async function GET(
           </div>
         \`).join('')
 
-        const carouselIndicators = carouselItems.length > 1 ? \`
-          <div class="announcement-carousel-indicators" style="
-            position: absolute;
-            bottom: 2px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-            padding-bottom: 2px;
-          ">
-            \${carouselItems.map((_, index) => \`
-              <div 
-                class="announcement-carousel-indicator"
-                data-index="\${index}"
-                style="
-                  width: 6px;
-                  height: 6px;
-                  border-radius: 50%;
-                  background-color: currentColor;
-                  opacity: \${index === 0 ? '1' : '0.3'};
-                  transition: opacity 0.3s ease-in-out;
-                "
-              ></div>
-            \`).join('')}
-          </div>
-        \` : ''
+        const carouselIndicators = '';
 
-        return \`
-          <div class="announcement-carousel relative h-full" style="overflow: hidden;">
-            \${carouselContent}
-            \${carouselIndicators}
-        </div>
-        \`
+        return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
+               carouselContent +
+               carouselIndicators +
+               '</div>';
       }
 
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
