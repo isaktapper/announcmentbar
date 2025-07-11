@@ -190,16 +190,25 @@ export async function GET(
     // Prepare announcement data for the embed script so that title / message are always present
     const serializedAnnouncement = {
       ...announcement,
-      // Ensure top-level title & message for single bars
+      // Normalized / camelCase duplicates for the embed script
       title: (announcement as any).title ?? (announcement.content?.title ?? ''),
       message: (announcement as any).message ?? (announcement.content?.message ?? ''),
-      // Ensure carouselItems array is always present / compatible
-      carouselItems: (announcement as any).carouselItems ?? (announcement.content?.items ?? []),
+      backgroundGradient: announcement.background_gradient,
+      useGradient: announcement.use_gradient,
+      textColor: announcement.text_color,
+      fontFamily: announcement.font_family,
+      isSticky: announcement.is_sticky,
+      barHeight: announcement.bar_height,
+      iconAlignment: announcement.icon_alignment,
+      carouselItems:
+        (announcement as any).carouselItems ?? (announcement as any).carousel_items ?? (announcement.content?.items ?? []),
+      iconSvg: iconSvg,
     }
 
     const jsCode = `
 (function() {
   const announcement = ${JSON.stringify(serializedAnnouncement)};
+  const iconSvg = announcement.iconSvg;
   const slug = "${slug}";
   
   ${pageTargetingScript}
@@ -328,6 +337,11 @@ export async function GET(
       \`
     }
 
+    function renderIcon() {
+      if (!iconSvg) return '';
+      return `<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;">${iconSvg}</span>`;
+    }
+
     function renderContent() {
       if (type === 'carousel' && carouselItems?.length > 0) {
         const carouselContent = carouselItems.map((item, index) => \`
@@ -390,13 +404,18 @@ export async function GET(
         \`
       }
 
-      return \`
-        <div class="\${getContentWrapperClasses()}">
-          \${title ? \`<span style="font-size: \${titleFontSize}px">\${title}</span>\` : ''}
-          <span style="font-size: \${messageFontSize}px">\${message}</span>
-          \${renderCTAButton(announcement)}
+      const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
+      const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
+
+      return `
+        <div class="${getContentWrapperClasses()}">
+          ${leftIcon}
+          ${title ? `<span style="font-size: ${titleFontSize}px">${title}</span>` : ''}
+          <span style="font-size: ${messageFontSize}px">${message}</span>
+          ${rightIcon}
+          ${renderCTAButton(announcement)}
         </div>
-      \`
+      `
     }
 
     return renderContent();
