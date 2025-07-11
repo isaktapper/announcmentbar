@@ -402,7 +402,7 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
-    'padding: 0 16px',
+    'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
     'font-family: ' + getFontFamily(announcement.fontFamily),
@@ -425,10 +425,26 @@ export async function GET(
   }
 
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
+
+  // Add close button if announcement is closable
+  if (announcement.isClosable) {
+    announcementBar.style.position = announcement.isSticky ? 'fixed' : 'relative';
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label','Close');
+    closeBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:20px;line-height:1;color:' + announcement.textColor + ';cursor:pointer;';
+    closeBtn.addEventListener('click', function(){
+      announcementBar.remove();
+      if (announcement.isSticky) {
+        document.body.style.marginTop = '';
+      }
+    });
+    announcementBar.appendChild(closeBtn);
+  }
   document.body.insertBefore(announcementBar, document.body.firstChild);
 
   // Handle carousel functionality
-  if (announcement.type === 'carousel' && announcement.content?.items?.length > 1) {
+  if (announcement.type === 'carousel' && announcement.carouselItems?.length > 1) {
     let currentIndex = 0;
     let isHovered = false;
     let rotationInterval;
@@ -440,7 +456,7 @@ export async function GET(
       // Hide current item
       items[currentIndex].style.opacity = '0';
       items[currentIndex].style.position = 'absolute';
-      indicators[currentIndex].style.opacity = '0.3';
+      if(indicators.length){indicators[currentIndex].style.opacity='0.3';}
       
       // Update index
       currentIndex = (currentIndex + 1) % items.length;
@@ -448,7 +464,7 @@ export async function GET(
       // Show next item
       items[currentIndex].style.opacity = '1';
       items[currentIndex].style.position = 'relative';
-      indicators[currentIndex].style.opacity = '1';
+      if(indicators.length){indicators[currentIndex].style.opacity='1';}
     }
 
     function startRotation() {
