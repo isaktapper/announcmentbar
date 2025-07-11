@@ -454,20 +454,33 @@ export async function GET(
     function rotateCarousel() {
       const items = announcementBar.querySelectorAll('.announcement-carousel-item');
       const indicators = announcementBar.querySelectorAll('.announcement-carousel-indicator');
-      
-      // Slide out current item to left
-      items[currentIndex].style.transform = 'translateX(-100%)';
-      items[currentIndex].style.opacity = '0';
- 
-      if(indicators.length){indicators[currentIndex].style.opacity='0.3';}
-       
-      // Update index
+
+      const prevIndex = currentIndex;
+
+      // Slide out previous
+      items[prevIndex].style.transform = 'translateX(-100%)';
+      items[prevIndex].style.opacity = '0';
+      if (indicators.length) indicators[prevIndex].style.opacity = '0.3';
+
+      // Determine next index
       currentIndex = (currentIndex + 1) % items.length;
-      
-      // Show next item
+
+      // Position next slide right off-screen before sliding in (only first cycle needs initial state but ok to set each time)
+      items[currentIndex].style.transform = 'translateX(100%)';
+      items[currentIndex].style.opacity = '0';
+
+      // trigger reflow to ensure transition
+      void items[currentIndex].offsetWidth;
+
+      // Slide in next
       items[currentIndex].style.transform = 'translateX(0)';
       items[currentIndex].style.opacity = '1';
-      if(indicators.length){indicators[currentIndex].style.opacity='1';}
+      if (indicators.length) indicators[currentIndex].style.opacity = '1';
+
+      // After animation finishes (~400ms), move prev slide to right so it can slide in next rotation
+      setTimeout(() => {
+        items[prevIndex].style.transform = 'translateX(100%)';
+      }, 450);
     }
 
     function startRotation() {
