@@ -354,8 +354,9 @@ export async function GET(
               top: 0;
               left: 0;
               width: 100%;
-              transition: transform 0.4s ease-in-out;
+              transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
               transform: translateX(\${index === 0 ? '0' : '100%'});
+              opacity: \${index === 0 ? '1' : '0'};
               \${item.background ? \`background-color: \${item.background};\` : ''}
               \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
               \${item.textColor ? \`color: \${item.textColor};\` : ''}
@@ -456,6 +457,7 @@ export async function GET(
       
       // Slide out current item to left
       items[currentIndex].style.transform = 'translateX(-100%)';
+      items[currentIndex].style.opacity = '0';
  
       if(indicators.length){indicators[currentIndex].style.opacity='0.3';}
        
@@ -464,6 +466,7 @@ export async function GET(
       
       // Show next item
       items[currentIndex].style.transform = 'translateX(0)';
+      items[currentIndex].style.opacity = '1';
       if(indicators.length){indicators[currentIndex].style.opacity='1';}
     }
 
