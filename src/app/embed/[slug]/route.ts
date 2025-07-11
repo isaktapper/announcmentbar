@@ -339,7 +339,7 @@ export async function GET(
 
     function renderIcon() {
       if (!iconSvg) return '';
-      return `<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;">${iconSvg}</span>`;
+      return '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;">' + iconSvg + '</span>';
     }
 
     function renderContent() {
@@ -407,15 +407,13 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
-      return `
-        <div class="${getContentWrapperClasses()}">
-          ${leftIcon}
-          ${title ? `<span style="font-size: ${titleFontSize}px">${title}</span>` : ''}
-          <span style="font-size: ${messageFontSize}px">${message}</span>
-          ${rightIcon}
-          ${renderCTAButton(announcement)}
-        </div>
-      `
+      return '<div class="' + getContentWrapperClasses() + '">' +
+             leftIcon +
+             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+             rightIcon +
+             renderCTAButton(announcement) +
+             '</div>';
     }
 
     return renderContent();
