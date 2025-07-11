@@ -59,7 +59,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  console.log("🔍 Received embed request for slug:", params.slug);
+  // Allow both /embed/mySlug and /embed/mySlug.js so existing embed tags continue to work
+  const rawSlug = params.slug || '';
+  const slug = rawSlug.replace(/\.js$/i, '');
+
+  console.log("🔍 Received embed request for slug:", rawSlug, "→ sanitized:", slug);
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,7 +73,7 @@ export async function GET(
     const { data: announcement, error } = await supabase
       .from('announcements')
       .select('*')
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .eq('visibility', true)
       .single()
 
@@ -187,11 +191,12 @@ export async function GET(
     const jsCode = `
 (function() {
   const announcement = ${JSON.stringify(announcement)};
+  const slug = "${slug}";
   
   ${pageTargetingScript}
 
   // Check if announcement bar already exists
-  if (document.getElementById('announcement-bar-${params.slug}')) {
+  if (document.getElementById('announcement-bar-' + slug)) {
     return;
   }
 
@@ -390,7 +395,7 @@ export async function GET(
 
   // Create the announcement bar
   const announcementBar = document.createElement('div');
-  announcementBar.id = 'announcement-bar-${params.slug}';
+  announcementBar.id = 'announcement-bar-' + slug;
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
   document.body.insertBefore(announcementBar, document.body.firstChild);
 
