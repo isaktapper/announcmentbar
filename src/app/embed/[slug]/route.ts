@@ -326,9 +326,8 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      const baseClasses = 'flex';
-      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : 'flex-col items-center gap-1';
-      return \`\${baseClasses} \${directionClasses}\`;
+      const baseClasses = 'flex items-center gap-3';
+      return baseClasses;
     }
 
     function renderCTAButton(announcement) {
@@ -389,12 +388,19 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
+      const ctaHTML = renderCTAButton(announcement);
+
+      let contentHTML;
+      if(textAlignment === 'right'){
+        contentHTML = ctaHTML + (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') + '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>';
+      }else{
+        contentHTML = (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') + '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' + ctaHTML;
+      }
+
       return '<div class="' + getContentWrapperClasses() + '">' +
              leftIcon +
-             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
-             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+             contentHTML +
              rightIcon +
-             renderCTAButton(announcement) +
              '</div>';
     }
 
@@ -411,7 +417,7 @@ export async function GET(
     'display: flex',
     'justify-content: center',
     'align-items: center',
-    // no fixed height, allow content to define height
+    'height: ' + (announcement.barHeight || 60) + 'px',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
@@ -425,13 +431,13 @@ export async function GET(
 
   announcementBar.setAttribute('style', baseStyles);
 
-  // After inserting, measure actual height and expose as CSS var
-  const measuredHeight = announcementBar.offsetHeight;
-  document.documentElement.style.setProperty('--announcement-bar-height', measuredHeight + 'px');
+  // Expose bar height as CSS var for host page convenience
+  document.documentElement.style.setProperty('--announcement-bar-height', (announcement.barHeight || 60) + 'px');
 
   // If sticky, push body down so it doesn't overlap
   if (announcement.isSticky) {
-    document.body.style.marginTop = measuredHeight + 'px';
+    const currentMarginTop = parseFloat(getComputedStyle(document.body).marginTop) || 0;
+    document.body.style.marginTop = (currentMarginTop + (announcement.barHeight || 60)) + 'px';
   }
 
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
