@@ -384,6 +384,7 @@ export async function GET(
             <div class="\${getContentWrapperClasses()}">
               \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
               <span style="font-size: \${messageFontSize}px">\${item.message}</span>
+              \${renderCTAButton(item)}
             </div>
           </div>
         \`).join('')
