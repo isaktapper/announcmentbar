@@ -10,6 +10,7 @@ import AnnouncementCard from '../../components/dashboard/AnnouncementCard'
 import { Announcement } from '../../types/announcement'
 import { getUserPlan, getUserDisplayName } from '@/lib/user-utils'
 import { useToast } from '@/hooks/useToast'
+import TypeSelectionModal from './components/TypeSelectionModal'
 
 interface DashboardClientProps {
   initialAnnouncements: Announcement[]
@@ -24,6 +25,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const router = useRouter()
   const { error } = useToast()
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false)
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -102,7 +104,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
       error("You can only have 1 active bar on the Free plan. Disable one to create another or upgrade your plan.")
       return
     }
-    router.push('/dashboard/create')
+    setIsTypeModalOpen(true)
   }
 
   return (
@@ -298,6 +300,11 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
         </div>
       </main>
 
+      {/* Type Selection Modal */}
+      <TypeSelectionModal
+        isOpen={isTypeModalOpen}
+        onClose={() => setIsTypeModalOpen(false)}
+      />
       {/* Toast Container */}
       {/* The ToastContainer component is now part of useToast, so it's not needed here. */}
       {/* If you want to customize the toast appearance, you might need to adjust useToast or create a custom component. */}

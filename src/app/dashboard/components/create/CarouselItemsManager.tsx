@@ -13,9 +13,7 @@ export default function CarouselItemsManager({ items, onChange }: CarouselItemsM
   const addItem = () => {
     const newItem: AnnouncementContentItem = {
       title: '',
-      message: '',
-      titleUrl: '',
-      messageUrl: ''
+      message: ''
     }
     onChange([...items, newItem])
   }
@@ -96,35 +94,6 @@ export default function CarouselItemsManager({ items, onChange }: CarouselItemsM
                   required
                   rows={3}
                 />
-              </div>
-
-              {/* URLs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Title Link (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={item.titleUrl || ''}
-                    onChange={(e) => updateItem(index, 'titleUrl', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    placeholder="https://example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Message Link (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={item.messageUrl || ''}
-                    onChange={(e) => updateItem(index, 'messageUrl', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    placeholder="https://example.com"
-                  />
-                </div>
               </div>
             </div>
           </div>

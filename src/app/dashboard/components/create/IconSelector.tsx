@@ -184,12 +184,27 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
         Icon
       </label>
       
-      {/* Popular icons - shown inline */}
+      {/* Inline icons (popular + selected) */}
       <div className="flex gap-2 overflow-x-auto pb-2">
-        {popularIcons.map(key => {
-          const componentName = ICONS[key as keyof typeof ICONS]
-          return renderIconButton(key, componentName, 'small')
-        })}
+        {(() => {
+          // Start with the predefined popular icons
+          const inlineIcons = [...popularIcons]
+
+          // If a non-popular icon is selected (and not "none"), insert it after 'success'
+          if (
+            selectedIcon &&
+            selectedIcon !== 'none' &&
+            !inlineIcons.includes(selectedIcon)
+          ) {
+            // Insert at index 4 (after 'success' which is at index 3)
+            inlineIcons.splice(4, 0, selectedIcon)
+          }
+
+          return inlineIcons.map((key) => {
+            const componentName = ICONS[key as keyof typeof ICONS]
+            return renderIconButton(key, componentName, 'small')
+          })
+        })()}
         
         {/* Show all icons button */}
         <button

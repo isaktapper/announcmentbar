@@ -1,7 +1,19 @@
 export type AnnouncementType = 'single' | 'carousel' | 'marquee'
 
 // Font family options with Google Fonts
-export type FontFamily = 'Work Sans' | 'Inter' | 'Roboto' | 'Open Sans' | 'System UI';
+export type FontFamily = string
+
+export type BorderRadiusStyle = 'sharp' | 'soft' | 'pill'
+
+export interface CTASettings {
+  enabled: boolean
+  text: string
+  url: string
+  size: 'small' | 'medium' | 'large'
+  borderRadius: BorderRadiusStyle
+  backgroundColor: string
+  textColor: string
+}
 
 export interface AnnouncementTypeSettings {
   // Carousel settings
@@ -16,6 +28,7 @@ export interface AnnouncementTypeSettings {
 export interface Announcement {
   id: string
   user_id: string
+  bar_name: string
   background: string
   background_gradient?: string
   use_gradient?: boolean
@@ -49,83 +62,115 @@ export interface Announcement {
 export interface AnnouncementContentItem {
   title: string
   message: string
-  titleUrl?: string
-  messageUrl?: string
 }
 
 export interface CarouselItem {
   title: string
   message: string
-  titleUrl?: string
-  messageUrl?: string
+  background: string
+  backgroundGradient: string
+  useGradient: boolean
+  textColor: string
+  fontFamily: string
+  titleFontSize: number
+  messageFontSize: number
+  textAlignment: 'left' | 'center' | 'right'
+  icon: string
+  iconAlignment: 'left' | 'right'
+  cta_enabled: boolean
+  cta_text: string
+  cta_url: string
+  cta_size: 'small' | 'medium' | 'large'
+  cta_border_radius: 'sharp' | 'soft' | 'pill'
+  cta_background_color: string
+  cta_text_color: string
+}
+
+export interface EnhancedCarouselItem extends CarouselItem {
+  textColor: string
+  backgroundColor: string
+  fontFamily: FontFamily
+  textAlignment: 'left' | 'center' | 'right'
+  cta: CTASettings
 }
 
 export interface AnnouncementFormData {
-  id?: string
-  type: 'single' | 'carousel' | 'marquee'
+  bar_name: string;
   title: string
   message: string
   icon: string
   background: string
-  backgroundGradient?: string
+  backgroundGradient: string
   useGradient: boolean
   textColor: string
   visibility: boolean
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
-  titleUrl?: string
-  messageUrl?: string
   textAlignment: 'left' | 'center' | 'right'
   iconAlignment: 'left' | 'right'
   isClosable: boolean
+  type: 'single' | 'carousel' | 'marquee'
   typeSettings: {
-    marquee_speed?: number
-    marquee_direction?: 'left' | 'right'
-    marquee_pause_on_hover?: boolean
-    carousel_speed?: number
-    carousel_pause_on_hover?: boolean
+    marquee_speed: number
+    marquee_direction: 'left' | 'right'
+    marquee_pause_on_hover: boolean
+    carousel_speed: number
+    carousel_pause_on_hover: boolean
   }
-  carouselItems: CarouselItem[]
-  pagePaths: string[]
-  geoCountries: string[]
-  scheduledStart?: string | null
-  scheduledEnd?: string | null
-  fontFamily: FontFamily
   barHeight: number
+  carouselItems: CarouselItem[]
+  fontFamily: string
+  geoCountries: string[]
+  pagePaths: string[]
+  scheduledStart: string | null
+  scheduledEnd: string | null
+  cta_enabled: boolean
+  cta_text: string
+  cta_url: string
+  cta_size: 'small' | 'medium' | 'large'
+  cta_border_radius: 'sharp' | 'soft' | 'pill'
+  cta_background_color: string
+  cta_text_color: string
 }
 
 export interface Template {
   id: string
-  type: 'single' | 'carousel' | 'marquee'
   title: string
   message: string
   icon: string
   background: string
-  backgroundGradient?: string
+  backgroundGradient: string
   useGradient: boolean
   textColor: string
-  visibility: boolean
   isSticky: boolean
   titleFontSize: number
   messageFontSize: number
   textAlignment: 'left' | 'center' | 'right'
   iconAlignment: 'left' | 'right'
   isClosable: boolean
+  type: AnnouncementType
   typeSettings: {
-    marquee_speed?: number
-    marquee_direction?: 'left' | 'right'
-    marquee_pause_on_hover?: boolean
-    carousel_speed?: number
-    carousel_pause_on_hover?: boolean
+    marquee_speed: number
+    marquee_direction: 'left' | 'right'
+    marquee_pause_on_hover: boolean
+    carousel_speed: number
+    carousel_pause_on_hover: boolean
   }
   barHeight: number
   carouselItems: CarouselItem[]
-  pagePaths: string[]
-  geoCountries: string[]
-  scheduledStart?: string | null
-  scheduledEnd?: string | null
   fontFamily: FontFamily
+  geoCountries: string[]
+  pagePaths: string[]
+  scheduledStart: string | null
+  scheduledEnd: string | null
+  cta_enabled: boolean
+  cta_text: string
+  cta_url: string
+  cta_size: 'small' | 'medium' | 'large'
+  cta_border_radius: BorderRadiusStyle
+  cta_background_color: string
+  cta_text_color: string
 }
 
 export const ICONS = {

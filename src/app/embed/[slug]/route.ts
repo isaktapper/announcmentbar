@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { BorderRadiusStyle } from '@/types/announcement'
 
 // Icon mapping for the JavaScript output
 const ICON_SVG_MAP = {
@@ -28,57 +29,106 @@ const pageTargetingScript = `
   }
 `
 
+const getBorderRadiusValue = (style: BorderRadiusStyle): string => {
+  switch (style) {
+    case 'sharp':
+      return '0px'
+    case 'soft':
+      return '6px'
+    case 'pill':
+      return '9999px'
+    default:
+      return '6px' // Default to soft
+  }
+}
+
+const getButtonSizeClasses = (size: 'small' | 'medium' | 'large') => {
+  switch (size) {
+    case 'small':
+      return 'text-xs px-2.5 py-1.5'
+    case 'medium':
+      return 'text-sm px-3.5 py-2'
+    case 'large':
+      return 'text-base px-4 py-2.5'
+    default:
+      return 'text-sm px-3.5 py-2'
+  }
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: { slug: string } }
 ) {
   try {
-    const resolvedParams = await params
-    
-    // Create Supabase client with service role key to bypass RLS for public embeds
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // Extract slug and remove .js extension if present
-    const slug = resolvedParams.slug.replace(/\.js$/, '')
-
-    // Check if request is asking for the .js file specifically
-    const url = new URL(request.url)
-    const isJsRequest = url.pathname.endsWith('.js')
-
-    // If not a .js request, return 404
-    if (!isJsRequest) {
-      return new NextResponse('Not Found', { status: 404 })
-    }
-
-    // Fetch announcement by slug
-    const { data: announcement, error } = await supabase
+    const { data: announcement } = await supabase
       .from('announcements')
       .select('*')
-      .eq('slug', slug)
-      .eq('visibility', true) // Only active announcements
+      .eq('slug', params.slug)
       .single()
 
-    // If no announcement found or error, return empty script
-    if (error || !announcement) {
-      const emptyScript = `
-        // Announcement not found or inactive
-        console.log('Announcement with slug "${slug}" not found or is inactive');
+    if (!announcement) {
+      return new NextResponse('Not found', { status: 404 })
+    }
+
+    const {
+      title,
+      message,
+      icon,
+      background,
+      backgroundGradient,
+      useGradient,
+      textColor,
+      visibility,
+      isSticky,
+      titleFontSize,
+      messageFontSize,
+      textAlignment,
+      iconAlignment,
+      isClosable,
+      type,
+      typeSettings,
+      barHeight,
+      carouselItems,
+      fontFamily,
+      cta_enabled,
+      cta_text,
+      cta_url,
+      cta_size,
+      cta_border_radius,
+      cta_background_color,
+      cta_text_color
+    } = announcement
+
+    const renderCTAButton = () => {
+      if (!cta_enabled || !cta_text) return ''
+
+      const buttonClasses = `
+        ${getButtonSizeClasses(cta_size)}
+        inline-flex items-center justify-center
+        transition-colors duration-200
+        hover:opacity-90
+      `.trim();
+
+      return `
+        <a 
+          href="${cta_url}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="${buttonClasses}"
+          style="
+            background-color: ${cta_background_color};
+            color: ${cta_text_color};
+            border-radius: ${getBorderRadiusValue(cta_border_radius as BorderRadiusStyle)};
+          "
+        >
+          ${cta_text}
+        </a>
       `
-      return new NextResponse(emptyScript, {
-        headers: {
-          'Content-Type': 'text/javascript',
-          'Cache-Control': 'public, max-age=60', // Cache empty responses for 1 minute
-        },
-      })
     }
 
     // Check geo targeting if enabled
@@ -136,7 +186,7 @@ export async function GET(
   ${pageTargetingScript}
 
   // Check if announcement bar already exists
-  if (document.getElementById('announcement-bar-${slug}')) {
+  if (document.getElementById('announcement-bar-${params.slug}')) {
     return;
   }
 
@@ -145,19 +195,19 @@ export async function GET(
   const googleFonts = {
     'Work Sans': { cssName: 'Work Sans', weights: '400;500;600', fallback: 'sans-serif' },
     'Inter': { cssName: 'Inter', weights: '400;500;600', fallback: 'sans-serif' },
-    'Lato': { cssName: 'Lato', weights: '400;700', fallback: 'sans-serif' },
-    'Roboto': { cssName: 'Roboto', weights: '400;500;700', fallback: 'sans-serif' },
-    'Rubik': { cssName: 'Rubik', weights: '400;500;600', fallback: 'sans-serif' },
+    'Roboto': { cssName: 'Roboto', weights: '400;500;600', fallback: 'sans-serif' },
+    'Open Sans': { cssName: 'Open Sans', weights: '400;500;600', fallback: 'sans-serif' },
     'Poppins': { cssName: 'Poppins', weights: '400;500;600', fallback: 'sans-serif' },
-    'Space Grotesk': { cssName: 'Space+Grotesk', weights: '400;500;600', fallback: 'sans-serif' },
+    'Lato': { cssName: 'Lato', weights: '400;500;600', fallback: 'sans-serif' },
     'DM Sans': { cssName: 'DM+Sans', weights: '400;500;600', fallback: 'sans-serif' },
-    'Playfair Display': { cssName: 'Playfair+Display', weights: '400;600;700', fallback: 'serif' },
-    'Bricolage Grotesque': { cssName: 'Bricolage+Grotesque', weights: '400;500;600', fallback: 'sans-serif' }
+    'Nunito': { cssName: 'Nunito', weights: '400;500;600', fallback: 'sans-serif' },
+    'IBM Plex Sans': { cssName: 'IBM+Plex+Sans', weights: '400;500;600', fallback: 'sans-serif' },
+    'Space Grotesk': { cssName: 'Space+Grotesk', weights: '400;500;600', fallback: 'sans-serif' }
   };
 
   // Load Google Font if needed
   function loadGoogleFont(fontName) {
-    const fontId = 'google-font-' + fontName.replace(/\s+/g, '-').toLowerCase();
+    const fontId = 'google-font-' + fontName.replace(/\\s+/g, '-').toLowerCase();
     
     // Check if font is already loaded
     if (document.getElementById(fontId)) {
@@ -169,7 +219,7 @@ export async function GET(
       const link = document.createElement('link');
       link.id = fontId;
       link.rel = 'stylesheet';
-      link.href = \`https://fonts.googleapis.com/css2?family=\${fontConfig.cssName}:wght@\${fontConfig.weights}&display=swap\`;
+      link.href = \`https://fonts.googleapis.com/css2?family=\${fontConfig.cssName}:wght@\${fontConfig.weights}&display=swap\`
       document.head.appendChild(link);
     }
   }
@@ -188,484 +238,213 @@ export async function GET(
     return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   }
 
-     // Create the announcement bar
-   function createAnnouncementBar() {
-     console.log("Creating announcement bar...");
-     const announcementBar = document.createElement('div');
-     announcementBar.id = 'announcement-bar-${slug}';
-     const isSticky = ${announcement.is_sticky !== false}; // Default to true if undefined
-     const positionStyle = isSticky ? 'fixed' : 'relative';
-     const isClosable = ${announcement.is_closable === true};
-     
-     // Announcement type and settings
-     const announcementType = '${announcement.type || 'single'}';
-     const typeSettings = ${JSON.stringify(announcement.type_settings || {})};
-     
-     // Typography and layout settings
-     const titleFontSize = ${announcement.title_font_size || 16};
-     const messageFontSize = ${announcement.message_font_size || 14};
-     const textAlignment = '${announcement.text_alignment || 'center'}';
-     const selectedFontFamily = getFontFamily(fontFamily);
-     
-     // URL settings
-     const titleUrl = '${announcement.content?.titleUrl || ''}';
-     const messageUrl = '${announcement.content?.messageUrl || ''}';
-     
-     // Calculate layout styles
-     const justifyContent = textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center';
-     const contentOrder = '${announcement.icon_alignment || 'left'}' === 'center' ? '0' : '1';
-     
-     // Create title and message elements with optional links
-     const titleElement = titleUrl ? 
-       \`<a href="\${titleUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${announcement.content?.title || ''}</a>\` :
-       '${announcement.content?.title || ''}';
-       
-     const messageElement = messageUrl ?
-       \`<a href="\${messageUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${announcement.content?.message || ''}</a>\` :
-       '${announcement.content?.message || ''}';
+  // Generate the announcement HTML
+  function generateAnnouncementHTML(announcement) {
+    const {
+      title,
+      message,
+      background,
+      backgroundGradient,
+      useGradient,
+      textColor,
+      textAlignment,
+      icon,
+      iconAlignment,
+      isClosable,
+      type,
+      typeSettings,
+      barHeight,
+      carouselItems,
+      fontFamily,
+      titleFontSize,
+      messageFontSize,
+      cta_enabled,
+      cta_text,
+      cta_url,
+      cta_size,
+      cta_rounded,
+      cta_background_color,
+      cta_text_color,
+      cta_border_radius
+    } = announcement;
 
-     // Parse carousel content for carousel type
-     let carouselItems = [];
-     if (announcementType === 'carousel') {
-       try {
-         const parsedContent = typeof ${JSON.stringify(announcement.content)} === 'string' ? 
-           JSON.parse(${JSON.stringify(announcement.content)}) : ${JSON.stringify(announcement.content)};
-         carouselItems = Array.isArray(parsedContent) ? parsedContent : [];
-       } catch (e) {
-         console.warn('Failed to parse carousel content, falling back to single mode');
-         carouselItems = [];
-       }
-     }
+    function getContentClasses() {
+      const baseClasses = 'flex items-center';
+      const alignmentClasses = {
+        left: 'justify-start',
+        center: 'justify-center',
+        right: 'justify-end'
+      };
+      return \`\${baseClasses} \${alignmentClasses[textAlignment]}\`;
+    }
 
-     // Create announcement content based on type
-     function createAnnouncementContent() {
-       if (announcementType === 'marquee') {
-         const marqueeSpeed = typeSettings.marquee_speed || 2;
-         const marqueeDirection = typeSettings.marquee_direction || 'left';
-         const pauseOnHover = typeSettings.marquee_pause_on_hover || false;
-         
-         const fullContent = titleElement ? 
-           \`<span style="font-size: \${titleFontSize}px; font-weight: 600;">\${titleElement}</span> — <span style="font-size: \${messageFontSize}px; opacity: 0.9;">\${messageElement}</span>\` :
-           \`<span style="font-size: \${messageFontSize}px; opacity: 0.9;">\${messageElement}</span>\`;
-         const animationDirection = marqueeDirection === 'left' ? 'marquee-left-to-right' : 'marquee-right-to-left';
-         const animationDuration = (marqueeSpeed === 1 ? 30 : marqueeSpeed === 2 ? 20 : 15) + 's';
-         
-         return \`
-           <div style="
-             position: absolute;
-             top: 0;
-             left: 0;
-             right: 0;
-             bottom: 0;
-             overflow: hidden;
-             display: flex;
-             align-items: center;
-           ">
-             <div 
-               class="animate-marquee"
-               style="
-                 display: flex;
-                 white-space: nowrap;
-                 animation: \${animationDirection} \${animationDuration} linear infinite;
-                 width: max-content;
-                 \${pauseOnHover ? 'animation-play-state: running;' : ''}
-               "
-               \${pauseOnHover ? 'onmouseenter="this.style.animationPlayState=\\'paused\\'" onmouseleave="this.style.animationPlayState=\\'running\\'"' : ''}
-             >
-               <div style="
-                 display: flex;
-                 align-items: center;
-                 gap: 8px;
-                 padding-right: 10px;
-                 font-size: \${Math.max(titleFontSize, messageFontSize)}px;
-                 line-height: 1.3;
-                 height: 100%;
-               ">
-                 \${fullContent}
-               </div>
-             </div>
-           </div>
-         \`;
-       } else if (announcementType === 'carousel' && carouselItems.length > 0) {
-         const carouselSpeed = typeSettings.carousel_speed || 5000;
-         const pauseOnHover = typeSettings.carousel_pause_on_hover || false;
-         
-         // Create carousel items HTML
-         const carouselItemsHtml = carouselItems.map((item, index) => {
-           const itemTitle = item.title || '';
-           const itemMessage = item.message || '';
-           const itemTitleUrl = item.titleUrl || '';
-           const itemMessageUrl = item.messageUrl || '';
-           
-           const titleEl = itemTitleUrl ? 
-             \`<a href="\${itemTitleUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${itemTitle}</a>\` :
-             itemTitle;
-           
-           const messageEl = itemMessageUrl ?
-             \`<a href="\${itemMessageUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5);">\${itemMessage}</a>\` :
-             itemMessage;
-           
-           return \`
-             <div class="carousel-item" style="
-               width: 100%;
-               flex-shrink: 0;
-               display: flex;
-               flex-direction: column;
-               align-items: center;
-               justify-content: center;
-               gap: 4px;
-               line-height: 1.3;
-             ">
-               \${itemTitle ? \`<div style="text-align: center; font-size: \${titleFontSize}px; font-weight: 600; width: 100%;">\${titleEl}</div>\` : ''}
-               \${itemMessage ? \`<div style="text-align: center; font-size: \${messageFontSize}px; opacity: 0.9; width: 100%;">\${messageEl}</div>\` : ''}
-             </div>
-           \`;
-         }).join('');
-         
-         return \`
-           <div id="carousel-container-${slug}" style="
-             flex: 1; 
-             min-width: 0; 
-             overflow: hidden;
-             order: \${contentOrder};
-           ">
-             <div class="carousel-track" style="
-               display: flex;
-               width: \${carouselItems.length * 100}%;
-               transform: translateX(0%);
-               transition: transform 0.5s ease-in-out;
-               height: 100%;
-             ">
-               \${carouselItemsHtml}
-             </div>
-           </div>
-         \`;
-       } else {
-         // Single type (default)
-         return \`
-           <div style="
-             flex: 1; 
-             min-width: 0; 
-             text-align: \${textAlignment};
-             order: \${contentOrder};
-           ">
-             <div style="
-               font-weight: 600; 
-               margin-bottom: 2px; 
-               font-size: \${titleFontSize}px;
-               line-height: 1.3;
-             ">\${titleElement}</div>
-             <div style="
-               opacity: 0.9; 
-               font-size: \${messageFontSize}px;
-               line-height: 1.4;
-             ">\${messageElement}</div>
-           </div>
-         \`;
-       }
-     }
-     
-     announcementBar.innerHTML = \`
-      <div style="
-        position: \${positionStyle};
-        \${isSticky ? 'top: 0;' : ''}
-        left: 0;
-        right: 0;
-        width: 100%;
-        z-index: \${isSticky ? '999999' : '100'};
-        ${backgroundStyle}
-        color: ${announcement.text_color};
-        padding: 10px 16px;
-        font-family: \${selectedFontFamily};
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transform: translateY(0);
-        box-sizing: border-box;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: \${justifyContent};
-        gap: 12px;
-        min-height: 40px;
-        position: relative;
-      ">
-        <div style="
-          display: flex;
-          align-items: center;
-          justify-content: \${justifyContent};
-          gap: 12px;
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 \${isClosable ? '40px' : '20px'} 0 20px;
-          box-sizing: border-box;
-        ">
-          ${iconSvg && announcement.icon_alignment !== 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: ${announcement.icon_alignment === 'right' ? '2' : '0'};">${iconSvg}</div>` : ''}
-          \${createAnnouncementContent()}
-          ${iconSvg && announcement.icon_alignment === 'center' ? `<div style="flex-shrink: 0; width: \${Math.max(titleFontSize, messageFontSize) + 2}px; height: \${Math.max(titleFontSize, messageFontSize) + 2}px; order: 1;">${iconSvg}</div>` : ''}
-        </div>
-        \${isClosable ? \`
-          <button 
-            onclick="this.closest('#announcement-bar-${slug}').remove(); document.body.style.marginTop = '0px';" 
+    function getContentWrapperClasses() {
+      const baseClasses = 'flex';
+      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : 'flex-col items-center gap-1';
+      return \`\${baseClasses} \${directionClasses}\`;
+    }
+
+    function renderCTAButton(announcement: any) {
+      if (!announcement.cta_enabled || !announcement.cta_text) return ''
+
+      const buttonClasses = \`
+        ${getButtonSizeClasses(announcement.cta_size)}
+        inline-flex items-center justify-center
+        transition-colors duration-200
+        hover:opacity-90
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
+      \`.trim();
+
+      return \`
+        <button 
+          class="\${buttonClasses}"
+          style="
+            background-color: \${announcement.cta_background_color};
+            color: \${announcement.cta_text_color};
+            border-radius: \${getBorderRadiusValue(announcement.cta_border_radius)};
+          "
+        >
+          \${announcement.cta_text}
+        </button>
+      \`
+    }
+
+    function renderContent() {
+      if (type === 'carousel' && carouselItems?.length > 0) {
+        const carouselContent = carouselItems.map((item, index) => \`
+          <div 
+            class="announcement-carousel-item" 
+            data-index="\${index}"
             style="
-              position: absolute;
-              right: 12px;
-              top: 50%;
-              transform: translateY(-50%);
-              background: none;
-              border: none;
-              color: ${announcement.text_color};
-              font-size: 18px;
-              line-height: 1;
-              cursor: pointer;
-              padding: 4px;
-              opacity: 0.7;
-              transition: opacity 0.2s ease;
-              z-index: 1;
+              opacity: \${index === 0 ? '1' : '0'};
+              position: \${index === 0 ? 'relative' : 'absolute'};
+              top: 0;
+              left: 0;
+              width: 100%;
+              transition: opacity 0.3s ease-in-out;
+              \${item.background ? \`background-color: \${item.background};\` : ''}
+              \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
+              \${item.textColor ? \`color: \${item.textColor};\` : ''}
+              \${item.fontFamily ? \`font-family: \${getFontFamily(item.fontFamily)};\` : ''}
             "
-            onmouseover="this.style.opacity='1'"
-            onmouseout="this.style.opacity='0.7'"
-            title="Close announcement"
-          >×</button>
-        \` : ''}
-      </div>
-         \`;
-     console.log("announcementBar.innerHTML", announcementBar.innerHTML);
+          >
+            <div class="\${getContentWrapperClasses()}">
+              \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
+              <span style="font-size: \${messageFontSize}px">\${item.message}</span>
+            </div>
+          </div>
+        \`).join('')
 
-     // Add icon styles and announcement type animations
-    const style = document.createElement('style');
-    style.textContent = \`
-      .announcement-icon {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-      
-      /* Marquee animations */
-      @keyframes marquee-left-to-right {
-        from {
-          transform: translateX(-5vw);
-        }
-        to {
-          transform: translateX(5vw);
-        }
-      }
-      
-      @keyframes marquee-right-to-left {
-        from {
-          transform: translateX(5vw);
-        }
-        to {
-          transform: translateX(-5vw);
-        }
-      }
-      
-      /* Ensure full width and proper positioning */
-      #announcement-bar-${slug} {
-        margin: 0 !important;
-        width: 100vw !important;
-        left: 0 !important;
-        right: 0 !important;
-        position: \${positionStyle} !important;
-        \${isSticky ? 'top: 0 !important;' : ''}
-        z-index: \${isSticky ? '999999' : '100'} !important;
-      }
-      
-      /* Inner container styling */
-      #announcement-bar-${slug} > div > div {
-        min-width: 0 !important;
-        flex: 1 !important;
-      }
-      
-      /* Mobile responsiveness */
-      @media (max-width: 768px) {
-        #announcement-bar-${slug} {
-          padding: 8px 16px !important;
-        }
-        #announcement-bar-${slug} > div {
-          padding: 0 16px !important;
-        }
-        #announcement-bar-${slug} .announcement-icon {
-          width: \${Math.max(titleFontSize, messageFontSize)}px !important;
-          height: \${Math.max(titleFontSize, messageFontSize)}px !important;
-        }
-      }
-      
-      /* Ensure body gets proper spacing */
-      body {
-        transition: padding-top 0.3s ease !important;
-      }
-      
-      /* Marquee pause on hover */
-      .animate-marquee:hover {
-        animation-play-state: paused !important;
-      }
-    \`;
-    document.head.appendChild(style);
+        const carouselIndicators = carouselItems.length > 1 ? \`
+          <div class="announcement-carousel-indicators" style="
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            padding-bottom: 2px;
+          ">
+            \${carouselItems.map((_, index) => \`
+              <div 
+                class="announcement-carousel-indicator"
+                data-index="\${index}"
+                style="
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 50%;
+                  background-color: currentColor;
+                  opacity: \${index === 0 ? '1' : '0.3'};
+                  transition: opacity 0.3s ease-in-out;
+                "
+              ></div>
+            \`).join('')}
+          </div>
+        \` : ''
 
-    // Insert at the beginning of body
-    document.body.insertBefore(announcementBar, document.body.firstChild);
+        return \`
+          <div class="announcement-carousel relative h-full" style="overflow: hidden;">
+            \${carouselContent}
+            \${carouselIndicators}
+        </div>
+        \`
+      }
 
-    // Initialize carousel functionality
-    if (announcementType === 'carousel' && carouselItems.length > 1) {
-      let currentIndex = 0;
-      let carouselInterval = null;
-      let isPaused = false;
-      const carouselSpeed = typeSettings.carousel_speed || 5000;
-      const pauseOnHover = typeSettings.carousel_pause_on_hover || false;
+      return \`
+        <div class="\${getContentWrapperClasses()}">
+          \${title ? \`<span style="font-size: \${titleFontSize}px">\${title}</span>\` : ''}
+          <span style="font-size: \${messageFontSize}px">\${message}</span>
+          \${renderCTAButton(announcement)}
+        </div>
+      \`
+    }
+
+    return renderContent();
+  }
+
+  // Create the announcement bar
+  const announcementBar = document.createElement('div');
+  announcementBar.id = 'announcement-bar-${params.slug}';
+  announcementBar.innerHTML = generateAnnouncementHTML(announcement);
+  document.body.insertBefore(announcementBar, document.body.firstChild);
+
+  // Handle carousel functionality
+  if (announcement.type === 'carousel' && announcement.content?.items?.length > 1) {
+    let currentIndex = 0;
+    let isHovered = false;
+    let rotationInterval;
+
+    function rotateCarousel() {
+      const items = announcementBar.querySelectorAll('.announcement-carousel-item');
+      const indicators = announcementBar.querySelectorAll('.announcement-carousel-indicator');
       
-      const carouselTrack = announcementBar.querySelector('.carousel-track');
-      const carouselContainer = announcementBar.querySelector('#carousel-container-${slug}');
+      // Hide current item
+      items[currentIndex].style.opacity = '0';
+      items[currentIndex].style.position = 'absolute';
+      indicators[currentIndex].style.opacity = '0.3';
       
-      function rotateCarousel() {
-        if (carouselTrack && !isPaused) {
-          currentIndex = (currentIndex + 1) % carouselItems.length;
-          carouselTrack.style.transform = \`translateX(-\${currentIndex * (100 / carouselItems.length)}%)\`;
-        }
+      // Update index
+      currentIndex = (currentIndex + 1) % items.length;
+      
+      // Show next item
+      items[currentIndex].style.opacity = '1';
+      items[currentIndex].style.position = 'relative';
+      indicators[currentIndex].style.opacity = '1';
+    }
+
+    function startRotation() {
+      if (!isHovered) {
+        rotationInterval = setInterval(rotateCarousel, announcement.type_settings?.carousel_speed || 5000);
       }
+    }
+
+    function stopRotation() {
+      clearInterval(rotationInterval);
+    }
+
+    // Handle hover pause
+    if (announcement.type_settings?.carousel_pause_on_hover) {
+      announcementBar.addEventListener('mouseenter', () => {
+        isHovered = true;
+        stopRotation();
+      });
       
-      function startCarousel() {
-        if (carouselInterval) clearInterval(carouselInterval);
-        carouselInterval = setInterval(rotateCarousel, carouselSpeed);
-      }
-      
-      function stopCarousel() {
-        if (carouselInterval) {
-          clearInterval(carouselInterval);
-          carouselInterval = null;
-        }
-      }
-      
-      // Start the carousel
-      startCarousel();
-      
-      // Add pause on hover functionality
-      if (pauseOnHover && carouselContainer) {
-        carouselContainer.addEventListener('mouseenter', function() {
-          isPaused = true;
-          stopCarousel();
-        });
-        
-        carouselContainer.addEventListener('mouseleave', function() {
-          isPaused = false;
-          startCarousel();
-        });
-      }
-      
-      // Clean up on page unload
-      window.addEventListener('beforeunload', function() {
-        stopCarousel();
+      announcementBar.addEventListener('mouseleave', () => {
+        isHovered = false;
+        startRotation();
       });
     }
 
-     // Simplified single-run spacing with proper height measurement (only for sticky bars)
-     const applySpacing = () => {
-       if (!isSticky) {
-         console.log('📍 Non-sticky bar, skipping spacing application');
-         return;
-       }
-       
-       console.log('🚀 Starting spacing application for sticky bar...');
-       
-               // Wait for element to be properly rendered
-        setTimeout(() => {
-          // Try multiple height measurement methods
-          const rect = announcementBar.getBoundingClientRect();
-          const offsetHeight = announcementBar.offsetHeight;
-          const scrollHeight = announcementBar.scrollHeight;
-          const clientHeight = announcementBar.clientHeight;
-          
-          console.log('📊 Height measurements:');
-          console.log('  - getBoundingClientRect:', rect.height + 'px');
-          console.log('  - offsetHeight:', offsetHeight + 'px');
-          console.log('  - scrollHeight:', scrollHeight + 'px');
-          console.log('  - clientHeight:', clientHeight + 'px');
-          
-          // Try measuring the inner content div instead
-          const innerDiv = announcementBar.querySelector('div');
-          let contentHeight = 0;
-          if (innerDiv) {
-            contentHeight = innerDiv.getBoundingClientRect().height;
-            console.log('  - innerDiv height:', contentHeight + 'px');
-          }
-          
-          // Choose the best height measurement
-          let barHeight = Math.max(rect.height, offsetHeight, scrollHeight, clientHeight, contentHeight);
-          
-          // If still 0, calculate from content
-          if (barHeight === 0) {
-            console.log('🔧 All measurements are 0, calculating from styling...');
-            // Calculate from padding (10px top + 10px bottom) + estimated text height
-            const padding = 20; // 10px top + 10px bottom from CSS
-            const estimatedTextHeight = Math.max(titleFontSize, messageFontSize) * 2.5; // Account for title + message
-            barHeight = padding + estimatedTextHeight;
-            console.log('📐 Estimated height:', barHeight + 'px');
-          }
-          
-          console.log('🎯 Final chosen height:', barHeight + 'px');
-          
-          if (barHeight > 0) {
-            // Apply margin-top to body
-            document.body.style.setProperty('margin-top', barHeight + 'px', 'important');
-            console.log('✅ Applied', barHeight + 'px', 'margin-top to body');
-            
-            // Also set a CSS custom property for potential use by the website
-            document.documentElement.style.setProperty('--announcement-bar-height', barHeight + 'px');
-            console.log('📝 Set CSS custom property --announcement-bar-height:', barHeight + 'px');
-          }
-        }, 500); // Wait even longer for full rendering
-     };
-     
-     // Single execution after DOM is ready
-     if (document.readyState === 'loading') {
-       document.addEventListener('DOMContentLoaded', applySpacing);
-     } else {
-       applySpacing();
-     }
-     
-     // Monitor size changes with ResizeObserver for dynamic updates
-     // TEMPORARY DISABLED to fix infinite loop
-     /*
-     if (window.ResizeObserver) {
-       const resizeObserver = new ResizeObserver(updateSpacing);
-       resizeObserver.observe(announcementBar);
-     }
-     */
-     
-     // Also try to push down any fixed headers or navigation (only for sticky bars)
-     if (isSticky) {
-       const commonHeaderSelectors = ['header', 'nav', '.header', '.navigation', '.navbar', '.nav'];
-       commonHeaderSelectors.forEach(selector => {
-         const elements = document.querySelectorAll(selector);
-         elements.forEach(el => {
-           const element = el;
-           if (window.getComputedStyle(element).position === 'fixed' && 
-               window.getComputedStyle(element).top === '0px') {
-             element.style.top = barHeight + 'px';
-             element.style.transition = 'top 0.3s ease';
-           }
-         });
-       });
-     }
-
-    return announcementBar;
+    // Start initial rotation
+    startRotation();
   }
-
-  // Wait for DOM to be ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', createAnnouncementBar);
-  } else {
-    createAnnouncementBar();
-  }
-})();
-`
+})();`
 
     return new NextResponse(jsCode, {
       headers: {
         'Content-Type': 'text/javascript',
-        'Cache-Control': 'public, max-age=30', // Cache for only 30 seconds for faster updates
-        'Access-Control-Allow-Origin': '*', // Allow cross-origin requests
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Cache-Control': 'public, max-age=60',
       },
     })
 

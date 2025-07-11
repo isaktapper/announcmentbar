@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   TrashIcon,
   ClipboardIcon,
   CheckIcon,
+  ClockIcon,
+  DocumentDuplicateIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline'
 import { Clock } from 'lucide-react'
 import { Switch } from '@headlessui/react'
@@ -21,6 +24,11 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,29 +82,31 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
     }
   }
 
-  const truncateText = (text: string, maxLength: number) => {
-    // First strip HTML tags
-    const div = document.createElement('div')
-    div.innerHTML = text
-    const plainText = div.textContent || div.innerText || ''
-    
-    // Then truncate
-    if (plainText.length <= maxLength) return plainText
-    return plainText.substring(0, maxLength) + '...'
+  const handleCopySlug = async (slug: string) => {
+    try {
+      await navigator.clipboard.writeText(slug)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy slug:', error)
+    }
+  }
+
+  const handleEdit = () => {
+    const editPath = announcement.type === 'single' 
+      ? `/dashboard/edit/single/${announcement.id}`
+      : `/dashboard/edit/carousel/${announcement.id}`
+    router.push(editPath)
   }
 
   return (
     <>
       <div className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-4">
         <div className="flex flex-col h-full max-h-[150px]">
-          {/* Header with Title and Status */}
+          {/* Title */}
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-medium text-gray-900 truncate pr-4">
-              {(() => {
-                const div = document.createElement('div')
-                div.innerHTML = (announcement.content && announcement.content.title) || 'Untitled Bar'
-                return div.textContent || div.innerText || 'Untitled Bar'
-              })()}
+            <h3 className="text-base font-medium text-gray-900">
+              {announcement.bar_name}
             </h3>
             <div className="flex items-center gap-2">
               <span className={`text-xs ${announcement.visibility ? 'text-green-600' : 'text-gray-400'}`}>
@@ -119,50 +129,61 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
             </div>
           </div>
 
-          {/* Message Preview */}
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {truncateText((announcement.content && announcement.content.message) || '', 120)}
-          </p>
-
-          {/* Bottom Section with Slug and Actions */}
+          {/* Bottom Section with Type, Slug and Actions */}
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
-            {/* Slug with Copy Button */}
+            {/* Type and Slug */}
             <div className="flex items-center gap-2">
-              <code className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+              {/* Bar Type */}
+              <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-700 rounded-full capitalize">
+                {announcement.type}
+              </span>
+
+              {/* Slug with Copy Button */}
+              <code className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded flex items-center gap-1">
                 {announcement.slug}
+                <button
+                  onClick={() => handleCopySlug(announcement.slug)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <DocumentDuplicateIcon className="w-3 h-3" />
+                </button>
               </code>
-              {announcement.scheduledStart && (
-                <div className="group relative">
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Scheduled</span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              {/* Scheduling Status */}
+              {(announcement.scheduledStart || announcement.scheduledEnd) && (
+                <div className="relative group">
+                  <div className="p-1.5 text-blue-600 bg-blue-50 rounded-md">
+                    <ClockIcon className="w-4 h-4" />
                   </div>
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
-                    {`Active from ${new Date(announcement.scheduledStart).toLocaleString()} to ${announcement.scheduledEnd ? new Date(announcement.scheduledEnd).toLocaleString() : 'indefinitely'}`}
+                  <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    <div className="font-medium mb-1">Scheduled Bar</div>
+                    {announcement.scheduledStart && (
+                      <div className="text-gray-300 text-xs">
+                        Starts: {isClient ? new Date(announcement.scheduledStart).toLocaleString() : announcement.scheduledStart}
+                      </div>
+                    )}
+                    {announcement.scheduledEnd && (
+                      <div className="text-gray-300 text-xs">
+                        Ends: {isClient ? new Date(announcement.scheduledEnd).toLocaleString() : announcement.scheduledEnd}
+                      </div>
+                    )}
+                    <div className="mt-2 text-xs text-gray-400">
+                      Bar will automatically activate at the scheduled time
+                    </div>
                   </div>
                 </div>
               )}
+              
               <button
-                onClick={copyEmbedScript}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                title={copySuccess ? 'Copied!' : 'Copy embed code'}
-              >
-                {copySuccess ? (
-                  <CheckIcon className="w-4 h-4 text-green-500" />
-                ) : (
-                  <ClipboardIcon className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-            <button
-                onClick={() => router.push(`/dashboard/edit/${announcement.id}`)}
+                onClick={handleEdit}
                 className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
             >
                 Edit
             </button>
+              
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="p-1 text-gray-400 hover:text-red-500 transition-colors"

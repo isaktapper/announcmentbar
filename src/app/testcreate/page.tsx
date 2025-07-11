@@ -11,6 +11,9 @@ import {
   ChevronUpIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
+import { EnhancedCarouselItem } from '@/types/announcement'
+import CarouselSlideManager from './components/CarouselSlideManager'
+import LivePreview from './components/LivePreview'
 
 interface Section {
   id: string
@@ -18,6 +21,8 @@ interface Section {
   icon: React.ElementType
   isOpen: boolean
 }
+
+type BarType = 'static' | 'carousel'
 
 export default function TestCreatePage() {
   const [sections, setSections] = useState<Section[]>([
@@ -28,6 +33,41 @@ export default function TestCreatePage() {
     { id: 'targeting', title: 'Targeting', icon: GlobeAltIcon, isOpen: true },
   ])
   const [origin, setOrigin] = useState('')
+  const [barType, setBarType] = useState<BarType>('static')
+  const [carouselItems, setCarouselItems] = useState<EnhancedCarouselItem[]>([{
+    title: '',
+    message: '',
+    textColor: '#000000',
+    backgroundColor: '#FFFFFF',
+    fontFamily: 'Inter',
+    textAlignment: 'center',
+    cta: {
+      enabled: false,
+      text: '',
+      url: '',
+      size: 'medium',
+      borderRadius: 'soft',
+      backgroundColor: '#000000',
+      textColor: '#FFFFFF'
+    }
+  }])
+  const [staticContent, setStaticContent] = useState({
+    title: '',
+    message: '',
+    backgroundColor: '#FFFFFF',
+    textColor: '#000000',
+    fontFamily: 'Inter' as const,
+    textAlignment: 'center' as const,
+    cta: {
+      enabled: false,
+      text: '',
+      url: '',
+      size: 'medium' as const,
+      borderRadius: 'soft' as const,
+      backgroundColor: '#000000',
+      textColor: '#FFFFFF'
+    }
+  })
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -57,14 +97,14 @@ export default function TestCreatePage() {
               </Switch>
             </div>
           </div>
-          <div className="mt-4 p-4 bg-yellow-400 text-black rounded-lg">
-            <div className="text-center">
-              <div className="font-semibold mb-1">Welcome to our Spring Sale! 🌸</div>
-              <div className="text-sm mb-2">Get 20% off on all products using code SPRING20</div>
-              <button className="px-4 py-1.5 bg-black text-white rounded-md text-sm font-medium">
-                Shop Now
-              </button>
-            </div>
+          <div className="mt-4">
+            <LivePreview
+              type={barType}
+              staticContent={staticContent}
+              carouselItems={carouselItems}
+              carouselSpeed={5000}
+              pauseOnHover={true}
+            />
           </div>
         </div>
       </div>
@@ -97,10 +137,24 @@ export default function TestCreatePage() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Bar Type</label>
                         <div className="flex gap-4">
-                          <button className="px-4 py-2 bg-brand-50 text-brand-700 border-2 border-brand-500 rounded-lg font-medium">
+                          <button 
+                            className={`px-4 py-2 ${
+                              barType === 'static' 
+                                ? 'bg-brand-50 text-brand-700 border-2 border-brand-500' 
+                                : 'bg-white text-gray-700 border-2 border-gray-200'
+                            } rounded-lg font-medium`}
+                            onClick={() => setBarType('static')}
+                          >
                             Static
                           </button>
-                          <button className="px-4 py-2 bg-white text-gray-700 border-2 border-gray-200 rounded-lg font-medium">
+                          <button 
+                            className={`px-4 py-2 ${
+                              barType === 'carousel' 
+                                ? 'bg-brand-50 text-brand-700 border-2 border-brand-500' 
+                                : 'bg-white text-gray-700 border-2 border-gray-200'
+                            } rounded-lg font-medium`}
+                            onClick={() => setBarType('carousel')}
+                          >
                             Carousel
                           </button>
                         </div>
@@ -128,12 +182,14 @@ export default function TestCreatePage() {
 
                   {section.id === 'content' && (
                     <div className="space-y-6">
-                      {/* Title & Message */}
+                      {barType === 'static' ? (
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
                           <input
                             type="text"
+                              value={staticContent.title}
+                              onChange={(e) => setStaticContent(prev => ({ ...prev, title: e.target.value }))}
                             placeholder="Welcome to our Spring Sale! 🌸"
                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                           />
@@ -141,69 +197,20 @@ export default function TestCreatePage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
                           <textarea
+                              value={staticContent.message}
+                              onChange={(e) => setStaticContent(prev => ({ ...prev, message: e.target.value }))}
                             placeholder="Get 20% off on all products using code SPRING20"
                             rows={2}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-
-                      {/* CTA Button */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-4">Call-to-Action Button</label>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">Button Text</label>
-                            <input
-                              type="text"
-                              placeholder="Shop Now"
-                              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">Button URL</label>
-                            <input
-                              type="text"
-                              placeholder="https://..."
                               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                             />
                           </div>
                         </div>
-                        <div className="mt-4">
-                          <label className="block text-xs text-gray-500 mb-1">Button Style</label>
-                          <div className="flex gap-4">
-                            <button className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium">
-                              Filled
-                            </button>
-                            <button className="px-4 py-2 bg-white text-black border-2 border-black rounded-lg text-sm font-medium">
-                              Outline
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Typography */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-4">Typography</label>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">Font Family</label>
-                            <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-                              <option>Inter</option>
-                              <option>Roboto</option>
-                              <option>Open Sans</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">Text Alignment</label>
-                            <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-                              <option>Center</option>
-                              <option>Left</option>
-                              <option>Right</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
+                      ) : (
+                        <CarouselSlideManager
+                          items={carouselItems}
+                          onChange={setCarouselItems}
+                        />
+                      )}
                     </div>
                   )}
 

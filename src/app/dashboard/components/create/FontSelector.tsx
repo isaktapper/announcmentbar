@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Lock } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import { FontFamily } from '@/types/announcement'
 import { getUserPlan } from '@/lib/user-utils'
 import { createClient } from '@/lib/supabase-client'
@@ -17,8 +17,13 @@ const fontOptions = {
   'Inter': { name: 'Inter', cssName: 'Inter', isPremium: true, fallback: 'sans-serif' },
   'Roboto': { name: 'Roboto', cssName: 'Roboto', isPremium: true, fallback: 'sans-serif' },
   'Open Sans': { name: 'Open Sans', cssName: 'Open Sans', isPremium: true, fallback: 'sans-serif' },
-  'System UI': { name: 'System UI', cssName: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial', isPremium: false, fallback: 'sans-serif' }
-}
+  'Poppins': { name: 'Poppins', cssName: 'Poppins', isPremium: true, fallback: 'sans-serif' },
+  'Lato': { name: 'Lato', cssName: 'Lato', isPremium: true, fallback: 'sans-serif' },
+  'DM Sans': { name: 'DM Sans', cssName: 'DM Sans', isPremium: true, fallback: 'sans-serif' },
+  'Nunito': { name: 'Nunito', cssName: 'Nunito', isPremium: true, fallback: 'sans-serif' },
+  'IBM Plex Sans': { name: 'IBM Plex Sans', cssName: 'IBM+Plex+Sans', isPremium: true, fallback: 'sans-serif' },
+  'Space Grotesk': { name: 'Space Grotesk', cssName: 'Space+Grotesk', isPremium: true, fallback: 'sans-serif' }
+} as const;
 
 export default function FontSelector({ selectedFont, onSelect }: FontSelectorProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -45,8 +50,19 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
     fetchUserPlan()
   }, [])
 
+  // Reset to Work Sans if user downgrades from unlimited
+  useEffect(() => {
+    if (userPlan === 'free' && fontOptions[selectedFont]?.isPremium) {
+      onSelect('Work Sans')
+    }
+  }, [userPlan, selectedFont, onSelect])
+
   const handleFontSelect = (font: FontFamily) => {
     const fontConfig = fontOptions[font]
+    if (!fontConfig) {
+      onSelect('Work Sans')
+      return
+    }
     
     // Check if font is premium and user is on free plan
     if (fontConfig.isPremium && userPlan === 'free') {
@@ -68,50 +84,19 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
     const isSelected = selectedFont === font
     const isDisabled = fontConfig.isPremium && userPlan === 'free'
     
-    return `flex items-center justify-between px-4 py-3 text-sm cursor-pointer transition-all ${
+    return `flex items-center justify-between px-4 py-3 text-sm transition-all ${
       isSelected 
-        ? 'bg-brand-50 text-brand-700' 
+        ? 'bg-gray-900 text-white' 
         : isDisabled
-        ? 'text-gray-400 cursor-not-allowed'
-        : 'text-gray-900 hover:bg-gray-50'
+        ? 'text-gray-700 cursor-default'
+        : 'text-gray-900 hover:bg-gray-50 cursor-pointer'
     }`
-  }
-
-  const renderFontOption = (font: FontFamily) => {
-    const fontConfig = fontOptions[font]
-    const isSelected = selectedFont === font
-    const isDisabled = fontConfig.isPremium && userPlan === 'free'
-
-    return (
-      <div
-        key={font}
-        onClick={() => handleFontSelect(font)}
-        className={getFontOptionClass(font)}
-        style={{ 
-          fontFamily: `'${fontConfig.cssName}', ${fontConfig.fallback}`,
-          opacity: isDisabled ? 0.5 : 1
-        }}
-      >
-        <span>{fontConfig.name}</span>
-        <div className="flex items-center gap-2">
-          {isSelected && !isDisabled && (
-            <div className="w-2 h-2 bg-brand-500 rounded-full"></div>
-          )}
-          {fontConfig.isPremium && userPlan === 'free' && (
-            <div className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-gray-400" />
-                <span className="text-xs text-gray-500">Premium</span>
-            </div>
-          )}
-        </div>
-      </div>
-    )
   }
 
   if (loading) {
     return (
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-900">
+        <label className="block text-sm font-medium text-gray-700">
           Typography
         </label>
         <div className="w-full h-12 bg-gray-100 rounded-xl animate-pulse"></div>
@@ -128,10 +113,12 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={getDropdownButtonClass()}
           style={{ 
-            fontFamily: `'${fontOptions[selectedFont].cssName}', ${fontOptions[selectedFont].fallback}`
+            fontFamily: fontOptions[selectedFont] 
+              ? `'${fontOptions[selectedFont].cssName}', ${fontOptions[selectedFont].fallback}`
+              : `'Work Sans', sans-serif`
           }}
         >
-          <span>{fontOptions[selectedFont].name}</span>
+          <span>{fontOptions[selectedFont]?.name || 'Work Sans'}</span>
           <svg 
             className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
             fill="none" 
@@ -145,22 +132,30 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
         {/* Dropdown Menu */}
         {isDropdownOpen && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto">
-            {/* Premium upgrade message for free users */}
-            {userPlan === 'free' && (
-              <div className="p-3 bg-yellow-50 border-b border-yellow-100">
-                <div className="flex items-center gap-2 text-sm text-yellow-800">
-                  <Lock className="w-4 h-4" />
-                  <span className="font-medium">Upgrade to unlock custom fonts</span>
-                </div>
-                <p className="text-xs text-yellow-700 mt-1">
-                  One-time payment, $8 • Get access to all premium fonts
-                </p>
-              </div>
-            )}
-            
-            {/* Font Options */}
             <div className="py-1">
-              {Object.keys(fontOptions).map(font => renderFontOption(font as FontFamily))}
+              {Object.entries(fontOptions).map(([font, config]) => (
+                <div
+                  key={font}
+                  onClick={() => handleFontSelect(font as FontFamily)}
+                  className={getFontOptionClass(font as FontFamily)}
+                  style={{ 
+                    fontFamily: `'${config.cssName}', ${config.fallback}`
+                  }}
+                >
+                  <span>{config.name}</span>
+                  <div className="flex items-center gap-2">
+                    {selectedFont === font && !config.isPremium && (
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    )}
+                    {config.isPremium && userPlan === 'free' && (
+                      <div className="flex items-center gap-2 text-yellow-600">
+                        <Crown className="w-4 h-4" />
+                        <span className="text-xs">Upgrade to unlimited</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
