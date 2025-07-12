@@ -332,28 +332,10 @@ export async function GET(
     }
 
     function renderCTAButton(announcement) {
-      if (!announcement.cta_enabled || !announcement.cta_text) return ''
-
-      const buttonClasses = \`
-        \${getButtonSizeClasses(announcement.cta_size)}
-        inline-flex items-center justify-center
-        transition-colors duration-200
-        hover:opacity-90
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
-      \`.trim();
-
-      return \`
-        <button 
-          class="\${buttonClasses}"
-          style="
-            background-color: \${announcement.cta_background_color};
-            color: \${announcement.cta_text_color};
-            border-radius: \${getBorderRadiusValue(announcement.cta_border_radius)};
-          "
-        >
-          \${announcement.cta_text}
-        </button>
-      \`
+      if (!announcement.cta_enabled || !announcement.cta_text) return '';
+      console.log('[EMBED] Rendering CTA:', announcement.cta_text);
+      const buttonClasses = getButtonSizeClasses(announcement.cta_size) + ' inline-flex items-center justify-center transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500';
+      return '<button class="' + buttonClasses + '" style="background-color:' + announcement.cta_background_color + ';color:' + announcement.cta_text_color + ';border-radius:' + getBorderRadiusValue(announcement.cta_border_radius) + ';height:100%;display:flex;align-items:center;">' + announcement.cta_text + '</button>';
     }
 
     function renderIcon() {
@@ -366,32 +348,20 @@ export async function GET(
         const carouselContent = carouselItems.map((item, index) => \`
           <div 
             class="announcement-carousel-item" 
-            data-index="\${index}"
-            style="
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-              transform: translateX(\${index === 0 ? '0' : '100%'});
-              opacity: \${index === 0 ? '1' : '0'};
-              \${item.background ? \`background-color: \${item.background};\` : ''}
-              \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
-              \${item.textColor ? \`color: \${item.textColor};\` : ''}
-              \${item.fontFamily ? \`font-family: \${getFontFamily(item.fontFamily)};\` : ''}
-            "
+            data-index="' + index + '"
+            style="position:absolute;top:0;left:0;width:100%;height:' + (barHeight || 60) + 'px;display:flex;align-items:center;transition:transform 0.4s ease-in-out,opacity 0.4s ease-in-out;transform:translateX(' + (index === 0 ? '0' : '100%') + ');opacity:' + (index === 0 ? '1' : '0') + ';' + (item.background ? 'background-color:' + item.background + ';' : '') + (item.useGradient ? 'background:linear-gradient(to right,' + item.background + ',' + item.backgroundGradient + ');' : '') + (item.textColor ? 'color:' + item.textColor + ';' : '') + (item.fontFamily ? 'font-family:' + getFontFamily(item.fontFamily) + ';' : '') + '"
           >
-            <div class="\${getContentWrapperClasses()}">
-              \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
-              <span style="font-size: \${messageFontSize}px">\${item.message}</span>
-              \${renderCTAButton(item)}
-            </div>
-          </div>
+            <div class="' + getContentWrapperClasses() + '" style="width:100%;display:flex;align-items:center;justify-content:center;height:100%;">' +
+              (item.title ? '<span style=\'font-size:' + titleFontSize + 'px\'>' + item.title + '</span>' : '') +
+              '<span style=\'font-size:' + messageFontSize + 'px;margin-left:8px;\'>' + item.message + '</span>' +
+              renderCTAButton(item) +
+            '</div>' +
+          '</div>'
         \`).join('')
 
         const carouselIndicators = '';
 
-        return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
+        return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;height:' + (barHeight || 60) + 'px;display:flex;align-items:center;">' +
                carouselContent +
                carouselIndicators +
                '</div>';
@@ -400,10 +370,10 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
-      return '<div class="' + getContentWrapperClasses() + '">' +
+      return '<div class="' + getContentWrapperClasses() + '" style="width:100%;display:flex;align-items:center;justify-content:center;height:100%;">' +
              leftIcon +
-             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
-             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+             (title ? '<span style=\'font-size:' + titleFontSize + 'px\'>' + title + '</span>' : '') +
+             '<span style=\'font-size:' + messageFontSize + 'px;margin-left:8px;\'>' + message + '</span>' +
              rightIcon +
              renderCTAButton(announcement) +
              '</div>';
@@ -423,6 +393,9 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
+    'min-height: ' + (announcement.barHeight || 60) + 'px',
+    'max-height: ' + (announcement.barHeight || 60) + 'px',
+    'overflow: hidden',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
