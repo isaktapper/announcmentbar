@@ -391,9 +391,11 @@ export async function GET(
 
       return '<div class="' + getContentWrapperClasses() + '">' +
              leftIcon +
-             '<div style="display:flex;flex-direction:column;align-items:' + (textAlignment==='right'?'flex-end':textAlignment==='center'?'center':'flex-start') + ';gap:2px;">' +
-             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
-             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+             '<div style="display:flex;flex-direction:column;align-items:' +
+               (textAlignment==='right'?'flex-end':textAlignment==='center'?'center':'flex-start') +
+               ';">' +
+               (title ? '<div style="font-size:'+titleFontSize+'px;margin-bottom:2px;">'+title+'</div>' : '') +
+               '<div style="font-size:'+messageFontSize+'px;">'+message+'</div>' +
              '</div>' +
              renderCTAButton(announcement) +
              rightIcon +
@@ -425,7 +427,11 @@ export async function GET(
     announcement.isSticky ? 'position: fixed; top: 0; left: 0;' : 'position: relative;',
   ].filter(Boolean).join(';');
 
-  announcementBar.setAttribute('style', baseStyles);
+  // Set bar style once
+  announcementBar.setAttribute(
+    'style',
+    baseStyles + ';overflow:hidden'   // prevents height leak
+  );
 
   // Expose bar height as CSS var for host page convenience
   document.documentElement.style.setProperty('--announcement-bar-height', (announcement.barHeight || 60) + 'px');
