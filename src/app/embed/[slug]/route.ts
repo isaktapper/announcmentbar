@@ -326,7 +326,7 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      var baseClasses = 'flex items-center gap-2';
+      var baseClasses = 'flex items-center gap-2 h-full w-full';
       var justify = textAlignment === 'center' ? 'justify-center' : (textAlignment === 'right' ? 'justify-end flex-row-reverse' : 'justify-start');
       return baseClasses + ' ' + justify;
     }
@@ -352,31 +352,33 @@ export async function GET(
 
     function renderContent() {
       if (type === 'carousel' && carouselItems?.length > 0) {
-        const carouselContent = carouselItems.map((item, index) => \`
-          <div 
+        const carouselContent = carouselItems.map((item, index) => {
+          return `<div 
             class="announcement-carousel-item" 
-            data-index="\${index}"
+            data-index="${index}"
             style="
               position: absolute;
               top: 0;
               left: 0;
               width: 100%;
+              height: 100%;
               transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-              transform: translateX(\${index === 0 ? '0' : '100%'});
-              opacity: \${index === 0 ? '1' : '0'};
-              \${item.background ? \`background-color: \${item.background};\` : ''}
-              \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
-              \${item.textColor ? \`color: \${item.textColor};\` : ''}
-              \${item.fontFamily ? \`font-family: \${getFontFamily(item.fontFamily)};\` : ''}
+              transform: translateX(${index === 0 ? '0' : '100%'});
+              opacity: ${index === 0 ? '1' : '0'};
+              ${item.background ? `background-color: ${item.background};` : ''}
+              ${item.useGradient ? `background: linear-gradient(to right, ${item.background}, ${item.backgroundGradient});` : ''}
+              ${item.textColor ? `color: ${item.textColor};` : ''}
+              ${item.fontFamily ? `font-family: ${getFontFamily(item.fontFamily)};` : ''}
+              overflow:hidden;
             "
           >
-            <div class="\${getContentWrapperClasses()}">
-              \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
-              <span style="font-size: \${messageFontSize}px">\${item.message}</span>
-              \${renderCTAButton(item)}
+            <div class="${getContentWrapperClasses()}" style="height:100%;overflow:hidden;">
+              ${item.title ? `<span style=\"font-size: ${titleFontSize}px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;\">${item.title}</span>` : ''}
+              <span style=\"font-size: ${messageFontSize}px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;\">${item.message}</span>
+              ${renderCTAButton(item)}
             </div>
-          </div>
-        \`).join('')
+          </div>`;
+        }).join('');
 
         const carouselIndicators = '';
 
@@ -389,13 +391,13 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
-      return '<div class="' + getContentWrapperClasses() + '">' +
+      return '<div class="' + getContentWrapperClasses() + '" style="height:100%;overflow:hidden;">' +
              leftIcon +
              '<div style="display:flex;flex-direction:column;align-items:' +
                (textAlignment==='right'?'flex-end':textAlignment==='center'?'center':'flex-start') +
-               ';">' +
-               (title ? '<div style="font-size:'+titleFontSize+'px;margin-bottom:2px;">'+title+'</div>' : '') +
-               '<div style="font-size:'+messageFontSize+'px;">'+message+'</div>' +
+               ';flex:1 1 0;min-width:0;overflow:hidden;">' +
+               (title ? '<div style="font-size:'+titleFontSize+'px;margin-bottom:2px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">'+title+'</div>' : '') +
+               '<div style="font-size:'+messageFontSize+'px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">'+message+'</div>' +
              '</div>' +
              renderCTAButton(announcement) +
              rightIcon +
@@ -416,6 +418,8 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
+    'min-height: ' + (announcement.barHeight || 60) + 'px',
+    'max-height: ' + (announcement.barHeight || 60) + 'px',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
@@ -425,12 +429,13 @@ export async function GET(
       : 'background: ' + announcement.background,
     'color: ' + announcement.textColor,
     announcement.isSticky ? 'position: fixed; top: 0; left: 0;' : 'position: relative;',
+    'overflow: hidden',
   ].filter(Boolean).join(';');
 
   // Set bar style once
   announcementBar.setAttribute(
     'style',
-    baseStyles + ';overflow:hidden'   // prevents height leak
+    baseStyles
   );
 
   // Expose bar height as CSS var for host page convenience
