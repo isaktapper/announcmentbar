@@ -280,9 +280,9 @@ export async function GET(
   function getFontFamily(fontName) {
     const fontConfig = googleFonts[fontName];
     if (fontConfig) {
-      return \`"\${fontConfig.cssName}", \${fontConfig.fallback}\`;
+      return `'${fontConfig.cssName}', ${fontConfig.fallback}`;
     }
-    return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   }
 
   // Generate the announcement HTML
