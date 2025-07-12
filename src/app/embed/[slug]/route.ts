@@ -326,13 +326,13 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      var baseClasses = 'flex items-center gap-2 h-full w-full';
-      var justify = textAlignment === 'center' ? 'justify-center' : (textAlignment === 'right' ? 'justify-end flex-row-reverse' : 'justify-start');
-      return baseClasses + ' ' + justify;
+      const baseClasses = 'flex';
+      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : 'flex-col items-center gap-1';
+      return \`\${baseClasses} \${directionClasses}\`;
     }
 
     function renderCTAButton(announcement) {
-      if (!announcement.cta_text) return ''
+      if (!announcement.cta_enabled || !announcement.cta_text) return ''
 
       const buttonClasses = \`
         \${getButtonSizeClasses(announcement.cta_size)}
@@ -342,7 +342,18 @@ export async function GET(
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
       \`.trim();
 
-      return '<a href="' + (announcement.cta_url || '#') + '" target="_blank" rel="noopener noreferrer" class="' + buttonClasses + '" style="background-color:' + announcement.cta_background_color + ';color:' + announcement.cta_text_color + ';border-radius:' + getBorderRadiusValue(announcement.cta_border_radius) + ';">' + announcement.cta_text + '</a>';
+      return \`
+        <button 
+          class="\${buttonClasses}"
+          style="
+            background-color: \${announcement.cta_background_color};
+            color: \${announcement.cta_text_color};
+            border-radius: \${getBorderRadiusValue(announcement.cta_border_radius)};
+          "
+        >
+          \${announcement.cta_text}
+        </button>
+      \`
     }
 
     function renderIcon() {
@@ -352,33 +363,31 @@ export async function GET(
 
     function renderContent() {
       if (type === 'carousel' && carouselItems?.length > 0) {
-        const carouselContent = carouselItems.map((item, index) => {
-          return `<div 
+        const carouselContent = carouselItems.map((item, index) => \`
+          <div 
             class="announcement-carousel-item" 
-            data-index="${index}"
+            data-index="\${index}"
             style="
               position: absolute;
               top: 0;
               left: 0;
               width: 100%;
-              height: 100%;
               transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-              transform: translateX(${index === 0 ? '0' : '100%'});
-              opacity: ${index === 0 ? '1' : '0'};
-              ${item.background ? `background-color: ${item.background};` : ''}
-              ${item.useGradient ? `background: linear-gradient(to right, ${item.background}, ${item.backgroundGradient});` : ''}
-              ${item.textColor ? `color: ${item.textColor};` : ''}
-              ${item.fontFamily ? `font-family: ${getFontFamily(item.fontFamily)};` : ''}
-              overflow:hidden;
+              transform: translateX(\${index === 0 ? '0' : '100%'});
+              opacity: \${index === 0 ? '1' : '0'};
+              \${item.background ? \`background-color: \${item.background};\` : ''}
+              \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
+              \${item.textColor ? \`color: \${item.textColor};\` : ''}
+              \${item.fontFamily ? \`font-family: \${getFontFamily(item.fontFamily)};\` : ''}
             "
           >
-            <div class="${getContentWrapperClasses()}" style="height:100%;overflow:hidden;">
-              ${item.title ? `<span style=\"font-size: ${titleFontSize}px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;\">${item.title}</span>` : ''}
-              <span style=\"font-size: ${messageFontSize}px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;\">${item.message}</span>
-              ${renderCTAButton(item)}
+            <div class="\${getContentWrapperClasses()}">
+              \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
+              <span style="font-size: \${messageFontSize}px">\${item.message}</span>
+              \${renderCTAButton(item)}
             </div>
-          </div>`;
-        }).join('');
+          </div>
+        \`).join('')
 
         const carouselIndicators = '';
 
@@ -391,16 +400,12 @@ export async function GET(
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
       const rightIcon = iconAlignment === 'right' ? renderIcon() : '';
 
-      return '<div class="' + getContentWrapperClasses() + '" style="height:100%;overflow:hidden;">' +
+      return '<div class="' + getContentWrapperClasses() + '">' +
              leftIcon +
-             '<div style="display:flex;flex-direction:column;align-items:' +
-               (textAlignment==='right'?'flex-end':textAlignment==='center'?'center':'flex-start') +
-               ';flex:1 1 0;min-width:0;overflow:hidden;">' +
-               (title ? '<div style="font-size:'+titleFontSize+'px;margin-bottom:2px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">'+title+'</div>' : '') +
-               '<div style="font-size:'+messageFontSize+'px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">'+message+'</div>' +
-             '</div>' +
-             renderCTAButton(announcement) +
+             (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+             '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
              rightIcon +
+             renderCTAButton(announcement) +
              '</div>';
     }
 
@@ -418,8 +423,6 @@ export async function GET(
     'justify-content: center',
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
-    'min-height: ' + (announcement.barHeight || 60) + 'px',
-    'max-height: ' + (announcement.barHeight || 60) + 'px',
     'padding: 0',
     'box-sizing: border-box',
     'z-index: 999999',
@@ -429,22 +432,14 @@ export async function GET(
       : 'background: ' + announcement.background,
     'color: ' + announcement.textColor,
     announcement.isSticky ? 'position: fixed; top: 0; left: 0;' : 'position: relative;',
-    'overflow: hidden',
   ].filter(Boolean).join(';');
 
-  // Set bar style once
-  announcementBar.setAttribute(
-    'style',
-    baseStyles
-  );
+  announcementBar.setAttribute('style', baseStyles);
 
   // Expose bar height as CSS var for host page convenience
   document.documentElement.style.setProperty('--announcement-bar-height', (announcement.barHeight || 60) + 'px');
 
-  // Remove default margins so bar touches viewport edges
-  document.body.style.marginLeft = '0';
-  document.body.style.marginRight = '0';
-
+  // If sticky, push body down so it doesn't overlap
   if (announcement.isSticky) {
     const currentMarginTop = parseFloat(getComputedStyle(document.body).marginTop) || 0;
     document.body.style.marginTop = (currentMarginTop + (announcement.barHeight || 60)) + 'px';
