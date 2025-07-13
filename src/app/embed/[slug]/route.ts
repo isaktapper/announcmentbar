@@ -303,6 +303,9 @@ export async function GET(
           : (Array.isArray(carouselItems) ? carouselItems : []);
         if (slides.length > 0) {
           const carouselContent = slides.map((item, index) => {
+            var justifyClass = 'justify-start';
+            if (item.textAlignment === 'center') justifyClass = 'justify-center';
+            else if (item.textAlignment === 'right') justifyClass = 'justify-end';
             return '<div ' +
               'class="announcement-carousel-item" ' +
               'data-index="' + index + '" ' +
@@ -320,8 +323,7 @@ export async function GET(
               (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
               '"' +
               '>' +
-              // --- New layout for carousel slide ---
-              '<div class="flex flex-row items-center gap-4">' +
+              '<div class="flex flex-row items-center gap-4 ' + justifyClass + '">' +
                 '<div class="min-w-0">' +
                   (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                   '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
@@ -348,7 +350,6 @@ export async function GET(
                   '"' +
                   '>' + item.cta_text + '</a>' : '') +
               '</div>' +
-              // --- End new layout ---
               '</div>';
           }).join('');
 
