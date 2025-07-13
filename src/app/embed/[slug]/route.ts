@@ -359,7 +359,7 @@ export async function GET(
 
       if (type === 'single') {
         // Group title and message vertically, CTA as sibling in flex row
-        return '<div class="flex flex-row items-center gap-2">' +
+        return '<div class="flex flex-row items-center gap-4">' +
           '<div class="min-w-0">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
