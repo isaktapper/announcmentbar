@@ -312,6 +312,9 @@ export async function GET(
                 if (item.textAlignment === 'center') textAlignClass = 'text-center';
                 else if (item.textAlignment === 'right') textAlignClass = 'text-right';
                 else textBlockMargin = ' mr-3';
+                // Add left padding for left-aligned text
+                var contentWrapperStyle = '';
+                if (item.textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
                 return '<div ' +
                   'class="announcement-carousel-item" ' +
                   'data-index="' + index + '" ' +
@@ -329,7 +332,7 @@ export async function GET(
                   (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
                   '>' +
-                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '">' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + '">' +
                     '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                       '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
@@ -370,7 +373,10 @@ export async function GET(
 
       if (type === 'single') {
         // Group title and message vertically, CTA as sibling in flex row
-        return '<div class="flex flex-row items-center gap-4">' +
+        // Add left padding for left-aligned text
+        var contentWrapperStyle = '';
+        if (textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
+        return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
           '<div class="min-w-0">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
