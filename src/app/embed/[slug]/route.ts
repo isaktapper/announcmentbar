@@ -315,6 +315,11 @@ export async function GET(
                 // Add left padding for left-aligned text
                 var contentWrapperStyle = '';
                 if (item.textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
+                // Render icon if present
+                var iconHtml = '';
+                if (item.icon && item.icon !== 'none' && ICON_SVG_MAP[item.icon]) {
+                  iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:12px;padding-left:4px;">' + ICON_SVG_MAP[item.icon] + '</span>';
+                }
                 return '<div ' +
                   'class="announcement-carousel-item" ' +
                   'data-index="' + index + '" ' +
@@ -333,6 +338,7 @@ export async function GET(
                   '"' +
                   '>' +
                   '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + '">' +
+                    iconHtml +
                     '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                       '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
@@ -376,7 +382,14 @@ export async function GET(
         // Add left padding for left-aligned text
         var contentWrapperStyle = '';
         if (textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
+        // Render icon if present (prefer top-level icon, fallback to content.icon)
+        var iconValue = icon && icon !== 'none' ? icon : (announcement.content && announcement.content.icon ? announcement.content.icon : null);
+        var iconHtml = '';
+        if (iconValue && iconValue !== 'none' && ICON_SVG_MAP[iconValue]) {
+          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:12px;padding-left:4px;">' + ICON_SVG_MAP[iconValue] + '</span>';
+        }
         return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
+          iconHtml +
           '<div class="min-w-0">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
