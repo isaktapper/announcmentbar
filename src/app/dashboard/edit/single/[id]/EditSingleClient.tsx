@@ -75,8 +75,6 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
       cta_enabled: announcement.cta_enabled,
       cta_text: announcement.cta_text,
       cta_url: announcement.cta_url,
-      cta_size: announcement.cta_size,
-      cta_border_radius: announcement.cta_border_radius,
       cta_background_color: announcement.cta_background_color,
       cta_text_color: announcement.cta_text_color,
     }
@@ -181,8 +179,6 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
         cta_enabled: formData.cta_enabled,
         cta_text: formData.cta_text || '',
         cta_url: formData.cta_url || '',
-        cta_size: formData.cta_size || 'medium',
-        cta_border_radius: formData.cta_border_radius || 'soft',
         cta_background_color: formData.cta_background_color || '#000000',
         cta_text_color: formData.cta_text_color || '#FFFFFF'
       }
@@ -283,8 +279,6 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
               cta_enabled={previewData.cta_enabled}
               cta_text={previewData.cta_text}
               cta_url={previewData.cta_url}
-              cta_size={previewData.cta_size}
-              cta_border_radius={previewData.cta_border_radius}
               cta_background_color={previewData.cta_background_color}
               cta_text_color={previewData.cta_text_color}
               iconAlignment={previewData.iconAlignment}

@@ -9,8 +9,6 @@ export interface CTASettings {
   enabled: boolean
   text: string
   url: string
-  size: 'small' | 'medium' | 'large'
-  borderRadius: BorderRadiusStyle
   backgroundColor: string
   textColor: string
 }
@@ -80,8 +78,6 @@ export interface CarouselItem {
   cta_enabled: boolean
   cta_text: string
   cta_url: string
-  cta_size: 'small' | 'medium' | 'large'
-  cta_border_radius: 'sharp' | 'soft' | 'pill'
   cta_background_color: string
   cta_text_color: string
 }
@@ -128,8 +124,6 @@ export interface AnnouncementFormData {
   cta_enabled: boolean
   cta_text: string
   cta_url: string
-  cta_size: 'small' | 'medium' | 'large'
-  cta_border_radius: 'sharp' | 'soft' | 'pill'
   cta_background_color: string
   cta_text_color: string
 }
@@ -167,8 +161,6 @@ export interface Template {
   cta_enabled: boolean
   cta_text: string
   cta_url: string
-  cta_size: 'small' | 'medium' | 'large'
-  cta_border_radius: BorderRadiusStyle
   cta_background_color: string
   cta_text_color: string
 }

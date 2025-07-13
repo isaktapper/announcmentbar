@@ -47,8 +47,6 @@ export interface LivePreviewProps {
   cta_enabled: boolean
   cta_text: string
   cta_url: string
-  cta_size: 'small' | 'medium' | 'large'
-  cta_border_radius: 'sharp' | 'soft' | 'pill'
   cta_background_color: string
   cta_text_color: string
   iconAlignment: 'left' | 'right'
@@ -91,8 +89,6 @@ export default function LivePreview({
   cta_enabled,
   cta_text,
   cta_url,
-  cta_size,
-  cta_border_radius,
   cta_background_color,
   cta_text_color,
   iconAlignment
@@ -143,10 +139,10 @@ export default function LivePreview({
         cta_enabled: currentSlide.cta_enabled,
         cta_text: currentSlide.cta_text,
         cta_url: currentSlide.cta_url,
-        cta_size: currentSlide.cta_size,
-        cta_border_radius: currentSlide.cta_border_radius,
         cta_background_color: currentSlide.cta_background_color,
-        cta_text_color: currentSlide.cta_text_color
+        cta_text_color: currentSlide.cta_text_color,
+        titleFontSize: currentSlide.titleFontSize,
+        messageFontSize: currentSlide.messageFontSize,
       }
     }
     return {
@@ -163,10 +159,10 @@ export default function LivePreview({
       cta_enabled,
       cta_text,
       cta_url,
-      cta_size,
-      cta_border_radius,
       cta_background_color,
-      cta_text_color
+      cta_text_color,
+      titleFontSize,
+      messageFontSize,
     }
   }
 
@@ -176,8 +172,6 @@ export default function LivePreview({
   const activeCtaEnabled = type === 'carousel' ? content.cta_enabled : cta_enabled
   const activeCtaText = type === 'carousel' ? content.cta_text : cta_text
   const activeCtaUrl = type === 'carousel' ? content.cta_url : cta_url
-  const activeCtaSize = type === 'carousel' ? content.cta_size : cta_size
-  const activeCtaRadius = type === 'carousel' ? content.cta_border_radius : cta_border_radius
   const activeCtaBg = type === 'carousel' ? content.cta_background_color : cta_background_color
   const activeCtaTextColor = type === 'carousel' ? content.cta_text_color : cta_text_color
 
@@ -201,20 +195,8 @@ export default function LivePreview({
     return <InformationCircleIcon className="w-5 h-5" />
   }
 
-  const getCtaClasses = () => {
-    const baseClasses = 'font-medium transition-colors'
-    const sizeClasses = {
-      small: 'px-3 py-1 text-sm',
-      medium: 'px-4 py-2',
-      large: 'px-6 py-3 text-lg'
-    }
-    const radiusClasses = {
-      sharp: 'rounded',
-      soft: 'rounded-lg',
-      pill: 'rounded-full'
-    }
-    return `${baseClasses} ${sizeClasses[activeCtaSize]} ${radiusClasses[activeCtaRadius]}`
-  }
+  const buttonHeight = Math.max(barHeight - 16, 24);
+  const buttonFontSize = Math.max(14, Math.min(buttonHeight * 0.45, 28));
 
   return (
     <div
@@ -256,8 +238,22 @@ export default function LivePreview({
               href={activeCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={getCtaClasses()}
-              style={{ backgroundColor: activeCtaBg, color: activeCtaTextColor }}
+              className="font-medium transition-colors inline-flex items-center justify-center px-3 text-sm"
+              style={{ 
+                backgroundColor: activeCtaBg, 
+                color: activeCtaTextColor,
+                borderRadius: '4px',
+                height: `${buttonHeight}px`,
+                minWidth: `${buttonHeight * 2.2}px`,
+                paddingLeft: '12px',
+                paddingRight: '12px',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                display: 'inline-flex',
+                fontSize: `${buttonFontSize}px`,
+              }}
             >
               {activeCtaText}
             </a>
@@ -276,12 +272,12 @@ export default function LivePreview({
             {content.title && (
               <div
                 className="mb-0.5"
-                style={{ fontSize: `${titleFontSize}px` }}
+                style={{ fontSize: `${content.titleFontSize || titleFontSize}px` }}
                 dangerouslySetInnerHTML={{ __html: content.title }}
               />
             )}
             <div
-              style={{ fontSize: `${messageFontSize}px` }}
+              style={{ fontSize: `${content.messageFontSize || messageFontSize}px` }}
               dangerouslySetInnerHTML={{ __html: content.message }}
             />
           </div>
@@ -292,8 +288,22 @@ export default function LivePreview({
               href={activeCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={getCtaClasses()}
-              style={{ backgroundColor: activeCtaBg, color: activeCtaTextColor }}
+              className="font-medium transition-colors inline-flex items-center justify-center px-3 text-sm"
+              style={{ 
+                backgroundColor: activeCtaBg, 
+                color: activeCtaTextColor,
+                borderRadius: '4px',
+                height: `${buttonHeight}px`,
+                minWidth: `${buttonHeight * 2.2}px`,
+                paddingLeft: '12px',
+                paddingRight: '12px',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                display: 'inline-flex',
+                fontSize: `${buttonFontSize}px`,
+              }}
             >
               {activeCtaText}
             </a>

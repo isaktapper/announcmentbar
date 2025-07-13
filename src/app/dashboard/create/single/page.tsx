@@ -75,8 +75,6 @@ export default function CreateAnnouncementPage() {
     cta_enabled: false,
     cta_text: '',
     cta_url: '',
-    cta_size: 'medium',
-    cta_border_radius: 'soft',
     cta_background_color: '#000000',
     cta_text_color: '#FFFFFF',
   }
@@ -155,8 +153,6 @@ export default function CreateAnnouncementPage() {
       cta_enabled: template.cta_enabled,
       cta_text: template.cta_text,
       cta_url: template.cta_url,
-      cta_size: template.cta_size,
-      cta_border_radius: template.cta_border_radius,
       cta_background_color: template.cta_background_color,
       cta_text_color: template.cta_text_color
     })
@@ -202,8 +198,6 @@ export default function CreateAnnouncementPage() {
         cta_enabled: false,
         cta_text: '',
         cta_url: '',
-        cta_size: 'medium',
-        cta_border_radius: 'soft',
         cta_background_color: '#000000',
         cta_text_color: '#FFFFFF'
       }
@@ -251,9 +245,7 @@ export default function CreateAnnouncementPage() {
 
       // Debug logging
       console.log('Form Data:', {
-        cta_enabled: formData.cta_enabled,
-        cta_border_radius: formData.cta_border_radius,
-        type: typeof formData.cta_border_radius
+        cta_enabled: formData.cta_enabled
       })
 
       const updatedAnnouncement = {
@@ -281,31 +273,16 @@ export default function CreateAnnouncementPage() {
         slug: generateSlug(),
         "scheduledStart": formData.scheduledStart,
         "scheduledEnd": formData.scheduledEnd,
-        cta_enabled: formData.cta_enabled,
+        cta_enabled: Boolean(formData.cta_enabled),
         cta_text: formData.cta_text || '',
         cta_url: formData.cta_url || '',
-        cta_size: formData.cta_size || 'medium',
-        cta_border_radius: formData.cta_border_radius || 'soft',
         cta_background_color: formData.cta_background_color || '#000000',
         cta_text_color: formData.cta_text_color || '#FFFFFF'
       }
 
-      // Ensure cta_border_radius is a valid value
-      if (!['sharp', 'soft', 'pill'].includes(updatedAnnouncement.cta_border_radius)) {
-        updatedAnnouncement.cta_border_radius = 'soft'
-      }
-
-      // Ensure cta_size is a valid value
-      if (!['small', 'medium', 'large'].includes(updatedAnnouncement.cta_size)) {
-        updatedAnnouncement.cta_size = 'medium'
-      }
-
       // Debug logging
       console.log('New Announcement:', {
-        cta_enabled: updatedAnnouncement.cta_enabled,
-        cta_border_radius: updatedAnnouncement.cta_border_radius,
-        cta_size: updatedAnnouncement.cta_size,
-        type: typeof updatedAnnouncement.cta_border_radius
+        cta_enabled: updatedAnnouncement.cta_enabled
       })
 
       const { error: insertError } = await supabase
@@ -409,8 +386,6 @@ export default function CreateAnnouncementPage() {
                 cta_enabled={previewData.cta_enabled}
                 cta_text={previewData.cta_text}
                 cta_url={previewData.cta_url}
-                cta_size={previewData.cta_size}
-                cta_border_radius={previewData.cta_border_radius}
                 cta_background_color={previewData.cta_background_color}
                 cta_text_color={previewData.cta_text_color}
                 iconAlignment={previewData.iconAlignment}
@@ -560,8 +535,6 @@ export default function CreateAnnouncementPage() {
                 enabled={formData.cta_enabled}
                 text={formData.cta_text}
                 url={formData.cta_url}
-                size={formData.cta_size}
-                borderRadius={formData.cta_border_radius}
                 backgroundColor={formData.cta_background_color}
                 textColor={formData.cta_text_color}
                 onUpdate={handleInputChange}

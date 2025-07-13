@@ -83,8 +83,6 @@ export default function CreateCarouselClient() {
       cta_enabled: false,
       cta_text: '',
       cta_url: '',
-      cta_size: 'medium',
-      cta_border_radius: 'soft',
       cta_background_color: '#000000',
       cta_text_color: '#FFFFFF'
     }],
@@ -96,8 +94,6 @@ export default function CreateCarouselClient() {
     cta_enabled: false,
     cta_text: '',
     cta_url: '',
-    cta_size: 'medium',
-    cta_border_radius: 'soft',
     cta_background_color: '#000000',
     cta_text_color: '#FFFFFF'
   }
@@ -178,8 +174,6 @@ export default function CreateCarouselClient() {
       cta_enabled: template.cta_enabled,
       cta_text: template.cta_text,
       cta_url: template.cta_url,
-      cta_size: template.cta_size,
-      cta_border_radius: template.cta_border_radius,
       cta_background_color: template.cta_background_color,
       cta_text_color: template.cta_text_color
     })
@@ -214,11 +208,9 @@ export default function CreateCarouselClient() {
           textAlignment: item.textAlignment,
           icon: item.icon,
           iconAlignment: item.iconAlignment,
-          cta_enabled: item.cta_enabled,
+          cta_enabled: Boolean(item.cta_enabled),
           cta_text: item.cta_text,
           cta_url: item.cta_url,
-          cta_size: item.cta_size,
-          cta_border_radius: item.cta_border_radius,
           cta_background_color: item.cta_background_color,
           cta_text_color: item.cta_text_color
         }))
@@ -249,11 +241,9 @@ export default function CreateCarouselClient() {
         slug: generateSlug(),
         scheduledStart: formData.scheduledStart,
         scheduledEnd: formData.scheduledEnd,
-        cta_enabled: formData.cta_enabled,
+        cta_enabled: Boolean(formData.cta_enabled),
         cta_text: formData.cta_text || '',
         cta_url: formData.cta_url || '',
-        cta_size: formData.cta_size || 'medium',
-        cta_border_radius: formData.cta_border_radius || 'soft',
         cta_background_color: formData.cta_background_color || '#000000',
         cta_text_color: formData.cta_text_color || '#FFFFFF'
       }
@@ -353,8 +343,6 @@ export default function CreateCarouselClient() {
               cta_enabled={previewData.cta_enabled}
               cta_text={previewData.cta_text}
               cta_url={previewData.cta_url}
-              cta_size={previewData.cta_size}
-              cta_border_radius={previewData.cta_border_radius}
               cta_background_color={previewData.cta_background_color}
               cta_text_color={previewData.cta_text_color}
               iconAlignment={previewData.iconAlignment}

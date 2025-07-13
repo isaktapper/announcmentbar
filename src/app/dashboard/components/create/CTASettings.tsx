@@ -2,14 +2,12 @@
 
 import { Switch } from '@headlessui/react'
 import ColorPicker from '@/components/ColorPicker'
-import { AnnouncementFormData, BorderRadiusStyle } from '@/types/announcement'
+import { AnnouncementFormData } from '@/types/announcement'
 
 interface CTASettingsProps {
   enabled: boolean
   text: string
   url: string
-  size: 'small' | 'medium' | 'large'
-  borderRadius: BorderRadiusStyle
   backgroundColor: string
   textColor: string
   onUpdate: (field: keyof AnnouncementFormData, value: any) => void
@@ -19,18 +17,10 @@ export default function CTASettings({
   enabled,
   text,
   url,
-  size,
-  borderRadius,
   backgroundColor,
   textColor,
   onUpdate
 }: CTASettingsProps) {
-  const borderRadiusOptions: { value: BorderRadiusStyle; label: string }[] = [
-    { value: 'sharp', label: 'Sharp' },
-    { value: 'soft', label: 'Soft' },
-    { value: 'pill', label: 'Pill' }
-  ]
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -77,48 +67,6 @@ export default function CTASettings({
                 placeholder="https://"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:ring-brand-500 focus:border-brand-500 bg-white text-gray-900"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
-              <div className="flex gap-2">
-                {(['small', 'medium', 'large'] as const).map((buttonSize) => (
-                  <button
-                    key={buttonSize}
-                    onClick={() => onUpdate('cta_size', buttonSize)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      size === buttonSize
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {buttonSize.charAt(0).toUpperCase() + buttonSize.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">Corner Style</h4>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {borderRadiusOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => onUpdate('cta_border_radius', option.value)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      borderRadius === option.value
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div className="space-y-3">

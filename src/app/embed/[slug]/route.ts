@@ -42,17 +42,9 @@ const getBorderRadiusValue = (style: BorderRadiusStyle): string => {
   }
 }
 
-const getButtonSizeClasses = (size: 'small' | 'medium' | 'large') => {
-  switch (size) {
-    case 'small':
-      return 'text-xs px-2.5 py-1.5'
-    case 'medium':
-      return 'text-sm px-3.5 py-2'
-    case 'large':
-      return 'text-base px-4 py-2.5'
-    default:
-      return 'text-sm px-3.5 py-2'
-  }
+const getButtonSizeClasses = (barHeight: number) => {
+  const buttonHeight = Math.max(barHeight - 16, 24)
+  return `text-sm inline-flex items-center justify-center`
 }
 
 export async function GET(
@@ -107,38 +99,9 @@ export async function GET(
       cta_enabled,
       cta_text,
       cta_url,
-      cta_size,
-      cta_border_radius,
       cta_background_color,
       cta_text_color
     } = announcement
-
-    const renderCTAButton = () => {
-      if (!cta_enabled || !cta_text) return ''
-
-      const buttonClasses = `
-        ${getButtonSizeClasses(cta_size)}
-        inline-flex items-center justify-center
-        transition-colors duration-200
-        hover:opacity-90
-      `.trim();
-
-      return `
-        <a 
-          href="${cta_url}"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="${buttonClasses}"
-          style="
-            background-color: ${cta_background_color};
-            color: ${cta_text_color};
-            border-radius: ${getBorderRadiusValue(cta_border_radius as BorderRadiusStyle)};
-          "
-        >
-          ${cta_text}
-        </a>
-      `
-    }
 
     // Check geo targeting if enabled
     if (announcement.geo_countries && announcement.geo_countries.length > 0) {
@@ -215,13 +178,9 @@ export async function GET(
   ${pageTargetingScript}
 
   // Helper functions for CTA
-  function getButtonSizeClasses(size){
-    switch(size){
-      case 'small': return 'text-xs px-2.5 py-1.5';
-      case 'medium': return 'text-sm px-3.5 py-2';
-      case 'large': return 'text-base px-4 py-2.5';
-      default: return 'text-sm px-3.5 py-2';
-    }
+  function getButtonSizeClasses(barHeight){
+    const buttonHeight = Math.max(barHeight - 16, 24)
+    return 'text-sm inline-flex items-center justify-center';
   }
   function getBorderRadiusValue(style){
     switch(style){
@@ -308,11 +267,8 @@ export async function GET(
       cta_enabled,
       cta_text,
       cta_url,
-      cta_size,
-      cta_rounded,
       cta_background_color,
-      cta_text_color,
-      cta_border_radius
+      cta_text_color
     } = announcement;
 
     function getContentClasses() {
@@ -331,70 +287,71 @@ export async function GET(
       return \`\${baseClasses} \${directionClasses}\`;
     }
 
-    function renderCTAButton(announcement) {
-      if (!announcement.cta_enabled || !announcement.cta_text) return ''
-
-      const buttonClasses = \`
-        \${getButtonSizeClasses(announcement.cta_size)}
-        inline-flex items-center justify-center
-        transition-colors duration-200
-        hover:opacity-90
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
-      \`.trim();
-
-      return \`
-        <button 
-          class="\${buttonClasses}"
-          style="
-            background-color: \${announcement.cta_background_color};
-            color: \${announcement.cta_text_color};
-            border-radius: \${getBorderRadiusValue(announcement.cta_border_radius)};
-          "
-        >
-          \${announcement.cta_text}
-        </button>
-      \`
-    }
-
     function renderIcon() {
       if (!iconSvg) return '';
       return '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;">' + iconSvg + '</span>';
     }
 
     function renderContent() {
-      if (type === 'carousel' && carouselItems?.length > 0) {
-        const carouselContent = carouselItems.map((item, index) => \`
-          <div 
-            class="announcement-carousel-item" 
-            data-index="\${index}"
-            style="
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-              transform: translateX(\${index === 0 ? '0' : '100%'});
-              opacity: \${index === 0 ? '1' : '0'};
-              \${item.background ? \`background-color: \${item.background};\` : ''}
-              \${item.useGradient ? \`background: linear-gradient(to right, \${item.background}, \${item.backgroundGradient});\` : ''}
-              \${item.textColor ? \`color: \${item.textColor};\` : ''}
-              \${item.fontFamily ? \`font-family: \${getFontFamily(item.fontFamily)};\` : ''}
-            "
-          >
-            <div class="\${getContentWrapperClasses()}">
-              \${item.title ? \`<span style="font-size: \${titleFontSize}px">\${item.title}</span>\` : ''}
-              <span style="font-size: \${messageFontSize}px">\${item.message}</span>
-              \${renderCTAButton(item)}
-            </div>
-          </div>
-        \`).join('')
+      if (type === 'carousel') {
+        // Use content.items if available, otherwise fallback to carouselItems
+        const slides = (announcement.content && Array.isArray(announcement.content.items))
+          ? announcement.content.items
+          : (Array.isArray(carouselItems) ? carouselItems : []);
+        if (slides.length > 0) {
+          const carouselContent = slides.map((item, index) => {
+            return '<div ' +
+              'class="announcement-carousel-item" ' +
+              'data-index="' + index + '" ' +
+              'style="' +
+              'position: absolute;' +
+              'top: 0;' +
+              'left: 0;' +
+              'width: 100%;' +
+              'transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;' +
+              'transform: translateX(' + (index === 0 ? '0' : '100%') + ');' +
+              'opacity: ' + (index === 0 ? '1' : '0') + ';' +
+              (item.background ? 'background-color: ' + item.background + ';' : '') +
+              (item.useGradient ? 'background: linear-gradient(to right, ' + item.background + ', ' + item.backgroundGradient + ');' : '') +
+              (item.textColor ? 'color: ' + item.textColor + ';' : '') +
+              (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
+              '"' +
+              '>' +
+              '<div class="' + getContentWrapperClasses() + '">' +
+              (item.title ? '<span style="font-size: ' + titleFontSize + 'px">' + item.title + '</span>' : '') +
+              '<span style="font-size: ' + messageFontSize + 'px">' + item.message + '</span>' +
+              (cta_enabled && cta_text ? '<a ' +
+                'href="' + cta_url + '" ' +
+                'target="_blank" ' +
+                'rel="noopener noreferrer" ' +
+                'class="' + getButtonSizeClasses(barHeight) + ' font-medium transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" ' +
+                'style="' +
+                'background-color: ' + cta_background_color + ';' +
+                'color: ' + cta_text_color + ';' +
+                'border-radius: 4px;' +
+                'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
+                'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
+                'padding-left: 12px;' +
+                'padding-right: 12px;' +
+                'box-sizing: border-box;' +
+                'text-align: center;' +
+                'justify-content: center;' +
+                'align-items: center;' +
+                'display: inline-flex;' +
+                'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+                '"' +
+                '>' + cta_text + '</a>' : '') +
+              '</div>' +
+              '</div>';
+          }).join('');
 
-        const carouselIndicators = '';
+          const carouselIndicators = '';
 
-        return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
-               carouselContent +
-               carouselIndicators +
-               '</div>';
+          return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
+                 carouselContent +
+                 carouselIndicators +
+                 '</div>';
+        }
       }
 
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
@@ -405,7 +362,27 @@ export async function GET(
              (title ? '<span style="font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
              '<span style="font-size: ' + messageFontSize + 'px">' + message + '</span>' +
              rightIcon +
-             renderCTAButton(announcement) +
+             (cta_enabled && cta_text ? '<a ' +
+               'href="' + cta_url + '" ' +
+               'target="_blank" ' +
+               'rel="noopener noreferrer" ' +
+               'class="' + getButtonSizeClasses(barHeight) + ' font-medium transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" ' +
+               'style="' +
+               'background-color: ' + cta_background_color + ';' +
+               'color: ' + cta_text_color + ';' +
+               'border-radius: 4px;' +
+               'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
+               'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
+               'padding-left: 12px;' +
+               'padding-right: 12px;' +
+               'box-sizing: border-box;' +
+               'text-align: center;' +
+               'justify-content: center;' +
+               'align-items: center;' +
+               'display: inline-flex;' +
+               'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+               '"' +
+               '>' + cta_text + '</a>' : '') +
              '</div>';
     }
 

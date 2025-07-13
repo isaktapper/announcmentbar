@@ -74,8 +74,6 @@ export default function CarouselSlideManager({ items, onChange }: CarouselSlideM
       cta_enabled: false,
       cta_text: '',
       cta_url: '',
-      cta_size: 'medium',
-      cta_border_radius: 'soft',
       cta_background_color: '#000000',
       cta_text_color: '#FFFFFF',
     }
@@ -316,8 +314,6 @@ export default function CarouselSlideManager({ items, onChange }: CarouselSlideM
             enabled={normalizedItems[activeSlideIndex].cta_enabled}
             text={normalizedItems[activeSlideIndex].cta_text}
             url={normalizedItems[activeSlideIndex].cta_url}
-            size={normalizedItems[activeSlideIndex].cta_size}
-            borderRadius={normalizedItems[activeSlideIndex].cta_border_radius}
             backgroundColor={normalizedItems[activeSlideIndex].cta_background_color}
             textColor={normalizedItems[activeSlideIndex].cta_text_color}
             onUpdate={(field, value) => handleSlideChange(field as keyof CarouselItem, value)}
