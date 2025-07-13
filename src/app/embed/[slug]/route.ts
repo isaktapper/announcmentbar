@@ -177,7 +177,6 @@ export async function GET(
       });
     } else {
       if (serializedAnnouncement.icon && serializedAnnouncement.icon !== 'none') usedIcons.add(serializedAnnouncement.icon);
-      if (serializedAnnouncement.content && serializedAnnouncement.content.icon && serializedAnnouncement.content.icon !== 'none') usedIcons.add(serializedAnnouncement.content.icon);
     }
     // Build a minimal ICON_SVG_MAP for the embed script
     const iconSvgMap: Record<string, string> = {};
@@ -399,11 +398,10 @@ export async function GET(
         // Add left padding for left-aligned text
         var contentWrapperStyle = '';
         if (textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
-        // Render icon if present (prefer top-level icon, fallback to content.icon)
-        var iconValue = icon && icon !== 'none' ? icon : (announcement.content && announcement.content.icon ? announcement.content.icon : null);
+        // Render icon if present (use only top-level icon for single)
         var iconHtml = '';
-        if (iconValue && iconValue !== 'none' && ICON_SVG_MAP[iconValue]) {
-          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:12px;padding-left:4px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[iconValue] + '</span>';
+        if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
+          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:12px;padding-left:4px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
         return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
           iconHtml +
