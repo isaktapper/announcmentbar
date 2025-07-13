@@ -308,8 +308,10 @@ export async function GET(
             else if (item.textAlignment === 'right') justifyClass = 'justify-end';
                 // Text alignment for the text block
                 var textAlignClass = 'text-left';
+                var textBlockMargin = '';
                 if (item.textAlignment === 'center') textAlignClass = 'text-center';
                 else if (item.textAlignment === 'right') textAlignClass = 'text-right';
+                else textBlockMargin = ' mr-3';
                 return '<div ' +
                   'class="announcement-carousel-item" ' +
                   'data-index="' + index + '" ' +
@@ -328,7 +330,7 @@ export async function GET(
                   '"' +
                   '>' +
                   '<div class="flex flex-row items-center gap-4 ' + justifyClass + '">' +
-                    '<div class="min-w-0 ' + textAlignClass + '">' +
+                    '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                       '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
                     '</div>' +
