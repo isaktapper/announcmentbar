@@ -3,6 +3,7 @@ LAUNCH CHECKLIST
 Hög
 - Carousel, fixa (KLAR)
 - Fixa CTA, ta bort URL (KLAR)
+- Fixa embed (PÅGÅENDE)
 - Integrera Stripe (PÅGÅENDE)
 - Fixa Cron
 - Fixa email sender

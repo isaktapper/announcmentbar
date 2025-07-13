@@ -306,51 +306,55 @@ export async function GET(
             var justifyClass = 'justify-start';
             if (item.textAlignment === 'center') justifyClass = 'justify-center';
             else if (item.textAlignment === 'right') justifyClass = 'justify-end';
-            return '<div ' +
-              'class="announcement-carousel-item" ' +
-              'data-index="' + index + '" ' +
-              'style="' +
-              'position: absolute;' +
-              'top: 0;' +
-              'left: 0;' +
-              'width: 100%;' +
-              'transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;' +
-              'transform: translateX(' + (index === 0 ? '0' : '100%') + ');' +
-              'opacity: ' + (index === 0 ? '1' : '0') + ';' +
-              (item.background ? 'background-color: ' + item.background + ';' : '') +
-              (item.useGradient ? 'background: linear-gradient(to right, ' + item.background + ', ' + item.backgroundGradient + ');' : '') +
-              (item.textColor ? 'color: ' + item.textColor + ';' : '') +
-              (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
-              '"' +
-              '>' +
-              '<div class="flex flex-row items-center gap-4 ' + justifyClass + '">' +
-                '<div class="min-w-0">' +
-                  (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
-                  '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
-                '</div>' +
-                (item.cta_enabled && item.cta_text ? '<a ' +
-                  'href="' + item.cta_url + '" ' +
-                  'target="_blank" ' +
-                  'rel="noopener noreferrer" ' +
-                  'class="' + getButtonSizeClasses(barHeight) + ' font-medium transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" ' +
+                // Text alignment for the text block
+                var textAlignClass = 'text-left';
+                if (item.textAlignment === 'center') textAlignClass = 'text-center';
+                else if (item.textAlignment === 'right') textAlignClass = 'text-right';
+                return '<div ' +
+                  'class="announcement-carousel-item" ' +
+                  'data-index="' + index + '" ' +
                   'style="' +
-                    'background-color: ' + item.cta_background_color + ';' +
-                    'color: ' + item.cta_text_color + ';' +
-                    'border-radius: 4px;' +
-                    'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
-                    'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
-                    'padding-left: 12px;' +
-                    'padding-right: 12px;' +
-                    'box-sizing: border-box;' +
-                    'text-align: center;' +
-                    'justify-content: center;' +
-                    'align-items: center;' +
-                    'display: inline-flex;' +
-                    'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+                  'position: absolute;' +
+                  'top: 0;' +
+                  'left: 0;' +
+                  'width: 100%;' +
+                  'transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;' +
+                  'transform: translateX(' + (index === 0 ? '0' : '100%') + ');' +
+                  'opacity: ' + (index === 0 ? '1' : '0') + ';' +
+                  (item.background ? 'background-color: ' + item.background + ';' : '') +
+                  (item.useGradient ? 'background: linear-gradient(to right, ' + item.background + ', ' + item.backgroundGradient + ');' : '') +
+                  (item.textColor ? 'color: ' + item.textColor + ';' : '') +
+                  (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
-                  '>' + item.cta_text + '</a>' : '') +
-              '</div>' +
-              '</div>';
+                  '>' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '">' +
+                    '<div class="min-w-0 ' + textAlignClass + '">' +
+                      (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
+                      '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
+                    '</div>' +
+                    (item.cta_enabled && item.cta_text ? '<a ' +
+                      'href="' + item.cta_url + '" ' +
+                      'target="_blank" ' +
+                      'rel="noopener noreferrer" ' +
+                      'class="' + getButtonSizeClasses(barHeight) + ' font-medium transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" ' +
+                      'style="' +
+                        'background-color: ' + item.cta_background_color + ';' +
+                        'color: ' + item.cta_text_color + ';' +
+                        'border-radius: 4px;' +
+                        'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
+                        'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
+                        'padding-left: 12px;' +
+                        'padding-right: 12px;' +
+                        'box-sizing: border-box;' +
+                        'text-align: center;' +
+                        'justify-content: center;' +
+                        'align-items: center;' +
+                        'display: inline-flex;' +
+                        'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+                      '"' +
+                      '>' + item.cta_text + '</a>' : '') +
+                  '</div>' +
+                  '</div>';
           }).join('');
 
           const carouselIndicators = '';
