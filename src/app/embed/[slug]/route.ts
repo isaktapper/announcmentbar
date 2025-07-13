@@ -169,8 +169,25 @@ export async function GET(
       iconSvg: iconSvg,
     }
 
+    // Collect all icon names used in this announcement (single or carousel)
+    let usedIcons = new Set();
+    if (announcement.type === 'carousel' && Array.isArray(serializedAnnouncement.carouselItems)) {
+      (serializedAnnouncement.carouselItems as any[]).forEach((item: any) => {
+        if (item.icon && item.icon !== 'none') usedIcons.add(item.icon);
+      });
+    } else {
+      if (serializedAnnouncement.icon && serializedAnnouncement.icon !== 'none') usedIcons.add(serializedAnnouncement.icon);
+      if (serializedAnnouncement.content && serializedAnnouncement.content.icon && serializedAnnouncement.content.icon !== 'none') usedIcons.add(serializedAnnouncement.content.icon);
+    }
+    // Build a minimal ICON_SVG_MAP for the embed script
+    const iconSvgMap: Record<string, string> = {};
+    usedIcons.forEach(icon => {
+      if (ICON_SVG_MAP[icon as keyof typeof ICON_SVG_MAP]) iconSvgMap[icon as string] = ICON_SVG_MAP[icon as keyof typeof ICON_SVG_MAP];
+    });
+
     const jsCode = `
 (function() {
+  const ICON_SVG_MAP = ${JSON.stringify(iconSvgMap)};
   const announcement = ${JSON.stringify(serializedAnnouncement)};
   const iconSvg = announcement.iconSvg;
   const slug = "${slug}";
