@@ -282,9 +282,12 @@ export async function GET(
     }
 
     function getContentWrapperClasses() {
-      const baseClasses = 'flex';
-      const directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : 'flex-col items-center gap-1';
-      return \`\${baseClasses} \${directionClasses}\`;
+      if (type === 'single') {
+        return 'flex flex-row items-center gap-2';
+      }
+      var baseClasses = 'flex';
+      var directionClasses = textAlignment === 'left' ? 'flex-row items-center gap-2' : 'flex-col items-center gap-1';
+      return baseClasses + ' ' + directionClasses;
     }
 
     function renderIcon() {
