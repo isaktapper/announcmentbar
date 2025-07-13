@@ -321,29 +321,29 @@ export async function GET(
               '"' +
               '>' +
               '<div class="' + getContentWrapperClasses() + '">' +
-              (item.title ? '<span style="font-size: ' + titleFontSize + 'px">' + item.title + '</span>' : '') +
-              '<span style="font-size: ' + messageFontSize + 'px">' + item.message + '</span>' +
-              (cta_enabled && cta_text ? '<a ' +
-                'href="' + cta_url + '" ' +
+              (item.title ? '<span style="font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
+              '<span style="font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
+              (item.cta_enabled && item.cta_text ? '<a ' +
+                'href="' + item.cta_url + '" ' +
                 'target="_blank" ' +
                 'rel="noopener noreferrer" ' +
                 'class="' + getButtonSizeClasses(barHeight) + ' font-medium transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" ' +
                 'style="' +
-                'background-color: ' + cta_background_color + ';' +
-                'color: ' + cta_text_color + ';' +
-                'border-radius: 4px;' +
-                'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
-                'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
-                'padding-left: 12px;' +
-                'padding-right: 12px;' +
-                'box-sizing: border-box;' +
-                'text-align: center;' +
-                'justify-content: center;' +
-                'align-items: center;' +
-                'display: inline-flex;' +
-                'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+                  'background-color: ' + item.cta_background_color + ';' +
+                  'color: ' + item.cta_text_color + ';' +
+                  'border-radius: 4px;' +
+                  'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
+                  'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
+                  'padding-left: 12px;' +
+                  'padding-right: 12px;' +
+                  'box-sizing: border-box;' +
+                  'text-align: center;' +
+                  'justify-content: center;' +
+                  'align-items: center;' +
+                  'display: inline-flex;' +
+                  'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
                 '"' +
-                '>' + cta_text + '</a>' : '') +
+                '>' + item.cta_text + '</a>' : '') +
               '</div>' +
               '</div>';
           }).join('');
