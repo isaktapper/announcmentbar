@@ -334,7 +334,7 @@ export async function GET(
                 // Render icon if present
                 var iconHtml = '';
                 if (item.icon && item.icon !== 'none' && ICON_SVG_MAP[item.icon]) {
-                  iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:6px;padding-left:2px;color:' + (item.textColor || '#000') + ';">' + ICON_SVG_MAP[item.icon] + '</span>';
+                  iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (item.textColor || '#000') + ';">' + ICON_SVG_MAP[item.icon] + '</span>';
                 }
                 return '<div ' +
                   'class="announcement-carousel-item" ' +
@@ -401,7 +401,7 @@ export async function GET(
         // Render icon if present (use only top-level icon for single)
         var iconHtml = '';
         if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
-          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:6px;padding-left:2px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
+          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
         return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
           iconHtml +
