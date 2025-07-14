@@ -484,6 +484,9 @@ export async function GET(
       : 'background: ' + announcement.background,
     'color: ' + announcement.textColor,
     announcement.isSticky ? 'position: fixed; top: 0; left: 0;' : 'position: relative;',
+    // Ta bort border och box-shadow helt
+    // 'border-bottom: 1px solid #f3f4f6', // <-- denna rad tas bort
+    // 'box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03)', // <-- denna rad tas bort
   ].filter(Boolean).join(';');
 
   announcementBar.setAttribute('style', baseStyles);
