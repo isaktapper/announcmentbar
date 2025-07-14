@@ -11,6 +11,8 @@ import { Announcement } from '../../types/announcement'
 import { getUserPlan, getUserDisplayName } from '@/lib/user-utils'
 import { useToast } from '@/hooks/useToast'
 import TypeSelectionModal from './components/TypeSelectionModal'
+import { Dialog, Transition } from '@headlessui/react'
+import { Fragment } from 'react'
 
 interface DashboardClientProps {
   initialAnnouncements: Announcement[]
@@ -27,6 +29,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const { error } = useToast()
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false)
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [showUnlimitedModal, setShowUnlimitedModal] = useState(false)
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,6 +64,17 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [error])
+
+  // Show Unlimited popup on first login
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const seen = localStorage.getItem('seenUnlimitedPopup')
+      if (!seen) {
+        setShowUnlimitedModal(true)
+        localStorage.setItem('seenUnlimitedPopup', '1')
+      }
+    }
+  }, [])
 
   const refreshAnnouncements = async () => {
     setIsLoading(true)
@@ -127,6 +141,71 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white to-[#FFFFC5]">
+      {/* Unlimited Plan Promo Modal */}
+      <Transition.Root show={showUnlimitedModal} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowUnlimitedModal(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-[rgba(30,41,59,0.32)] transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:p-6">
+                  <div className="absolute right-0 top-0 pr-4 pt-4">
+                    <button
+                      type="button"
+                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                      onClick={() => setShowUnlimitedModal(false)}
+                    >
+                      <span className="sr-only">Close</span>
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-semibold text-sm"><svg className="w-5 h-5 mr-1 text-yellow-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4l2.09 6.26L20 10l-5 3.64L16.18 20 12 16.77 7.82 20 9 13.64 4 10l5.91-.74L12 4z" /></svg>One-time $8</span>
+                    </div>
+                    <Dialog.Title as="h3" className="text-2xl font-bold text-gray-900 mb-2">Unlock Unlimited</Dialog.Title>
+                    <div className="text-lg font-semibold text-gray-900 mb-1">$8 <span className="text-base font-normal text-gray-500">one-time</span></div>
+                    <div className="text-gray-600 mb-4">Everything you need, forever</div>
+                    <ul className="text-left mb-6 space-y-2">
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Unlimited bars</li>
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Templates</li>
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Premium icons</li>
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Custom fonts</li>
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Advanced targeting</li>
+                      <li className="flex items-center text-gray-800"><span className="text-green-500 mr-2">✔</span> Scheduled bars</li>
+                    </ul>
+                    <button
+                      className="w-full py-3 bg-yellow-100 text-yellow-800 font-semibold rounded-lg shadow hover:bg-yellow-200 transition-colors text-lg mb-2"
+                      onClick={() => { setShowUnlimitedModal(false); if (userPlan === 'free') handleUpgrade(); }}
+                    >
+                      Get Unlimited
+                    </button>
+                    <div className="text-sm text-gray-500">Pay once, use forever</div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
