@@ -10,6 +10,7 @@ import { Crown } from 'lucide-react'
 
 interface UserProfile {
   display_name?: string
+  email?: string
   plan: 'free' | 'unlimited'
 }
 
@@ -38,12 +39,13 @@ export default function ProfilePage() {
         // Get profile data from profiles table
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('plan, display_name')
+          .select('plan, display_name, email')
           .eq('id', currentUser.id)
           .single()
         
         setProfile({
-          display_name: profileData?.display_name || await getUserDisplayName(currentUser.id),
+          display_name: profileData?.display_name || currentUser.user_metadata?.display_name || '',
+          email: profileData?.email || currentUser.email || '',
           plan: profileData?.plan || 'free'
         })
         
@@ -130,19 +132,52 @@ export default function ProfilePage() {
       </header>
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
-          <h2 className="text-xl font-semibold mb-2">Din plan</h2>
-          <div className="mb-4">{getPlanBadge()}</div>
+        <div className="w-full max-w-md mx-auto flex flex-col gap-8">
+          <div className="flex flex-col gap-2 items-center text-center">
+            <img src="/logo_yello.svg" alt="Logo" className="h-12 w-auto mb-2" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Account details</h2>
+            <p className="text-gray-500 text-sm mb-2">Manage your profile and plan</p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-6 flex flex-col gap-4 shadow-sm border border-gray-100">
+            <div>
+              <span className="block text-xs text-gray-500">Display name</span>
+              <span className="block text-lg font-medium text-gray-900">{profile.display_name || '-'}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500">Email</span>
+              <span className="block text-lg font-medium text-gray-900">{profile.email || '-'}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500">Plan</span>
+              <span>{getPlanBadge()}</span>
+            </div>
+          </div>
           {profile.plan === 'free' && (
             <button
               onClick={handleUpgrade}
               disabled={isUpgrading}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 font-medium rounded-md border border-yellow-200 shadow-sm hover:bg-yellow-200 transition-colors disabled:opacity-50 text-sm"
+              className="flex items-center gap-2 justify-center w-full px-4 py-3 bg-yellow-100 text-yellow-700 font-semibold rounded-lg border border-yellow-200 shadow hover:bg-yellow-200 transition-colors disabled:opacity-50 text-base"
             >
-              <Crown className="w-4 h-4 text-yellow-500" />
+              <Crown className="w-5 h-5 text-yellow-500" />
               {isUpgrading ? 'Loading...' : 'Upgrade to Unlimited'}
             </button>
           )}
+          <button
+            onClick={async () => {
+              if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+              const res = await fetch('/api/delete-account', { method: 'POST' })
+              if (res.ok) {
+                router.push('/auth/signup')
+              } else {
+                const data = await res.json()
+                alert('Failed to delete account: ' + (data.error || 'Unknown error'))
+              }
+            }}
+            className="flex items-center gap-2 justify-center w-full px-4 py-3 mt-2 bg-red-50 text-red-700 font-semibold rounded-lg border border-red-200 shadow hover:bg-red-100 transition-colors text-base"
+          >
+            <TrashIcon className="w-5 h-5" />
+            Delete account
+          </button>
         </div>
       </main>
     </div>
