@@ -344,6 +344,7 @@ export async function GET(
                   'top: 0;' +
                   'left: 0;' +
                   'width: 100%;' +
+                  'height: 100%;' +
                   'transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;' +
                   'transform: translateX(' + (index === 0 ? '0' : '100%') + ');' +
                   'opacity: ' + (index === 0 ? '1' : '0') + ';' +
@@ -353,13 +354,13 @@ export async function GET(
                   (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
                   '>' +
-                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + '">' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;">' +
                     iconHtml +
-                    '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '">' +
+                    '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="height:100%;display:flex;flex-direction:column;justify-content:center;">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                       '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
                     '</div>' +
-                    (item.cta_enabled && item.cta_text ? '<a ' +
+                    (item.cta_enabled && item.cta_text && item.cta_url ? '<a ' +
                       'href="' + item.cta_url + '" ' +
                       'target="_blank" ' +
                       'rel="noopener noreferrer" ' +
@@ -368,27 +369,22 @@ export async function GET(
                         'background-color: ' + item.cta_background_color + ';' +
                         'color: ' + item.cta_text_color + ';' +
                         'border-radius: 4px;' +
-                        'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
-                        'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
-                        'padding-left: 12px;' +
-                        'padding-right: 12px;' +
-                        'box-sizing: border-box;' +
-                        'text-align: center;' +
-                        'justify-content: center;' +
-                        'align-items: center;' +
-                        'display: inline-flex;' +
-                        'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+                        'padding: 8px 16px;' +
+                        'white-space: nowrap;' +
+                        'text-decoration: none;' +
+                        'margin-left: 16px;' +
+                        'align-self: center;' +
                       '"' +
                       '>' + item.cta_text + '</a>' : '') +
                   '</div>' +
                   '</div>';
           }).join('');
 
-          const carouselIndicators = '';
+        const carouselIndicators = '';
 
-          return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
-                 carouselContent +
-                 carouselIndicators +
+        return '<div class="announcement-carousel relative h-full" style="overflow:hidden;width:100%;">' +
+               carouselContent +
+               carouselIndicators +
                  '</div>';
         }
       }
@@ -409,7 +405,7 @@ export async function GET(
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
-          (cta_enabled && cta_text ? '<a ' +
+          (cta_enabled && cta_text && cta_url ? '<a ' +
             'href="' + cta_url + '" ' +
             'target="_blank" ' +
             'rel="noopener noreferrer" ' +
@@ -418,19 +414,14 @@ export async function GET(
               'background-color: ' + cta_background_color + ';' +
               'color: ' + cta_text_color + ';' +
               'border-radius: 4px;' +
-              'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
-              'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
-              'padding-left: 12px;' +
-              'padding-right: 12px;' +
-              'box-sizing: border-box;' +
-              'text-align: center;' +
-              'justify-content: center;' +
-              'align-items: center;' +
-              'display: inline-flex;' +
-              'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+              'padding: 8px 16px;' +
+              'white-space: nowrap;' +
+              'text-decoration: none;' +
+              'margin-left: 16px;' +
+              'align-self: center;' +
             '"' +
             '>' + cta_text + '</a>' : '') +
-        '</div>';
+               '</div>';
       }
 
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
@@ -450,16 +441,10 @@ export async function GET(
                'background-color: ' + cta_background_color + ';' +
                'color: ' + cta_text_color + ';' +
                'border-radius: 4px;' +
-               'height: ' + Math.max(barHeight - 16, 24) + 'px;' +
-               'min-width: ' + (Math.max(barHeight - 16, 24)) * 2.2 + 'px;' +
-               'padding-left: 12px;' +
-               'padding-right: 12px;' +
-               'box-sizing: border-box;' +
-               'text-align: center;' +
-               'justify-content: center;' +
-               'align-items: center;' +
-               'display: inline-flex;' +
-               'font-size: ' + Math.max(14, Math.min((Math.max(barHeight - 16, 24)) * 0.45, 28)) + 'px;' +
+               'padding: 8px 16px;' +
+               'white-space: nowrap;' +
+               'text-decoration: none;' +
+               'margin-left: 16px;' +
                '"' +
                '>' + cta_text + '</a>' : '') +
              '</div>';
