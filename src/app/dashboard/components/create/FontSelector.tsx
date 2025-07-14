@@ -12,7 +12,12 @@ interface FontSelectorProps {
 }
 
 // Font definitions with Google Fonts
-const fontOptions = {
+const fontOptions: Record<FontFamily, {
+  name: string;
+  cssName: string;
+  isPremium: boolean;
+  fallback: string;
+}> = {
   'Work Sans': { name: 'Work Sans', cssName: 'Work Sans', isPremium: false, fallback: 'sans-serif' },
   'Inter': { name: 'Inter', cssName: 'Inter', isPremium: true, fallback: 'sans-serif' },
   'Roboto': { name: 'Roboto', cssName: 'Roboto', isPremium: true, fallback: 'sans-serif' },
@@ -49,6 +54,21 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
 
     fetchUserPlan()
   }, [])
+
+  // Load all Google Fonts when dropdown opens
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    (Object.values(fontOptions) as { cssName: string }[]).forEach(font => {
+      const fontId = 'google-font-' + font.cssName.replace(/\s|\+/g, '-').toLowerCase();
+      if (!document.getElementById(fontId)) {
+        const link = document.createElement('link');
+        link.id = fontId;
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${font.cssName.replace(/ /g, '+')}:wght@400;500;600&display=swap`;
+        document.head.appendChild(link);
+      }
+    });
+  }, [isDropdownOpen]);
 
   // Reset to Work Sans if user downgrades from unlimited
   useEffect(() => {
@@ -133,11 +153,11 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
         {isDropdownOpen && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto">
             <div className="py-1">
-              {Object.entries(fontOptions).map(([font, config]) => (
+              {(Object.entries(fontOptions) as [FontFamily, typeof fontOptions[FontFamily]][]).map(([font, config]) => (
                 <div
                   key={font}
-                  onClick={() => handleFontSelect(font as FontFamily)}
-                  className={getFontOptionClass(font as FontFamily)}
+                  onClick={() => handleFontSelect(font)}
+                  className={getFontOptionClass(font)}
                   style={{ 
                     fontFamily: `'${config.cssName}', ${config.fallback}`
                   }}

@@ -119,6 +119,19 @@ export default function LivePreview({
     }
   }, [type, carouselItems.length, carouselRotationSpeed, isPaused])
 
+  // Dynamically load Google Font for preview
+  useEffect(() => {
+    if (!fontFamily) return;
+    const fontId = 'google-font-' + fontFamily.replace(/\s|\+/g, '-').toLowerCase();
+    if (!document.getElementById(fontId)) {
+      const link = document.createElement('link');
+      link.id = fontId;
+      link.rel = 'stylesheet';
+      link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;500;600&display=swap`;
+      document.head.appendChild(link);
+    }
+  }, [fontFamily]);
+
   // Get current slide content
   const getCurrentContent = () => {
     if (type === 'carousel' && carouselItems.length > 0) {
