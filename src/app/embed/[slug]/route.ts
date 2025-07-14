@@ -410,9 +410,12 @@ export async function GET(
         if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
           iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
+        // Lägg till text-align: center om textAlignment är 'center'
+        var textContainerStyle = '';
+        if (textAlignment === 'center') textContainerStyle = 'text-align:center;';
         return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
           iconHtml +
-          '<div class="min-w-0">' +
+          '<div class="min-w-0" style="' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
