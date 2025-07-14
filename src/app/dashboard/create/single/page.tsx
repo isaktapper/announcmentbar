@@ -280,7 +280,7 @@ export default function CreateAnnouncementPage() {
         cta_url: formData.cta_url || '',
         cta_background_color: formData.cta_background_color || '#000000',
         cta_text_color: formData.cta_text_color || '#FFFFFF',
-        allowed_domain: formData.allowed_domain || '',
+        allowed_domain: formData.allowed_domain?.trim() || null,
       }
 
       // Debug logging

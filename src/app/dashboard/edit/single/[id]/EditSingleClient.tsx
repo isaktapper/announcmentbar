@@ -77,7 +77,7 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
       cta_url: announcement.cta_url,
       cta_background_color: announcement.cta_background_color,
       cta_text_color: announcement.cta_text_color,
-      allowed_domain: announcement.allowed_domain,
+      allowed_domain: announcement.allowed_domain?.trim() || null,
     }
 
     setFormData(formData)

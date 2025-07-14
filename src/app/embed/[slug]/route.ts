@@ -119,8 +119,12 @@ export async function GET(
           const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`)
           const geoData = await geoResponse.json()
 
-          // If country doesn't match, return empty script
-          if (!announcement.geo_countries.includes(geoData.country_code)) {
+          // Logga för felsökning
+          console.log('geoData.country_code:', geoData.country_code, 'geo_countries:', announcement.geo_countries);
+          // Fallback: om country_code är tomt, visa baren
+          if (!geoData.country_code) {
+            console.log('No country_code from geo lookup, showing bar (fail open)');
+          } else if (!(announcement.geo_countries as string[]).map((c: string) => c.toLowerCase()).includes((geoData.country_code || '').toLowerCase())) {
             const emptyScript = `
               // Announcement not available in your region
               console.log('Announcement not available in your region');
