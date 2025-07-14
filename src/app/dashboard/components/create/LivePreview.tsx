@@ -224,6 +224,7 @@ export default function LivePreview({
               ? 'justify-end'
               : 'justify-start'
           }`}
+          style={{ height: '100%' }}
         >
           {/* Left icon (if any) */}
           {displayLeftIcon && (
@@ -238,21 +239,15 @@ export default function LivePreview({
               href={activeCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium transition-colors inline-flex items-center justify-center px-3 text-sm"
+              className="font-medium transition-colors inline-flex items-center justify-center text-sm"
               style={{ 
                 backgroundColor: activeCtaBg, 
                 color: activeCtaTextColor,
                 borderRadius: '4px',
-                height: `${buttonHeight}px`,
-                minWidth: `${buttonHeight * 2.2}px`,
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                boxSizing: 'border-box',
-                textAlign: 'center',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: 'inline-flex',
-                fontSize: `${buttonFontSize}px`,
+                padding: '8px 16px',
+                whiteSpace: 'nowrap',
+                textDecoration: 'none',
+                marginLeft: '16px',
               }}
             >
               {activeCtaText}
@@ -268,6 +263,7 @@ export default function LivePreview({
                 ? 'text-right'
                 : 'text-left'
             }`}
+            style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
           >
             {content.title && (
               <div
@@ -288,21 +284,15 @@ export default function LivePreview({
               href={activeCtaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium transition-colors inline-flex items-center justify-center px-3 text-sm"
+              className="font-medium transition-colors inline-flex items-center justify-center text-sm"
               style={{ 
                 backgroundColor: activeCtaBg, 
                 color: activeCtaTextColor,
                 borderRadius: '4px',
-                height: `${buttonHeight}px`,
-                minWidth: `${buttonHeight * 2.2}px`,
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                boxSizing: 'border-box',
-                textAlign: 'center',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: 'inline-flex',
-                fontSize: `${buttonFontSize}px`,
+                padding: '8px 16px',
+                whiteSpace: 'nowrap',
+                textDecoration: 'none',
+                marginLeft: '16px',
               }}
             >
               {activeCtaText}
