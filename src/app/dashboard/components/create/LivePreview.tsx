@@ -234,7 +234,7 @@ export default function LivePreview({
           )}
 
           {/* CTA before text when right-aligned */}
-          {content.textAlignment === 'right' && activeCtaEnabled && (
+          {content.textAlignment === 'right' && activeCtaEnabled && activeCtaText && activeCtaUrl && (
             <a
               href={activeCtaUrl}
               target="_blank"
@@ -279,7 +279,7 @@ export default function LivePreview({
           </div>
 
           {/* CTA after text when left/center aligned */}
-          {content.textAlignment !== 'right' && activeCtaEnabled && (
+          {content.textAlignment !== 'right' && activeCtaEnabled && activeCtaText && activeCtaUrl && (
             <a
               href={activeCtaUrl}
               target="_blank"
