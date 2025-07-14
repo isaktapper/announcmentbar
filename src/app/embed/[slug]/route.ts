@@ -190,6 +190,13 @@ export async function GET(
   const announcement = ${JSON.stringify(serializedAnnouncement)};
   const iconSvg = announcement.iconSvg;
   const slug = "${slug}";
+  // Domain check
+  const currentDomain = window.location.hostname.replace(/^www\./, '').toLowerCase();
+  const allowedDomain = announcement.allowed_domain?.trim().toLowerCase();
+  if (allowedDomain && currentDomain !== allowedDomain) {
+    console.log("❌ Domain mismatch – not rendering bar:", currentDomain, "!=", allowedDomain);
+    return;
+  }
   
   ${pageTargetingScript}
 

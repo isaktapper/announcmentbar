@@ -126,6 +126,7 @@ export interface AnnouncementFormData {
   cta_url: string
   cta_background_color: string
   cta_text_color: string
+  allowed_domain: string
 }
 
 export interface Template {
@@ -163,6 +164,7 @@ export interface Template {
   cta_url: string
   cta_background_color: string
   cta_text_color: string
+  allowed_domain: string
 }
 
 export const ICONS = {

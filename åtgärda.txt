@@ -9,11 +9,12 @@ CHECK INNAN LAUNCH
 - kolla genom alla sidor
 
 Hög
+- Fixa Cron
+- Fixa webbside baserad skyddning
 - Carousel, fixa (KLAR)
 - Fixa CTA, ta bort URL (KLAR)
 - Fixa embed (KLAR)
 - Integrera Stripe (KLAR)
-- Fixa Cron
 - Fixa så icons syns. (KLAR)
 - Fixa så att alla fonts syns rätt i preview, embed och font-listan. (KLAR)
 - Fixa white space med bar height osv. (KLAR)

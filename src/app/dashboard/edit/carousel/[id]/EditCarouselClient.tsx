@@ -85,6 +85,7 @@ export default function EditCarouselClient({ announcement }: EditCarouselClientP
       cta_url: announcement.cta_url,
       cta_background_color: announcement.cta_background_color,
       cta_text_color: announcement.cta_text_color,
+      allowed_domain: announcement.allowed_domain,
     }
 
     setFormData(formData)
@@ -206,7 +207,8 @@ export default function EditCarouselClient({ announcement }: EditCarouselClientP
         cta_text: formData.cta_text || '',
         cta_url: formData.cta_url || '',
         cta_background_color: formData.cta_background_color || '#000000',
-        cta_text_color: formData.cta_text_color || '#FFFFFF'
+        cta_text_color: formData.cta_text_color || '#FFFFFF',
+        allowed_domain: formData.allowed_domain,
       }
 
       const { error: updateError } = await supabase
@@ -342,6 +344,22 @@ export default function EditCarouselClient({ announcement }: EditCarouselClientP
                 />
                 <p className="mt-1 text-sm text-gray-500">
                   This name is for your reference only and won't be shown to users
+                </p>
+              </div>
+              {/* Allowed Domain Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Allowed domain
+                </label>
+                <input
+                  type="text"
+                  value={formData.allowed_domain || ''}
+                  onChange={(e) => handleInputChange('allowed_domain', e.target.value)}
+                  placeholder="example.com"
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  The bar will only be shown on this domain. Enter without https:// or www.
                 </p>
               </div>
             </div>
