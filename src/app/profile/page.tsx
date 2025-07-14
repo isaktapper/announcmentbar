@@ -6,6 +6,7 @@ import { ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { getUserDisplayName } from '@/lib/user-utils'
+import { Crown } from 'lucide-react'
 
 interface UserProfile {
   display_name?: string
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isUpgrading, setIsUpgrading] = useState(false)
   
   const supabase = createClient()
 
@@ -82,6 +84,23 @@ export default function ProfilePage() {
     )
   }
 
+  const handleUpgrade = async () => {
+    setIsUpgrading(true)
+    try {
+      const res = await fetch('/api/create-checkout-session', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Kunde inte starta betalning. Försök igen.')
+      }
+    } catch (e) {
+      alert('Något gick fel. Försök igen.')
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white to-[#FFFFC5]">
       {/* Header */}
@@ -103,66 +122,27 @@ export default function ProfilePage() {
                 alt="Logo" 
                 className="h-8 w-auto"
               />
-                              <h1 className="text-2xl font-bold text-gray-900">Account</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Account</h1>
             </div>
             <div className="w-32"></div> {/* Spacer for centering */}
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6">
-            <div className="space-y-6">
-              {/* Name */}
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
-                  <p className="text-lg text-gray-900">
-                    {profile?.display_name || 'Not provided'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
-                  <p className="text-lg text-gray-900">{user.email}</p>
-                </div>
-              </div>
-
-              {/* Plan */}
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Plan</label>
-                  <div className="mt-2">
-                    {getPlanBadge()}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Delete Account Section */}
-          <div className="bg-red-50 border-t border-red-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-red-800">Danger Zone</h3>
-                <p className="text-sm text-red-600 mt-1">
-                  Permanently delete your account and all data
-                </p>
-              </div>
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
-              >
-                <TrashIcon className="w-4 h-4 mr-2" />
-                Delete my account
-              </button>
-            </div>
-          </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
+          <h2 className="text-xl font-semibold mb-2">Din plan</h2>
+          <div className="mb-4">{getPlanBadge()}</div>
+          {profile.plan === 'free' && (
+            <button
+              onClick={handleUpgrade}
+              disabled={isUpgrading}
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 font-medium rounded-md border border-yellow-200 shadow-sm hover:bg-yellow-200 transition-colors disabled:opacity-50 text-sm"
+            >
+              <Crown className="w-4 h-4 text-yellow-500" />
+              {isUpgrading ? 'Loading...' : 'Upgrade to Unlimited'}
+            </button>
+          )}
         </div>
       </main>
     </div>

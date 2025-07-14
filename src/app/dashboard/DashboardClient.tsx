@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Plus, Sparkles, BarChart2, CheckCircle, MinusCircle, User as UserIcon, Wrench, Zap } from 'lucide-react'
+import { Plus, Sparkles, BarChart2, CheckCircle, MinusCircle, User as UserIcon, Wrench, Zap, Crown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { ScribbleArrow, ScribbleHeart, ScribbleWave } from '../../components/scribbles/ScribbleElements'
@@ -26,6 +26,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
   const router = useRouter()
   const { error } = useToast()
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false)
+  const [isUpgrading, setIsUpgrading] = useState(false)
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -84,6 +85,23 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
     router.push('/auth/login')
   }
 
+  const handleUpgrade = async () => {
+    setIsUpgrading(true)
+    try {
+      const res = await fetch('/api/create-checkout-session', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        error('Kunde inte starta betalning. Försök igen.')
+      }
+    } catch (e) {
+      error('Något gick fel. Försök igen.')
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
+
   const stats = {
     total: announcements.length,
     public: announcements.filter(a => a.visibility === true).length,
@@ -125,6 +143,17 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
               <div className="hidden sm:block text-sm text-gray-600">
                 Welcome back, <span className="font-medium">{displayName}</span>!
               </div>
+              {userPlan === 'free' && (
+                <button
+                  onClick={handleUpgrade}
+                  disabled={isUpgrading}
+                  className="flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-700 font-medium rounded-md border border-yellow-200 shadow-sm hover:bg-yellow-200 transition-colors disabled:opacity-50 text-sm"
+                  title="Upgrade to Unlimited"
+                >
+                  <Crown className="w-4 h-4 text-yellow-500" />
+                  {isUpgrading ? 'Loading...' : 'Upgrade to Unlimited'}
+                </button>
+              )}
               <button
                 onClick={() => router.push('/profile')}
                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

@@ -1,19 +1,38 @@
 LAUNCH CHECKLIST
 
+CHECK INNAN LAUNCH
+- Kolla så sign up / sign in funkar
+- Testa alla bars med alla olika typer av kombinationer.
+- testa free
+- testa premium
+- testa uppgradera från free
+- kolla genom alla sidor
+
 Hög
 - Carousel, fixa (KLAR)
 - Fixa CTA, ta bort URL (KLAR)
-- Fixa embed (PÅGÅENDE)
+- Fixa embed (SNART KLAR)
 - Integrera Stripe (PÅGÅENDE)
 - Fixa Cron
-- Fixa email sender
+- Fixa så icons syns. (KLAR)
+- Fixa så att alla fonts syns rätt i preview, embed och font-listan. (KLAR)
+- Fixa white space med bar height osv. (KLAR)
+
 
 Mellan
 - Sätt upp supportmejl
 - Det syns inte på announcment cards om ett card är scheduled. (KLAR)
-
+- Fixa email sender
+- Fixa "Forgot password"
 
 Låg
 - Lägg till en feature request "låda" folk kan skicka in requtests till (KLAR)
 - Koppla "Delete account" till riktig funktion
 - Uppdatera admin så det är korrekt med alla uppdateringar vi gjort.
+
+
+
+FRAMÅT
+- Aligna databasstruktur för bars oavsett typ. store all in "content" som med carousel.
+- 2FA
+- SSO
