@@ -162,22 +162,12 @@ export default function ProfilePage() {
               {isUpgrading ? 'Loading...' : 'Upgrade to Unlimited'}
             </button>
           )}
-          <button
-            onClick={async () => {
-              if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
-              const res = await fetch('/api/delete-account', { method: 'POST' })
-              if (res.ok) {
-                router.push('/auth/signup')
-              } else {
-                const data = await res.json()
-                alert('Failed to delete account: ' + (data.error || 'Unknown error'))
-              }
-            }}
-            className="flex items-center gap-2 justify-center w-full px-4 py-3 mt-2 bg-red-50 text-red-700 font-semibold rounded-lg border border-red-200 shadow hover:bg-red-100 transition-colors text-base"
-          >
-            <TrashIcon className="w-5 h-5" />
-            Delete account
-          </button>
+          {/* Ta bort Delete account-knappen, lägg till info-text */}
+          <div className="w-full flex justify-center mt-8">
+            <p className="text-sm text-gray-400 text-center">
+              Want to delete your account? Email us at <a href="mailto:hello@yello.bar" className="underline hover:text-yellow-700">hello@yello.bar</a> and we’ll help you out.
+            </p>
+          </div>
         </div>
       </main>
     </div>
