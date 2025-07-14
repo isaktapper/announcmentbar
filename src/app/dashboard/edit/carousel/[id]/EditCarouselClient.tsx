@@ -578,6 +578,16 @@ export default function EditCarouselClient({ announcement }: EditCarouselClientP
             </div>
           </SectionCard>
 
+          {/* CTA Settings */}
+          <CTASettings
+            enabled={formData.cta_enabled}
+            text={formData.cta_text}
+            url={formData.cta_url}
+            backgroundColor={formData.cta_background_color}
+            textColor={formData.cta_text_color}
+            onUpdate={(field, value) => handleInputChange(field as keyof AnnouncementFormData, value)}
+          />
+
           {/* Submit Button */}
           <form onSubmit={handleSubmit}>
             <div className="flex justify-center pt-2">

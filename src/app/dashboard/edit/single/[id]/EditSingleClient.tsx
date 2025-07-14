@@ -338,30 +338,34 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
 
               {/* Icon Alignment */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">Icon Alignment</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="left"
-                      checked={formData.iconAlignment === 'left'}
-                      onChange={(e) => handleInputChange('iconAlignment', e.target.value)}
-                      className="w-4 h-4 text-brand-600 border-gray-300 focus:ring-brand-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Left</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="right"
-                      checked={formData.iconAlignment === 'right'}
-                      onChange={(e) => handleInputChange('iconAlignment', e.target.value)}
-                      className="w-4 h-4 text-brand-600 border-gray-300 focus:ring-brand-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Right</span>
-                  </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Icon Alignment</label>
+                <div className="flex gap-2">
+                  {['left', 'right'].map((alignment) => (
+                    <button
+                      key={alignment}
+                      type="button"
+                      onClick={() => handleInputChange('iconAlignment', alignment)}
+                      className={`px-4 py-2 rounded-lg border transition-colors capitalize ${
+                        formData.iconAlignment === alignment
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {alignment}
+                    </button>
+                  ))}
                 </div>
               </div>
+
+              {/* CTA Settings */}
+              <CTASettings
+                enabled={formData.cta_enabled}
+                text={formData.cta_text}
+                url={formData.cta_url}
+                backgroundColor={formData.cta_background_color}
+                textColor={formData.cta_text_color}
+                onUpdate={(field, value) => handleInputChange(field as keyof AnnouncementFormData, value)}
+              />
 
               {/* Text Alignment */}
               <div>
