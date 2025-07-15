@@ -449,7 +449,7 @@ export async function GET(
         var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
         return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + justifyStyle + '">' +
           singleLeftIcon +
-          '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
+          '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
