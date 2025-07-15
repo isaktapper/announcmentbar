@@ -510,7 +510,11 @@ export async function GET(
   const baseStyles = [
     'width: 100%',
     'display: flex',
-    'justify-content: center',
+    'justify-content: ' + (
+      announcement.textAlignment === 'right' ? 'flex-end' :
+      announcement.textAlignment === 'center' ? 'center' :
+      'flex-start'
+    ),
     'align-items: center',
     'height: ' + (announcement.barHeight || 60) + 'px',
     'padding: 0',
