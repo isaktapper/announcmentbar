@@ -301,7 +301,7 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
                       </p>
                       <div className="space-y-2">
                         <button
-                          onClick={() => router.push('/profile')}
+                          onClick={handleUpgrade}
                           className="inline-flex items-center px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-amber-600 transform hover:-translate-y-0.5 transition-all duration-200"
                         >
                           <Zap className="w-4 h-4 mr-1.5" />
