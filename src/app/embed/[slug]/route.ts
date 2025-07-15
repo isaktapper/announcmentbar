@@ -328,6 +328,7 @@ export async function GET(
         const slides = (announcement.content && Array.isArray(announcement.content.items))
           ? announcement.content.items
           : (Array.isArray(carouselItems) ? carouselItems : []);
+        console.log("[YELLO EMBED] Carousel slides:", slides); // <-- Logging added
         if (slides.length > 0) {
           const carouselContent = slides.map((item, index) => {
             var justifyClass = 'justify-start';
