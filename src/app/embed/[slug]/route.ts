@@ -450,12 +450,12 @@ export async function GET(
           textBlockMargin = ' mr-3';
           textContainerStyle = 'text-align:left;';
         }
-        // Bygg flex-row: [ikon][text] eller [text][ikon] beroende på iconAlignment
-        let textAndIconFlex = '';
+        // Bygg inre flex-row: [ikon][text] eller [text][ikon] beroende på iconAlignment
+        let textAndIconInnerFlex = '';
         if (iconAlignment === 'right') {
-          textAndIconFlex =
-            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
-              '<span style="display:block;width:100%">' +
+          textAndIconInnerFlex =
+            '<div class="flex flex-row items-center min-w-0" style="min-width:0;">' +
+              '<span class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="min-width:0;' + textContainerStyle + '">' +
                 (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
                 '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
               '</span>' +
@@ -463,10 +463,10 @@ export async function GET(
             '</div>';
         } else {
           // left eller default
-          textAndIconFlex =
-            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
+          textAndIconInnerFlex =
+            '<div class="flex flex-row items-center min-w-0" style="min-width:0;">' +
               iconHtml +
-              '<span style="display:block;width:100%">' +
+              '<span class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="min-width:0;' + textContainerStyle + '">' +
                 (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
                 '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
               '</span>' +
@@ -499,9 +499,11 @@ export async function GET(
         } else {
           closeBtnPad = 'margin-left:8px;';
         }
-        // Returnera hela baren: [textAndIconFlex][ctaBtn][closeBtn]
-        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + justifyStyle + '">' +
-          textAndIconFlex +
+        // Returnera hela baren: [inre flex-row][CTA][closeBtn], där inre flex-row alignas enligt textAlignment
+        return '<div class="flex flex-row items-center gap-4" style="flex:1;width:100%;' + innerPadding + '">' +
+          '<div class="flex flex-1 w-full items-center" style="' + justifyStyle + '">' +
+            textAndIconInnerFlex +
+          '</div>' +
           ctaBtn +
           // Close button placeras alltid sist, med padding
           '<span id="announcement-close-btn-slot" style="' + closeBtnPad + '"></span>' +
