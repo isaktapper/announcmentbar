@@ -337,9 +337,17 @@ export async function GET(
                 // Text alignment for the text block
                 var textAlignClass = 'text-left';
                 var textBlockMargin = '';
-                if (item.textAlignment === 'center') textAlignClass = 'text-center';
-                else if (item.textAlignment === 'right') textAlignClass = 'text-right';
-                else textBlockMargin = ' mr-3';
+                var textContainerStyle = 'height:100%;display:flex;flex-direction:column;justify-content:center;';
+                if (item.textAlignment === 'right') {
+                  textAlignClass = 'text-right';
+                  textContainerStyle += 'align-items:flex-end;text-align:right;';
+                } else if (item.textAlignment === 'center') {
+                  textAlignClass = 'text-center';
+                  textContainerStyle += 'align-items:center;text-align:center;';
+                } else {
+                  textBlockMargin = ' mr-3';
+                  textContainerStyle += 'align-items:flex-start;text-align:left;';
+                }
                 // Add left padding for left-aligned text
                 var contentWrapperStyle = '';
                 if (item.textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
@@ -368,7 +376,7 @@ export async function GET(
                   '>' +
                   '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;">' +
                     iconHtml +
-                    '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="height:100%;display:flex;flex-direction:column;justify-content:center;">' +
+                    '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
                       '<span style="display:block;font-size: ' + item.messageFontSize + 'px">' + item.message + '</span>' +
                     '</div>' +
