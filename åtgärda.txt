@@ -10,7 +10,7 @@ CHECK INNAN LAUNCH
 
 Hög
 - Fixa Cron
-- Fixa webbside baserad skyddning
+- Fixa webbside baserad skyddning (KLAR)
 - Carousel, fixa (KLAR)
 - Fixa CTA, ta bort URL (KLAR)
 - Fixa embed (KLAR)
@@ -21,14 +21,14 @@ Hög
 
 
 Mellan
-- Sätt upp supportmejl
+- Sätt upp supportmejl (KLAR)
 - Det syns inte på announcment cards om ett card är scheduled. (KLAR)
-- Fixa email sender
+- Fixa email sender (vi kör supabase så länge, fixa bara styling)
 - Fixa "Forgot password"
 
 Låg
 - Lägg till en feature request "låda" folk kan skicka in requtests till (KLAR)
-- Koppla "Delete account" till riktig funktion
+- Koppla "Delete account" till riktig funktion (KLAR)
 - Uppdatera admin så det är korrekt med alla uppdateringar vi gjort.
 
 

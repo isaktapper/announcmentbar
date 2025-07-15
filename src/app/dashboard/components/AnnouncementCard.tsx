@@ -35,6 +35,8 @@ interface AnnouncementCardProps {
   onDelete: (id: string) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
+  userPlan?: 'free' | 'unlimited'
+  hasActiveBar?: boolean
 }
 
 const iconComponents = {
@@ -59,7 +61,9 @@ export default function AnnouncementCard({
   onUpdate, 
   onDelete, 
   onSuccess, 
-  onError 
+  onError,
+  userPlan = 'free',
+  hasActiveBar = false
 }: AnnouncementCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
@@ -467,11 +471,23 @@ export default function AnnouncementCard({
                 
                 <button
                   onClick={handleToggleVisibility}
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    (userPlan === 'free' && hasActiveBar && !announcement.visibility)
+                  }
+                  title={
+                    userPlan === 'free' && hasActiveBar && !announcement.visibility
+                      ? 'You can only have 1 active bar on the Free plan. Disable another bar to activate this one.'
+                      : undefined
+                  }
                   className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                     announcement.visibility
                       ? 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
                       : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                  } ${
+                    userPlan === 'free' && hasActiveBar && !announcement.visibility
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
                   }`}
                 >
                   {announcement.visibility ? (

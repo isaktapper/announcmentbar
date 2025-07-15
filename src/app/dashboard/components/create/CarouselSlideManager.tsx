@@ -6,13 +6,16 @@ import CTASettings from './CTASettings'
 import FontSelector from './FontSelector'
 import IconSelector from './IconSelector'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Crown } from 'lucide-react'
 
 interface CarouselSlideManagerProps {
   items: CarouselItem[]
   onChange: (items: CarouselItem[]) => void
+  userPlan?: 'free' | 'unlimited'
+  planLoading?: boolean
 }
 
-export default function CarouselSlideManager({ items, onChange }: CarouselSlideManagerProps) {
+export default function CarouselSlideManager({ items, onChange, userPlan = 'free', planLoading = false }: CarouselSlideManagerProps) {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
 
   // Keep a ref to the latest items array to avoid stale closures when
@@ -310,14 +313,29 @@ export default function CarouselSlideManager({ items, onChange }: CarouselSlideM
           </div>
 
           {/* CTA Settings */}
-          <CTASettings
-            enabled={normalizedItems[activeSlideIndex].cta_enabled}
-            text={normalizedItems[activeSlideIndex].cta_text}
-            url={normalizedItems[activeSlideIndex].cta_url}
-            backgroundColor={normalizedItems[activeSlideIndex].cta_background_color}
-            textColor={normalizedItems[activeSlideIndex].cta_text_color}
-            onUpdate={(field, value) => handleSlideChange(field as keyof CarouselItem, value)}
-          />
+          {planLoading ? (
+            <div className="h-16 bg-gray-100 rounded-xl animate-pulse w-full" />
+          ) : userPlan === 'free' ? (
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-400">Call-to-Action Button</h4>
+                <p className="text-sm text-gray-300">Add a clickable button to your announcement</p>
+              </div>
+              <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
+                <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+              </div>
+            </div>
+          ) : (
+            <CTASettings
+              enabled={normalizedItems[activeSlideIndex].cta_enabled}
+              text={normalizedItems[activeSlideIndex].cta_text}
+              url={normalizedItems[activeSlideIndex].cta_url}
+              backgroundColor={normalizedItems[activeSlideIndex].cta_background_color}
+              textColor={normalizedItems[activeSlideIndex].cta_text_color}
+              onUpdate={(field, value) => handleSlideChange(field as keyof CarouselItem, value)}
+            />
+          )}
         </div>
       </div>
     </div>

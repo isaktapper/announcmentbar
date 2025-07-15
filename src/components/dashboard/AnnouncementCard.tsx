@@ -17,14 +17,28 @@ import { Announcement } from '../../types/announcement'
 
 interface AnnouncementCardProps {
   announcement: Announcement
-  onUpdate: () => void
+  onUpdate: (announcement: Announcement) => void
+  onDelete: (id: string) => void
+  onSuccess: (message: string) => void
+  onError: (message: string) => void
+  userPlan?: 'free' | 'unlimited'
+  hasActiveBar?: boolean
 }
 
-export default function AnnouncementCard({ announcement, onUpdate }: AnnouncementCardProps) {
+export default function AnnouncementCard({
+  announcement,
+  onUpdate,
+  onDelete,
+  onSuccess,
+  onError,
+  userPlan = 'free',
+  hasActiveBar = false
+}: AnnouncementCardProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [isToggleHovered, setIsToggleHovered] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -45,7 +59,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
         .eq('id', announcement.id)
       
       if (error) throw error
-      onUpdate()
+      onUpdate(announcement)
     } catch (error) {
       console.error('Error updating visibility:', error)
     } finally {
@@ -62,7 +76,7 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
         .eq('id', announcement.id)
       
       if (error) throw error
-      onUpdate()
+      onDelete(announcement.id)
       setShowDeleteModal(false)
     } catch (error) {
       console.error('Error deleting announcement:', error)
@@ -113,21 +127,40 @@ export default function AnnouncementCard({ announcement, onUpdate }: Announcemen
               <span className={`text-xs ${announcement.visibility ? 'text-green-600' : 'text-gray-400'}`}>
                 {announcement.visibility ? 'Active' : 'Inactive'}
                   </span>
-              <Switch
-                checked={announcement.visibility}
-                onChange={handleToggleVisibility}
-                disabled={isUpdating}
-                className={`${
-                  announcement.visibility ? 'bg-green-500' : 'bg-gray-200'
-                } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50`}
-              >
-                <span
-                  className={`${
-                    announcement.visibility ? 'translate-x-5' : 'translate-x-1'
-                  } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-            </div>
+                <div
+                  className="relative flex items-center"
+                  onMouseEnter={() => setIsToggleHovered(true)}
+                  onMouseLeave={() => setIsToggleHovered(false)}
+                >
+                  <Switch
+                    checked={announcement.visibility}
+                    onChange={handleToggleVisibility}
+                    disabled={
+                      isUpdating ||
+                      (userPlan === 'free' && hasActiveBar && !announcement.visibility)
+                    }
+                    className={`${
+                      announcement.visibility ? 'bg-green-500' : 'bg-gray-200'
+                    } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 ${
+                      userPlan === 'free' && hasActiveBar && !announcement.visibility
+                        ? 'cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    <span
+                      className={`${
+                        announcement.visibility ? 'translate-x-5' : 'translate-x-1'
+                      } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
+                    />
+                  </Switch>
+                  {/* Custom Tooltip */}
+                  {userPlan === 'free' && hasActiveBar && !announcement.visibility && isToggleHovered && (
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 px-3 py-2 bg-yellow-100 text-yellow-900 text-xs rounded shadow-lg whitespace-nowrap font-semibold border border-yellow-300">
+                      You can only have 1 active bar on the Free plan. Upgrade to Unlimited for unlimited bars.
+                    </div>
+                  )}
+                </div>
+              </div>
           </div>
 
           {/* Bottom Section with Type, Slug and Actions */}

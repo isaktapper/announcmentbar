@@ -136,11 +136,14 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
         key={key}
         type="button"
         onClick={() => {
+          if (isPremium && userPlan === 'free') return;
           onSelect(key)
           if (showAllIcons) setShowAllIcons(false)
         }}
         className={buttonClass}
         title={label}
+        disabled={isPremium && userPlan === 'free'}
+        style={isPremium && userPlan === 'free' ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
       >
         {/* Premium badge - only show for free users */}
         {isPremium && userPlan === 'free' && (
@@ -221,7 +224,7 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
 
       {/* All icons modal */}
       {showAllIcons && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
             {/* Modal header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -230,7 +233,7 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                   {userPlan === 'free' ? (
                     <>
-                  Choose from our collection of icons. Premium icons are marked with 
+                  Choose from our collection of icons. Unlimited icons are marked with 
                   <span className="bg-yellow-200 rounded-full p-1">
                     <Crown className="w-3 h-3 text-black inline" />
                   </span>
@@ -303,7 +306,7 @@ export default function IconSelector({ selectedIcon, onSelect }: IconSelectorPro
                 <div className="text-xs text-gray-500 flex items-center gap-1">
                   💡 Tip: <span className="bg-yellow-200 rounded-full p-0.5">
                     <Crown className="w-2.5 h-2.5 text-black inline" />
-                  </span> Premium icons may require an upgraded plan in the future
+                  </span> Upgrade to Unlimited to use all icons.
                 </div>
                 )}
                 <button

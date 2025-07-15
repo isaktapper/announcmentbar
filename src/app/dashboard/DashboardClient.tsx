@@ -401,6 +401,11 @@ export default function DashboardClient({ initialAnnouncements, user }: Dashboar
                   key={announcement.id}
                   announcement={announcement}
                   onUpdate={refreshAnnouncements}
+                  onDelete={() => refreshAnnouncements()}
+                  onSuccess={() => {}}
+                  onError={() => {}}
+                  userPlan={userPlan}
+                  hasActiveBar={userPlan === 'free' && stats.public > 0}
                 />
               ))}
             </div>

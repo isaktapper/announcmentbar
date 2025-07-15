@@ -24,6 +24,8 @@ import SectionCard from '../../components/create/SectionCard'
 import GeoSelector from '../../components/create/GeoSelector'
 import CTASettings from '../../components/create/CTASettings'
 import { LivePreviewProps } from '../../components/create/LivePreview'
+import { Crown } from 'lucide-react'
+import { getUserPlan } from '@/lib/user-utils'
 
 export default function CreateAnnouncementPage() {
   const router = useRouter()
@@ -31,6 +33,38 @@ export default function CreateAnnouncementPage() {
   const [loading, setLoading] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [openSections, setOpenSections] = useState<string[]>(['general'])
+  const [userPlan, setUserPlan] = useState<'free' | 'unlimited'>('free')
+  const [planLoading, setPlanLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserPlanAndBars = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const plan = await getUserPlan(user.id)
+          setUserPlan(plan)
+          if (plan === 'free') {
+            // Fetch bars for this user
+            const { data: bars } = await supabase
+              .from('announcements')
+              .select('id, visibility')
+              .eq('user_id', user.id)
+            if (bars && bars.some(bar => bar.visibility)) {
+              error('You can only have 1 active bar on the Free plan. Disable one to create another or upgrade your plan.')
+              router.replace('/dashboard')
+              return
+            }
+          }
+        }
+      } catch (error) {
+        setUserPlan('free')
+      } finally {
+        setPlanLoading(false)
+      }
+    }
+    fetchUserPlanAndBars()
+  }, [])
 
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => 
@@ -550,14 +584,29 @@ export default function CreateAnnouncementPage() {
               )}
 
               {/* CTA Settings */}
-              <CTASettings
-                enabled={formData.cta_enabled}
-                text={formData.cta_text}
-                url={formData.cta_url}
-                backgroundColor={formData.cta_background_color}
-                textColor={formData.cta_text_color}
-                onUpdate={handleInputChange}
-              />
+              {planLoading ? (
+                <div className="h-16 bg-gray-100 rounded-xl animate-pulse w-full" />
+              ) : userPlan === 'free' ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400">Call-to-Action Button</h4>
+                    <p className="text-sm text-gray-300">Add a clickable button to your announcement</p>
+                  </div>
+                  <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
+                    <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                    <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+                  </div>
+                </div>
+              ) : (
+                <CTASettings
+                  enabled={formData.cta_enabled}
+                  text={formData.cta_text}
+                  url={formData.cta_url}
+                  backgroundColor={formData.cta_background_color}
+                  textColor={formData.cta_text_color}
+                  onUpdate={handleInputChange}
+                />
+              )}
 
               {/* Typography */}
                     <div>
@@ -809,10 +858,24 @@ export default function CreateAnnouncementPage() {
                 </div>
 
               {/* Scheduling */}
+              {planLoading ? (
+                <div className="h-16 bg-gray-100 rounded-xl animate-pulse w-full" />
+              ) : userPlan === 'free' ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+                  <div>
+                    <div className="font-medium text-gray-400">Schedule Bar</div>
+                    <div className="text-sm text-gray-300">Set when the bar goes live and expires</div>
+                  </div>
+                  <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
+                    <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                    <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+                  </div>
+                </div>
+              ) : (
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
-                  <div className="font-medium text-gray-900">Schedule Bar</div>
-                  <div className="text-sm text-gray-500">Set when the bar goes live and expires</div>
+                    <div className="font-medium text-gray-900">Schedule Bar</div>
+                    <div className="text-sm text-gray-500">Set when the bar goes live and expires</div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -824,8 +887,8 @@ export default function CreateAnnouncementPage() {
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                   </label>
                 </div>
-
-              {showScheduling && (
+              )}
+              {userPlan !== 'free' && showScheduling && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Start Date & Time</label>
@@ -835,7 +898,7 @@ export default function CreateAnnouncementPage() {
                       onChange={(e) => handleDateChange('scheduledStart', e.target.value)}
                       className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black transition-colors"
                     />
-              </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">End Date & Time</label>
                     <input
@@ -844,8 +907,8 @@ export default function CreateAnnouncementPage() {
                       onChange={(e) => handleDateChange('scheduledEnd', e.target.value)}
                       className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black transition-colors"
                     />
-            </div>
-          </div>
+                  </div>
+                </div>
               )}
             </div>
           </SectionCard>
@@ -861,48 +924,78 @@ export default function CreateAnnouncementPage() {
           >
             <div className="space-y-6">
               {/* Path Targeting */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Show on these paths
-                </label>
-                <div className="space-y-2">
-                  {formData.pagePaths.map((path, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={path}
-                        onChange={(e) => handleInputChange('pagePaths', [...formData.pagePaths.slice(0, index), e.target.value, ...formData.pagePaths.slice(index + 1)])}
-                        placeholder={index === 0 ? "Ex. /products or /dashboard" : "/"}
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-white text-gray-900 pl-4"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange('pagePaths', formData.pagePaths.filter((_, i) => i !== index))}
-                        className="p-2 text-gray-400 hover:text-gray-600"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleInputChange('pagePaths', [...formData.pagePaths, ''])}
-                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
-                  >
-                    Add Path
-                  </button>
+              {planLoading ? (
+                <div className="h-12 bg-gray-100 rounded-xl animate-pulse w-full mb-2" />
+              ) : userPlan === 'free' ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mb-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Show on these paths</label>
+                    <div className="text-sm text-gray-300">Target specific pages for your bar</div>
+                  </div>
+                  <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
+                    <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                    <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Show on these paths
+                  </label>
+                  <div className="space-y-2">
+                    {formData.pagePaths.map((path, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={path}
+                          onChange={(e) => handleInputChange('pagePaths', [...formData.pagePaths.slice(0, index), e.target.value, ...formData.pagePaths.slice(index + 1)])}
+                          placeholder={index === 0 ? "Ex. /products or /dashboard" : "/"}
+                          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-white text-gray-900 pl-4"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleInputChange('pagePaths', formData.pagePaths.filter((_, i) => i !== index))}
+                          className="p-2 text-gray-400 hover:text-gray-600"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('pagePaths', [...formData.pagePaths, ''])}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                    >
+                      Add Path
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Country Targeting */}
-              <div className="relative">
-                <GeoSelector
-                  initialCountries={formData.geoCountries}
-                  onCountriesChange={(countries) => handleInputChange('geoCountries', countries)}
-                />
-              </div>
+              {planLoading ? (
+                <div className="h-12 bg-gray-100 rounded-xl animate-pulse w-full" />
+              ) : userPlan === 'free' ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Country Targeting</label>
+                    <div className="text-sm text-gray-300">Show your bar only in specific countries</div>
+                  </div>
+                  <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
+                    <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                    <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <GeoSelector
+                    initialCountries={formData.geoCountries}
+                    onCountriesChange={(countries) => handleInputChange('geoCountries', countries)}
+                  />
+                </div>
+              )}
             </div>
           </SectionCard>
 

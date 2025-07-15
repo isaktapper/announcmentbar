@@ -156,22 +156,26 @@ export default function FontSelector({ selectedFont, onSelect }: FontSelectorPro
               {(Object.entries(fontOptions) as [FontFamily, typeof fontOptions[FontFamily]][]).map(([font, config]) => (
                 <div
                   key={font}
-                  onClick={() => handleFontSelect(font)}
+                  onClick={() => {
+                    // Only allow selection if not disabled
+                    const isDisabled = config.isPremium && userPlan === 'free';
+                    if (!isDisabled) handleFontSelect(font);
+                  }}
                   className={getFontOptionClass(font)}
                   style={{ 
-                    fontFamily: `'${config.cssName}', ${config.fallback}`
+                    fontFamily: `'${config.cssName}', ${config.fallback}`,
+                    color: config.isPremium && userPlan === 'free' ? '#A3A3A3' : undefined, // Tailwind gray-400
+                    opacity: config.isPremium && userPlan === 'free' ? 0.7 : 1,
+                    cursor: config.isPremium && userPlan === 'free' ? 'not-allowed' : undefined
                   }}
                 >
                   <span>{config.name}</span>
-                  <div className="flex items-center gap-2">
-                    {selectedFont === font && !config.isPremium && (
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    )}
+                  <div className="flex items-center gap-1 min-w-[90px]" style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}>
                     {config.isPremium && userPlan === 'free' && (
-                      <div className="flex items-center gap-2 text-yellow-600">
-                        <Crown className="w-4 h-4" />
-                        <span className="text-xs">Upgrade to unlimited</span>
-                      </div>
+                      <>
+                        <Crown className="w-4 h-4 align-middle text-yellow-600" />
+                        <span className="text-xs font-semibold leading-none align-middle text-yellow-600">Unlimited</span>
+                      </>
                     )}
                   </div>
                 </div>
