@@ -401,6 +401,7 @@ export async function GET(
                         'align-self: center;' +
                       '"' +
                       '>' + item.cta_text + '</a>' : '') +
+                    (announcement.isClosable ? '<button aria-label="Close" style="margin-left:16px;font-size:20px;background:transparent;border:none;cursor:pointer;color:' + (item.textColor || '#000') + ';">&times;</button>' : '')
                   '</div>' +
                   '</div>';
           }).join('');
@@ -520,7 +521,8 @@ export async function GET(
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
 
   // Add close button if announcement is closable
-  if (announcement.isClosable) {
+  // OBS! För carousel renderas close-knappen direkt i HTML:en nu
+  if (announcement.isClosable && announcement.type !== 'carousel') {
     announcementBar.style.position = announcement.isSticky ? 'fixed' : 'relative';
     const closeBtn = document.createElement('button');
     closeBtn.innerHTML = '&times;';
