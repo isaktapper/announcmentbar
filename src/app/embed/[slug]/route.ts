@@ -415,24 +415,36 @@ export async function GET(
       }
 
       if (type === 'single') {
-        // Group title and message vertically, CTA as sibling in flex row
-        // Add left padding for left-aligned text
+        // Group title and message vertically, CTA as sibling i flex row
+        // Add left/right padding for alignment
         var contentWrapperStyle = '';
         if (textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
-        // Render icon if present (use only top-level icon for single)
+        else if (textAlignment === 'right') contentWrapperStyle = 'padding-right:16px;';
+        // Set justify-content for flex row
+        var justifyStyle = '';
+        var justifyClass = 'justify-start';
+        if (textAlignment === 'center') { justifyStyle = 'justify-content:center;'; justifyClass = 'justify-center'; }
+        else if (textAlignment === 'right') { justifyStyle = 'justify-content:flex-end;'; justifyClass = 'justify-end'; }
+        // Render icon if present
         var iconHtml = '';
         if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
           iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
-        // Lägg till text-align: center om textAlignment är 'center'
+        // Set text-align for text block
         var textContainerStyle = '';
         if (textAlignment === 'center') textContainerStyle = 'text-align:center;';
-        return '<div class="flex flex-row items-center gap-4" style="' + contentWrapperStyle + '">' +
-          iconHtml +
+        else if (textAlignment === 'right') textContainerStyle = 'text-align:right;';
+        else textContainerStyle = 'text-align:left;';
+        // Render icon left or right
+        var leftIcon = iconAlignment === 'left' ? iconHtml : '';
+        var rightIcon = iconAlignment === 'right' ? iconHtml : '';
+        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + justifyStyle + '">' +
+          leftIcon +
           '<div class="min-w-0" style="' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
+          rightIcon +
           (cta_enabled && cta_text && cta_url ? '<a ' +
             'href="' + cta_url + '" ' +
             'target="_blank" ' +
