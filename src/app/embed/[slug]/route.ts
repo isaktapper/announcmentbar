@@ -525,7 +525,7 @@ export async function GET(
     const closeBtn = document.createElement('button');
     closeBtn.innerHTML = '&times;';
     closeBtn.setAttribute('aria-label','Close');
-    closeBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:20px;line-height:1;color:' + announcement.textColor + ';cursor:pointer;';
+    closeBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:20px;line-height:1;color:' + announcement.textColor + ';cursor:pointer;margin-left:16px;';
     closeBtn.addEventListener('click', function(){
       announcementBar.remove();
       if (announcement.isSticky) {
