@@ -379,7 +379,7 @@ export async function GET(
                   (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
                   '>' +
-                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;' + extraJustifyStyle + '">' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;' + extraJustifyStyle + (announcement.isClosable ? 'max-width:calc(100% - 40px);' : '') + '">' +
                     iconHtml +
                     '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
@@ -401,7 +401,6 @@ export async function GET(
                         'align-self: center;' +
                       '"' +
                       '>' + item.cta_text + '</a>' : '') +
-                    (announcement.isClosable ? '<button aria-label="Close" style="margin-left:16px;font-size:20px;background:transparent;border:none;cursor:pointer;color:' + (item.textColor || '#000') + ';">&times;</button>' : '')
                   '</div>' +
                   '</div>';
           }).join('');
@@ -521,8 +520,7 @@ export async function GET(
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
 
   // Add close button if announcement is closable
-  // OBS! För carousel renderas close-knappen direkt i HTML:en nu
-  if (announcement.isClosable && announcement.type !== 'carousel') {
+  if (announcement.isClosable) {
     announcementBar.style.position = announcement.isSticky ? 'fixed' : 'relative';
     const closeBtn = document.createElement('button');
     closeBtn.innerHTML = '&times;';
