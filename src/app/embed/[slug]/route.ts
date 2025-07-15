@@ -430,17 +430,26 @@ export async function GET(
         if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
           iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
-        // Set text-align for text block
-        var textContainerStyle = '';
-        if (textAlignment === 'center') textContainerStyle = 'text-align:center;';
-        else if (textAlignment === 'right') textContainerStyle = 'text-align:right;';
-        else textContainerStyle = 'text-align:left;';
+        // Set text-align and flex for text block (match carousel)
+        var textAlignClass = 'text-left';
+        var textBlockMargin = '';
+        var textContainerStyle = 'height:100%;display:flex;flex-direction:column;justify-content:center;';
+        if (textAlignment === 'right') {
+          textAlignClass = 'text-right';
+          textContainerStyle += 'align-items:flex-end;text-align:right;';
+        } else if (textAlignment === 'center') {
+          textAlignClass = 'text-center';
+          textContainerStyle += 'align-items:center;text-align:center;';
+        } else {
+          textBlockMargin = ' mr-3';
+          textContainerStyle += 'align-items:flex-start;text-align:left;';
+        }
         // Render icon left or right
         var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
         var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
         return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + justifyStyle + '">' +
           singleLeftIcon +
-          '<div class="min-w-0" style="' + textContainerStyle + '">' +
+          '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
