@@ -415,22 +415,29 @@ export async function GET(
       }
 
       if (type === 'single') {
-        // Group title and message vertically, CTA as sibling i flex row
-        // Add left/right padding for alignment
-        var contentWrapperStyle = '';
-        if (textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
-        else if (textAlignment === 'right') contentWrapperStyle = 'padding-right:16px;';
-        // Set justify-content for flex row
-        var justifyStyle = '';
-        var justifyClass = 'justify-start';
-        if (textAlignment === 'center') { justifyStyle = 'justify-content:center;'; justifyClass = 'justify-center'; }
-        else if (textAlignment === 'right') { justifyStyle = 'justify-content:flex-end;'; justifyClass = 'justify-end'; }
-        // Render icon if present
-        var iconHtml = '';
-        if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
-          iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
+        // Sätt justify-content och padding beroende på textAlignment
+        let justifyStyle = '';
+        let justifyClass = '';
+        let innerPadding = '';
+        if (textAlignment === 'center') {
+          justifyStyle = 'justify-content:center;';
+          justifyClass = 'justify-center';
+          innerPadding = 'padding-left:16px;padding-right:16px;';
+        } else if (textAlignment === 'right') {
+          justifyStyle = 'justify-content:flex-end;';
+          justifyClass = 'justify-end';
+          innerPadding = 'padding-right:16px;';
+        } else {
+          // left
+          justifyStyle = 'justify-content:flex-start;';
+          justifyClass = 'justify-start';
+          innerPadding = 'padding-left:16px;';
         }
-        // Set text-align for text block (utan flex)
+        // Render icon left or right
+        var iconHtml = icon && icon !== 'none' && ICON_SVG_MAP[icon] ? '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>' : '';
+        var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
+        var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
+        // Sätt text-align på textblocket
         var textAlignClass = 'text-left';
         var textBlockMargin = '';
         var textContainerStyle = '';
@@ -444,18 +451,7 @@ export async function GET(
           textBlockMargin = ' mr-3';
           textContainerStyle = 'text-align:left;';
         }
-        // Debug log
-        console.log('[YELLO EMBED SINGLE] textContainerStyle:', textContainerStyle, 'textAlignClass:', textAlignClass);
-        // Inre flex-rad style och justify
-        var innerPadding = '';
-        var innerJustify = '';
-        if (textAlignment === 'left') { innerPadding = 'padding-left:16px;'; innerJustify = 'justify-content:flex-start;'; }
-        else if (textAlignment === 'right') { innerPadding = 'padding-right:16px;'; innerJustify = 'justify-content:flex-end;'; }
-        else { innerPadding = 'padding-left:16px;padding-right:16px;'; innerJustify = 'justify-content:center;'; }
-        // Render icon left or right
-        var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
-        var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
-        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + innerJustify + '">' +
+        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + justifyStyle + '">' +
           singleLeftIcon +
           '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
