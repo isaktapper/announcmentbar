@@ -332,8 +332,12 @@ export async function GET(
         if (slides.length > 0) {
           const carouselContent = slides.map((item, index) => {
             var justifyClass = 'justify-start';
+            var extraJustifyStyle = '';
             if (item.textAlignment === 'center') justifyClass = 'justify-center';
-            else if (item.textAlignment === 'right') justifyClass = 'justify-end';
+            else if (item.textAlignment === 'right') {
+              justifyClass = 'justify-end';
+              extraJustifyStyle = 'justify-content:flex-end;';
+            }
                 // Text alignment for the text block
                 var textAlignClass = 'text-left';
                 var textBlockMargin = '';
@@ -374,7 +378,7 @@ export async function GET(
                   (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
                   '>' +
-                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;">' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;' + extraJustifyStyle + '">' +
                     iconHtml +
                     '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
