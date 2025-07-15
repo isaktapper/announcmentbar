@@ -444,10 +444,16 @@ export async function GET(
           textBlockMargin = ' mr-3';
           textContainerStyle += 'align-items:flex-start;text-align:left;';
         }
+        // Inre flex-rad style och justify
+        var innerPadding = '';
+        var innerJustify = '';
+        if (textAlignment === 'left') { innerPadding = 'padding-left:16px;'; innerJustify = 'justify-content:flex-start;'; }
+        else if (textAlignment === 'right') { innerPadding = 'padding-right:16px;'; innerJustify = 'justify-content:flex-end;'; }
+        else { innerPadding = 'padding-left:16px;padding-right:16px;'; innerJustify = 'justify-content:center;'; }
         // Render icon left or right
         var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
         var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
-        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + justifyStyle + '">' +
+        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + innerJustify + '">' +
           singleLeftIcon +
           '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
