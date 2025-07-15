@@ -436,15 +436,15 @@ export async function GET(
         else if (textAlignment === 'right') textContainerStyle = 'text-align:right;';
         else textContainerStyle = 'text-align:left;';
         // Render icon left or right
-        var leftIcon = iconAlignment === 'left' ? iconHtml : '';
-        var rightIcon = iconAlignment === 'right' ? iconHtml : '';
+        var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
+        var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
         return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + justifyStyle + '">' +
-          leftIcon +
+          singleLeftIcon +
           '<div class="min-w-0" style="' + textContainerStyle + '">' +
             (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
             '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
           '</div>' +
-          rightIcon +
+          singleRightIcon +
           (cta_enabled && cta_text && cta_url ? '<a ' +
             'href="' + cta_url + '" ' +
             'target="_blank" ' +
