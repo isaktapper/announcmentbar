@@ -451,9 +451,9 @@ export async function GET(
           textContainerStyle = 'text-align:left;';
         }
         // Bygg flex-row: [ikon][text] eller [text][ikon] beroende på icon_alignment
-        let contentFlex = '';
+        let textAndIconFlex = '';
         if (iconAlignment === 'right') {
-          contentFlex =
+          textAndIconFlex =
             '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
               '<span style="display:block;width:100%">' +
                 (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
@@ -463,7 +463,7 @@ export async function GET(
             '</div>';
         } else {
           // left eller default
-          contentFlex =
+          textAndIconFlex =
             '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
               iconHtml +
               '<span style="display:block;width:100%">' +
@@ -499,9 +499,9 @@ export async function GET(
         } else {
           closeBtnPad = 'margin-left:8px;';
         }
-        // Returnera hela baren: [contentFlex][ctaBtn][closeBtn]
+        // Returnera hela baren: [textAndIconFlex][ctaBtn][closeBtn]
         return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + justifyStyle + '">' +
-          contentFlex +
+          textAndIconFlex +
           ctaBtn +
           // Close button placeras alltid sist, med padding
           '<span id="announcement-close-btn-slot" style="' + closeBtnPad + '"></span>' +
