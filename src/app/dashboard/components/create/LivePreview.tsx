@@ -154,8 +154,9 @@ export default function LivePreview({
         cta_url: currentSlide.cta_url,
         cta_background_color: currentSlide.cta_background_color,
         cta_text_color: currentSlide.cta_text_color,
-        titleFontSize: currentSlide.titleFontSize,
-        messageFontSize: currentSlide.messageFontSize,
+        // Always use the per-slide font sizes, fallback to defaults if missing
+        titleFontSize: typeof currentSlide.titleFontSize === 'number' ? currentSlide.titleFontSize : 16,
+        messageFontSize: typeof currentSlide.messageFontSize === 'number' ? currentSlide.messageFontSize : 14,
       }
     }
     return {
@@ -281,12 +282,12 @@ export default function LivePreview({
             {content.title && (
               <div
                 className="mb-0.5"
-                style={{ fontSize: `${content.titleFontSize || titleFontSize}px` }}
+                style={{ fontSize: `${content.titleFontSize}px` }}
                 dangerouslySetInnerHTML={{ __html: content.title }}
               />
             )}
             <div
-              style={{ fontSize: `${content.messageFontSize || messageFontSize}px` }}
+              style={{ fontSize: `${content.messageFontSize}px` }}
               dangerouslySetInnerHTML={{ __html: content.message }}
             />
           </div>
