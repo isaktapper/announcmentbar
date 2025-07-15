@@ -168,6 +168,7 @@ export async function GET(
       isClosable: announcement.is_closable,
       barHeight: announcement.bar_height,
       iconAlignment: announcement.icon_alignment,
+      textAlignment: announcement.text_alignment, // <-- FIX: map snake_case to camelCase
       carouselItems:
         (announcement as any).carouselItems ?? (announcement as any).carousel_items ?? (announcement.content?.items ?? []),
       iconSvg: iconSvg,
