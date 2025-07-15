@@ -430,20 +430,22 @@ export async function GET(
         if (icon && icon !== 'none' && ICON_SVG_MAP[icon]) {
           iconHtml = '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>';
         }
-        // Set text-align and flex for text block (match carousel)
+        // Set text-align for text block (utan flex)
         var textAlignClass = 'text-left';
         var textBlockMargin = '';
-        var textContainerStyle = 'height:100%;display:flex;flex-direction:column;justify-content:center;';
+        var textContainerStyle = '';
         if (textAlignment === 'right') {
           textAlignClass = 'text-right';
-          textContainerStyle += 'align-items:flex-end;text-align:right;';
+          textContainerStyle = 'text-align:right;';
         } else if (textAlignment === 'center') {
           textAlignClass = 'text-center';
-          textContainerStyle += 'align-items:center;text-align:center;';
+          textContainerStyle = 'text-align:center;';
         } else {
           textBlockMargin = ' mr-3';
-          textContainerStyle += 'align-items:flex-start;text-align:left;';
+          textContainerStyle = 'text-align:left;';
         }
+        // Debug log
+        console.log('[YELLO EMBED SINGLE] textContainerStyle:', textContainerStyle, 'textAlignClass:', textAlignClass);
         // Inre flex-rad style och justify
         var innerPadding = '';
         var innerJustify = '';
