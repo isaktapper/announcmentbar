@@ -379,7 +379,7 @@ export async function GET(
                   (item.fontFamily ? 'font-family: ' + getFontFamily(item.fontFamily) + ';' : '') +
                   '"' +
                   '>' +
-                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;' + extraJustifyStyle + (announcement.isClosable ? 'max-width:calc(100% - 40px);' : '') + '">' +
+                  '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="' + contentWrapperStyle + 'height:100%;align-items:center;' + extraJustifyStyle + (announcement.isClosable ? 'max-width:calc(100% - 32px);' : '') + '">' +
                     iconHtml +
                     '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="' + textContainerStyle + '">' +
                       (item.title ? '<span style="display:block;font-size: ' + item.titleFontSize + 'px">' + item.title + '</span>' : '') +
