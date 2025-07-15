@@ -450,15 +450,28 @@ export async function GET(
           textBlockMargin = ' mr-3';
           textContainerStyle = 'text-align:left;';
         }
-        // Bygg flex-row: [ikon][text] alltid, precis som carousel
-        let textAndIconFlex =
-          '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
-            iconHtml +
-            '<span style="display:block;width:100%">' +
-              (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
-              '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
-            '</span>' +
-          '</div>';
+        // Bygg flex-row: [ikon][text] eller [text][ikon] beroende på iconAlignment
+        let textAndIconFlex = '';
+        if (iconAlignment === 'right') {
+          textAndIconFlex =
+            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
+              '<span style="display:block;width:100%">' +
+                (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+                '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+              '</span>' +
+              iconHtml +
+            '</div>';
+        } else {
+          // left eller default
+          textAndIconFlex =
+            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
+              iconHtml +
+              '<span style="display:block;width:100%">' +
+                (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+                '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+              '</span>' +
+            '</div>';
+        }
         // CTA-knapp
         let ctaBtn = '';
         if (cta_enabled && cta_text && cta_url) {
