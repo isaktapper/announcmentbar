@@ -434,10 +434,8 @@ export async function GET(
           justifyClass = 'justify-start';
           innerPadding = 'padding-left:16px;';
         }
-        // Render icon left or right
-        var iconHtml = icon && icon !== 'none' && ICON_SVG_MAP[icon] ? '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:3px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>' : '';
-        var singleLeftIcon = iconAlignment === 'left' ? iconHtml : '';
-        var singleRightIcon = iconAlignment === 'right' ? iconHtml : '';
+        // Render icon if present
+        var iconHtml = icon && icon !== 'none' && ICON_SVG_MAP[icon] ? '<span class="announcement-inline-icon" style="display:inline-flex;align-items:center;padding-right:6px;padding-left:1px;color:' + (textColor || '#000') + ';">' + ICON_SVG_MAP[icon] + '</span>' : '';
         // Sätt text-align på textblocket
         var textAlignClass = 'text-left';
         var textBlockMargin = '';
@@ -452,14 +450,32 @@ export async function GET(
           textBlockMargin = ' mr-3';
           textContainerStyle = 'text-align:left;';
         }
-        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + justifyStyle + '">' +
-          singleLeftIcon +
-          '<div class="min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
-            (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
-            '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
-          '</div>' +
-          singleRightIcon +
-          (cta_enabled && cta_text && cta_url ? '<a ' +
+        // Bygg flex-row: [ikon][text] eller [text][ikon] beroende på icon_alignment
+        let contentFlex = '';
+        if (iconAlignment === 'right') {
+          contentFlex =
+            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
+              '<span style="display:block;width:100%">' +
+                (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+                '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+              '</span>' +
+              iconHtml +
+            '</div>';
+        } else {
+          // left eller default
+          contentFlex =
+            '<div class="flex flex-row items-center min-w-0 ' + textAlignClass + textBlockMargin + '" style="flex:1;min-width:0;' + textContainerStyle + '">' +
+              iconHtml +
+              '<span style="display:block;width:100%">' +
+                (title ? '<span style="display:block;font-size: ' + titleFontSize + 'px">' + title + '</span>' : '') +
+                '<span style="display:block;font-size: ' + messageFontSize + 'px">' + message + '</span>' +
+              '</span>' +
+            '</div>';
+        }
+        // CTA-knapp
+        let ctaBtn = '';
+        if (cta_enabled && cta_text && cta_url) {
+          ctaBtn = '<a ' +
             'href="' + cta_url + '" ' +
             'target="_blank" ' +
             'rel="noopener noreferrer" ' +
@@ -474,8 +490,22 @@ export async function GET(
               'margin-left: 16px;' +
               'align-self: center;' +
             '"' +
-            '>' + cta_text + '</a>' : '') +
-               '</div>';
+            '>' + cta_text + '</a>';
+        }
+        // Extra padding om både text_alignment och icon_alignment är right
+        let closeBtnPad = '';
+        if (textAlignment === 'right' && iconAlignment === 'right') {
+          closeBtnPad = 'margin-left:20px;';
+        } else {
+          closeBtnPad = 'margin-left:8px;';
+        }
+        // Returnera hela baren: [contentFlex][ctaBtn][closeBtn]
+        return '<div class="flex flex-row items-center gap-4 ' + justifyClass + '" style="flex:1;width:100%;' + innerPadding + justifyStyle + '">' +
+          contentFlex +
+          ctaBtn +
+          // Close button placeras alltid sist, med padding
+          '<span id="announcement-close-btn-slot" style="' + closeBtnPad + '"></span>' +
+        '</div>';
       }
 
       const leftIcon = iconAlignment === 'left' ? renderIcon() : '';
@@ -549,20 +579,22 @@ export async function GET(
 
   announcementBar.innerHTML = generateAnnouncementHTML(announcement);
 
-  // Add close button if announcement is closable
+  // Flytta closeBtn till rätt plats
   if (announcement.isClosable) {
     announcementBar.style.position = announcement.isSticky ? 'fixed' : 'relative';
     const closeBtn = document.createElement('button');
     closeBtn.innerHTML = '&times;';
     closeBtn.setAttribute('aria-label','Close');
-    closeBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:20px;line-height:1;color:' + announcement.textColor + ';cursor:pointer;margin-left:16px;';
+    closeBtn.style.cssText = 'position:static;vertical-align:middle;background:transparent;border:none;font-size:20px;line-height:1;color:' + announcement.textColor + ';cursor:pointer;';
     closeBtn.addEventListener('click', function(){
       announcementBar.remove();
       if (announcement.isSticky) {
         document.body.style.marginTop = '';
       }
     });
-    announcementBar.appendChild(closeBtn);
+    // Lägg closeBtn i slotten
+    const slot = announcementBar.querySelector('#announcement-close-btn-slot');
+    if (slot) slot.appendChild(closeBtn);
   }
   document.body.insertBefore(announcementBar, document.body.firstChild);
 
