@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const userId = session.metadata?.user_id
+    console.log('Stripe webhook: userId from metadata:', userId)
     if (!userId) {
       console.error('No user_id in session metadata')
       return NextResponse.json({ error: 'No user_id in metadata' }, { status: 400 })
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
         console.error('Failed to update user plan:', error)
         return NextResponse.json({ error: 'Failed to update user plan' }, { status: 500 })
       }
+      console.log('Supabase update succeeded for user:', userId)
       return NextResponse.json({ received: true })
     } catch (err) {
       console.error('Supabase error:', err)
