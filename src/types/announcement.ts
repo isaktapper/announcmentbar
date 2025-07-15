@@ -165,6 +165,7 @@ export interface Template {
   cta_background_color: string
   cta_text_color: string
   allowed_domain: string
+  displayName?: string
 }
 
 export const ICONS = {

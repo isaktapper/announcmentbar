@@ -484,6 +484,7 @@ export default function CreateAnnouncementPage() {
                 <TemplatePicker
                   selectedTemplate={selectedTemplate}
                   onSelect={handleTemplateSelect}
+                  typeFilter="single"
                 />
               </div>
             </div>

@@ -441,6 +441,7 @@ export default function CreateCarouselClient() {
                 <TemplatePicker
                   selectedTemplate={selectedTemplate}
                   onSelect={handleTemplateSelect}
+                  typeFilter="carousel"
                 />
               </div>
             </div>
