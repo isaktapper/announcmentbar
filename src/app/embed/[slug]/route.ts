@@ -355,6 +355,7 @@ export async function GET(
                 // Add left padding for left-aligned text
                 var contentWrapperStyle = '';
                 if (item.textAlignment === 'left') contentWrapperStyle = 'padding-left:16px;';
+                else if (item.textAlignment === 'right') contentWrapperStyle = 'padding-right:16px;';
                 // Render icon if present
                 var iconHtml = '';
                 if (item.icon && item.icon !== 'none' && ICON_SVG_MAP[item.icon]) {
