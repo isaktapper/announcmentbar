@@ -9,7 +9,7 @@ import '@fontsource/space-grotesk/600.css'
 import '@fontsource/space-grotesk/700.css'
 
 export const metadata = {
-      title: 'Bars Dashboard',
+      title: 'Yello',
     description: 'Create and manage beautiful bars for your website',
   icons: {
     icon: '/favicon_final_2.png',
