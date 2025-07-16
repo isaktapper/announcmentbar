@@ -283,17 +283,17 @@ export default function TemplatePicker({ selectedTemplate, onSelect, typeFilter 
                 </>
               ) : (
                 <>
-                  {template.title && <div className="font-medium mb-0.5">{template.title}</div>}
-                  <div>{template.message}</div>
+              {template.title && <div className="font-medium mb-0.5">{template.title}</div>}
+              <div>{template.message}</div>
                 </>
               )}
-            </div>
+                  </div>
                 </div>
                 
                 {/* Template Name */}
           <div className="font-medium text-gray-900">
             {template.displayName || (template.id.charAt(0).toUpperCase() + template.id.slice(1))}
-          </div>
+                </div>
 
           {/* Selected Indicator */}
           {selectedTemplate === template.id && (

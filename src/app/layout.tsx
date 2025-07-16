@@ -12,7 +12,7 @@ export const metadata = {
       title: 'Bars Dashboard',
     description: 'Create and manage beautiful bars for your website',
   icons: {
-    icon: '/favicon_yello.png',
+    icon: '/favicon_final_2.png',
   },
 }
 

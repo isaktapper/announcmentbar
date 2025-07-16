@@ -178,6 +178,7 @@ export default function EditSingleClient({ announcement }: EditSingleClientProps
       }
 
       const updatedAnnouncement = {
+        bar_name: formData.bar_name,
         icon: formData.icon,
         background: formData.background,
         background_gradient: formData.useGradient ? formData.backgroundGradient : null,
